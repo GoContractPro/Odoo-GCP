@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+	
+      <!-- Company Form --> 
+        
+        <record id="view_company_form_jdc3" model="ir.ui.view">
+            <field name="name">res.company.form.jdc3</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@string='Configuration']" position="inside">
+                    <group>
+                        <separator string="Supplier Payment"  colspan="2"/><newline/>
+                        <field name="def_supp_journal" domain="[('type','in',['bank','cash'])]"/>
+                        <field name="writeoff_account" colspan="2"/>
+                    </group>
+                </xpath>
+<!--                 <xpath expr="/form/notebook" position="inside"> -->
+<!--                     <page string="Accounting"> -->
+<!--                             <field name="writeoff_account" colspan="2"/> -->
+<!--                     </page> -->
+<!--                 </xpath> -->
+            </field>
+        </record>
+		
+	</data>
+</openerp>

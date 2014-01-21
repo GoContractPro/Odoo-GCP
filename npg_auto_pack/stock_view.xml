@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openerp>
+	<data>
+		<record id="npg_auto_pack_stock_picking_form_view" model="ir.ui.view">
+            <field name="name">form.npg.auto.pack.stock.picking</field>
+            <field name="model">stock.picking.out</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='origin']" position="after">
+                	<button name="%(action_npg_auto_pack_items)d" string="Auto-Pack Items" type="action" icon="terp-document-new" attrs="{'invisible':[('state','in', ['cancel','done'])]}"/>
+				</xpath>
+            </field>
+        </record>
+	</data>
+</openerp>

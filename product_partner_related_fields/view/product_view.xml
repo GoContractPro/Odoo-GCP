@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    
+		<record id="product_partner_related_product_form" model="ir.ui.view">
+			<field name="name">product.partner.related.product.form</field>
+			<field name="model">product.product</field>
+			<field name="type">form</field>
+			<field name="inherit_id" ref="product.product_normal_form_view" />
+			<field name="arch" type="xml">
+				<page string="Information" position="after">
+					<page string="Partner related information">
+						<field name="id" invisible="1" />
+						<field name="partner_related_ids" nolabel="1">
+							<tree string="Partner related information">
+								<field name="partner_id" />
+								<field name="name" />
+								<field name="value" />
+							</tree>
+							<form string="Partner related information">
+								<field name="partner_id" />
+								<newline/>
+								<field name="name" />
+								<field name="value" />
+							</form>
+						</field>
+					</page>
+				</page>
+			</field>
+		</record>
+		
+    </data>
+</openerp>
