@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!--
+        HR Employee
+        -->
+
+        <record id="view_hr_employee_form_inherit" model="ir.ui.view">
+            <field name="name">view.hr.employeeform.inherit</field>
+            <field name="model">hr.employee</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+                <page string="Personal Information" position="after">
+                    <page string="Emergency Contact Information">
+                         <group col="2" colspan="2" groups="base.group_hr_user">
+                                <separator colspan="2" string="Contact Person 1"/>
+                                <field name="contact_name1"/>
+                                <field name="contact_relationship1"/>
+                                <field name="contact_address1"/>
+                                <field name="contact_home_number1"/>
+                                <field name="contact_cell_number1"/>
+                                <field name="contact_work_number1"/>
+                                <field name="contact_employer1"/>
+                            </group>
+                            <group col="2" colspan="2" groups="base.group_hr_user">
+                                <separator colspan="2" string="Contact Person 2"/>
+                                <field name="contact_name2"/>
+                                <field name="contact_relationship2"/>
+                                <field name="contact_address2"/>
+                                <field name="contact_home_number2"/>
+                                <field name="contact_cell_number2"/>
+                                <field name="contact_work_number2"/>
+                                <field name="contact_employer2"/>
+                            </group>
+                            <group col="2" colspan="2">
+                                <separator string="Doctor" colspan="2"/>
+                                <field name="doctor_name"/>
+                                <field name="physician_group"/>
+                                <field name="doctor_number"/>
+                            </group>
+                            <group col="2" colspan="2">
+                                <separator string="Dentist" colspan="2"/>
+                                <field name="dentist_name"/>
+                                <field name="dentist_group"/>
+                                <field name="dentist_number"/>
+                            </group>
+                        </page>
+                     </page>
+                </field>
+            </record>
+
+    </data>
+</openerp>
