@@ -707,7 +707,7 @@ class account_voucher(osv.Model):
          'trans_type' : 'AuthOnly'
     }
 
-class Stock_Picking(osv.osv):
+class Stock_Picking(osv.Model):
     _inherit = 'stock.picking'
 
     def ddo_partial(self, cr, uid, ids, partial_datas, context=None):

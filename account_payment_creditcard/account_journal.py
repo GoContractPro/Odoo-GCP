@@ -23,16 +23,14 @@
 from openerp.osv import osv, fields
 import rsa_encrypt
 
-class account_journal(osv.osv):
+class account_journal(osv.Model):
     _inherit = "account.journal"
     _columns = {
         'cc_allow_processing': fields.boolean('Allow Credit Card Processing',),
         'cc_allow_refunds': fields.boolean('Allow Credit Card Refunds',),
     }
-account_journal()
 
-
-class res_partner(osv.osv):
+class res_partner(osv.Model):
     _inherit = "res.partner"
     
     def write(self, cr, uid, ids, vals, context=None):
@@ -44,9 +42,7 @@ class res_partner(osv.osv):
         result = super(res_partner, self).write(cr, uid, ids, vals, context)
         return True
 
-res_partner()
-
-class res_partner_bank(osv.osv):
+class res_partner_bank(osv.Model):
     '''Bank Accounts'''
 
     _inherit = "res.partner.bank"
@@ -156,7 +152,5 @@ class res_partner_bank(osv.osv):
         }
         default.update(vals)
         return super(res_partner_bank, self).copy(cr, uid, id, default=default, context=context)
-    
-res_partner_bank()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

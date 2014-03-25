@@ -28,10 +28,11 @@
     """,
     'author': 'NovaPoint Group LLC',
     'website': ' http://www.novapointgroup.com',
-    'depends': ['account_voucher_credits_us'],
+    'depends': ['account_payment_creditcard'],
     'data': [
-           'account_voucher.xml',
-           'security/ir.model.access.csv',
+        'wizard/account_post_voucher.xml',
+        'account_voucher.xml',
+        'security/ir.model.access.csv',
     ],
     'demo': [
     ],

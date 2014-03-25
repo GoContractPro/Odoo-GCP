@@ -55,7 +55,6 @@ class cust_payment_profile(osv.Model):
     }
 
     _defaults = {
-        'use_default':False,
         'partner_id': _get_partner,
     }
 

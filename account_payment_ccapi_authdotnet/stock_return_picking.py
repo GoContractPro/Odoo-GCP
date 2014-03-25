@@ -108,7 +108,7 @@ class stock_return_picking(osv.TransientModel):
 
 stock_return_picking()
 
-class stock_picking(osv.osv):
+class stock_picking(osv.Model):
     
     _inherit = "stock.picking"
     _columns = {
@@ -172,7 +172,6 @@ class stock_picking(osv.osv):
                     voucher_obj.write(cr, uid, [pick.voucher_id.id], {'cc_refund_amt':amount}, context=context)
                     self.pool.get('auth.net.cc.api').do_this_transaction(cr, uid, [pick.voucher_id.id] , refund=True, context=context)
         return res
-stock_picking()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
 

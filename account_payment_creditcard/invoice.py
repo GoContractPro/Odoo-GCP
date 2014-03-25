@@ -23,7 +23,7 @@
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
 
-class account_invoice(osv.osv):
+class account_invoice(osv.Model):
     
     _inherit = 'account.invoice'
     
@@ -53,10 +53,6 @@ class account_invoice(osv.osv):
     _columns = {
         'credit_card' : fields.boolean('Credit Card', readonly=True)
     }
-    
-    _defaults = {
-        'credit_card' : False
-    }
-account_invoice()
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
 

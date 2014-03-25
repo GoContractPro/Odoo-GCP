@@ -139,7 +139,8 @@ class delete_payment_profile(osv.TransientModel):
             partner = self.pool.get(parent_model).browse(cr, uid, parent_id)
         else:
             parent_model_obj = self.pool.get(parent_model).browse(cr, uid, parent_id)
-            partner = parent_model_obj.address_id.partner_id
+            print "parent model obj ",parent_model_obj
+            partner = parent_model_obj.partner_id
 
         data = self.pool.get('delete.payment.profile').browse(cr, uid, ids[0])
 

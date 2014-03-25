@@ -23,6 +23,18 @@
             </field>
         </record>
         
+		<record model="ir.ui.view" id="view_vendor_receipt_form_5">
+            <field name="name">account.voucher.receipt.form.5</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+            <field name="arch" type="xml">
+				<xpath expr="//form/header/button[@name='proforma_voucher']" position="replace">
+                    <button name="%(action_proforma_voucher)d" string="Post" states="draft" type="action" 
+                            attrs="{'invisible': ['|',('cc_info_hide','=',False),('state','&lt;&gt;','draft')]}" icon="terp-camera_test"/>
+				</xpath>
+            </field>
+        </record>
+        
     </data>
 </openerp>
         

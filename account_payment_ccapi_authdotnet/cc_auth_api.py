@@ -48,7 +48,7 @@ class AuthnetAIMError(Exception):
             raise AuthnetAIMError('Incorrect parameters passed to setParameter(): {0}:{1}'.format(key, value))
         return parameters
 
-class auth_net_cc_api(osv.osv):
+class auth_net_cc_api(osv.Model):
     _name = "auth.net.cc.api"
     '''
         Class to do credit card transaction
@@ -495,9 +495,7 @@ class auth_net_cc_api(osv.osv):
 
         return ret
 
-auth_net_cc_api()
-
-class account_voucher(osv.osv):
+class account_voucher(osv.Model):
 
     _inherit = 'account.voucher'
     '''
@@ -524,9 +522,7 @@ class account_voucher(osv.osv):
     def cc_refund(self, cr, uid, ids, context=None):
         return self.pool.get('auth.net.cc.api').do_this_transaction(cr, uid, ids, refund=True, context=context)
     
-account_voucher()
-
-class sale_order(osv.osv):
+class sale_order(osv.Model):
     _inherit = "sale.order"
 
     def _get_prod_acc(self, product_id, journal_obj, context=False):
@@ -604,6 +600,5 @@ class sale_order(osv.osv):
                 if sale.order_policy == 'credit_card':
                     self.pool.get('account.invoice').action_cancel(cr, uid, [inv.id], {})
         return super(sale_order, self).action_cancel(cr, uid, ids, context)
-    
-sale_order()
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

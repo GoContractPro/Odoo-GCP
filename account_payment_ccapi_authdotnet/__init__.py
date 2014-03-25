@@ -20,8 +20,9 @@
 #
 ##############################################################################
 
-import account_voucher
-import cc_auth_api
-import stock_return_picking
+from . import account_voucher
+from . import cc_auth_api
+from . import stock_return_picking
+import wizard
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

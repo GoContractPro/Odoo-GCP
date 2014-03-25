@@ -31,7 +31,7 @@ class AuthnetAIMError(Exception):
     def __str__(self):
         return str(self.parameter)
 
-class account_voucher(osv.osv):
+class account_voucher(osv.Model):
 
     def setParameter(self, parameters={}, key=None, value=None):
 
@@ -297,7 +297,6 @@ class account_voucher(osv.osv):
         
         if cc_allow_refunds:
             res['value']['cc_info_hide'] = True
-            
         context.update({'sale_id':sale_id})
         if not sale_id:
             sale_id = context.get('sale_id')
@@ -497,9 +496,7 @@ class account_voucher(osv.osv):
             self.pool.get('transaction.details').create(cr, uid, vals, context=context)
         return True
 
-account_voucher()
-
-class res_company(osv.osv):
+class res_company(osv.Model):
     '''
     Add credit card details on company configuration
     '''
@@ -510,7 +507,6 @@ class res_company(osv.osv):
         'cc_testmode': fields.boolean('Test Mode'),
         'cc_journal_id':fields.many2one('account.journal', 'Payment Method', help="The default payment method on payment voucher open using the Pay button from sale order."),
     }
-res_company()
 
 class transaction_details(osv.Model):
     _name = "transaction.details"

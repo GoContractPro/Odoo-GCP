@@ -174,6 +174,8 @@ class res_partner(osv.Model):
         
         # Creating the customer profile 
         for customer in customers:
+            if not customer.company_id.auth_config_id:
+                raise osv.except_osv(_('Warning'),_('Please configure authentication in company configuration!'))
             Trans_key = customer.company_id.auth_config_id.transaction_key or ''
             Login_id = customer.company_id.auth_config_id.login_id or ''
             url_extension = customer.company_id.auth_config_id.url_extension or ''
@@ -205,6 +207,7 @@ class res_partner(osv.Model):
                 if xsd:
                     self._setparameter(Param_Dic, 'xsd', xsd)
                 Customer_Profile_ID = self.createCustomerProfile(Param_Dic)
+                print "Error_Message ",Customer_Profile_ID
                 if Customer_Profile_ID and type(Customer_Profile_ID) == type(''):
                     cust_prof_id = self.pool.get('cust.profile').create(cr, uid, {'name':Customer_Profile_ID})
                     cust_obj.write(cr, uid, ids, {'payment_profile_id':cust_prof_id})
@@ -217,5 +220,4 @@ class res_partner(osv.Model):
 
         return ret
 
-res_partner()
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

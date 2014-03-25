@@ -22,12 +22,10 @@
 
 from openerp.osv import osv, fields
 
-class account_voucher(osv.osv):
+class account_voucher(osv.Model):
     
     _inherit = 'account.voucher'
     
     _columns = {
         'origin':fields.char('Origin', size=16, help='Mentions the reference of Sale/Purchase document'),
     }
-
-account_voucher()

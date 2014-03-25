@@ -23,7 +23,7 @@ from openerp.osv import fields, osv
 from tools.translate import _
 import netsvc
 
-class sale_order(osv.osv):
+class sale_order(osv.Model):
     _inherit = "sale.order"
 
 #     def onchange_partner_id(self, cr, uid, ids, part_id, context={}):
@@ -199,10 +199,10 @@ class sale_order(osv.osv):
         'invoiced': fields.function(_invoiced, method=True, string='Paid',
         type='boolean', help="It indicates that an invoice has been paid.",
         store={
-                 'account.invoice'  : (_get_invoice, ['state'], 20),
-                 'sale.order'       : (lambda self, cr, uid, ids, c={}: ids, ['state'], 20),
-                 'account.voucher'  : (_get_voucher, ['state'], 20),
-                 }),
+             'account.invoice'  : (_get_invoice, ['state'], 20),
+             'sale.order'       : (lambda self, cr, uid, ids, c={}: ids, ['state'], 20),
+             'account.voucher'  : (_get_voucher, ['state'], 20),
+         }),
         'cc_ship_refund' : fields.boolean('Ship Refunded', readonly=True),
     }
     
@@ -229,4 +229,3 @@ class sale_order(osv.osv):
                 for pick in sale_obj.picking_ids:
                     self.pool.get('stock.picking.out').write(cr, uid, [pick.id], {'invoice_state': 'credit_card'}, context=context)
         return ret
-sale_order()

@@ -20,9 +20,9 @@
 #
 ##############################################################################
 
-import create_payment_profile
-import make_transaction
-import edit_payment_profile
-import delete_payment_profile
+from . import create_payment_profile
+from . import make_transaction
+from . import edit_payment_profile
+from . import delete_payment_profile
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

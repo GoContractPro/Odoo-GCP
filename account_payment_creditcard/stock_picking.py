@@ -23,7 +23,7 @@
 
 from openerp.osv import fields, osv
 
-class stock_picking(osv.osv):
+class stock_picking(osv.Model):
 
     _inherit = "stock.picking"
     '''
@@ -64,9 +64,7 @@ class stock_picking(osv.osv):
         'ship_message': fields.text('Message'),
     }
 
-stock_picking()
-
-class stock_picking_out(osv.osv):
+class stock_picking_out(osv.Model):
 
     _inherit = "stock.picking.out"
     
@@ -80,7 +78,7 @@ class stock_picking_out(osv.osv):
             ], "Invoice Control", select=True, required=True, readonly=True, states={'draft': [('readonly', False)]}),
     }
     
-class stock_picking_in(osv.osv):
+class stock_picking_in(osv.Model):
 
     _inherit = "stock.picking.in"
     

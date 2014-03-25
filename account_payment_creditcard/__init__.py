@@ -20,10 +20,10 @@
 #
 ##############################################################################
 
-import account_voucher
-import account_journal
-import stock_picking
-import sale
-import invoice
+from . import sale
+from . import account_voucher
+from . import account_journal
+from . import stock_picking
+from . import invoice
 import rsa_encrypt
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

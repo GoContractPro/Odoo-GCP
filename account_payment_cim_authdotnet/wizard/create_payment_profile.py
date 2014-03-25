@@ -90,6 +90,7 @@ class create_payment_profile(osv.TransientModel):
 
     def _clean_string(self, text):
         lis = ['\t', '\n']
+        print "text",text
         if type(text) != type(''):
             text = str(text)
         for t in lis:
@@ -415,7 +416,6 @@ class create_payment_profile(osv.TransientModel):
         email = ''
         merchantCustomerId = ''
         description = ''
-
         Trans_key = partner.company_id.auth_config_id.transaction_key
         Login_id = partner.company_id.auth_config_id.login_id
         url_extension = partner.company_id.auth_config_id.url_extension
@@ -453,6 +453,10 @@ class create_payment_profile(osv.TransientModel):
             self._setparameter(Param_Dic, 'description', description)
 
         Customer_Payment_Profile_ID = self.createCustomerPaymentProfile(Param_Dic)
+        print "Customer_Payment_Profile_ID ",type(Customer_Payment_Profile_ID)
+        if type(Customer_Payment_Profile_ID) is dict:
+            if Customer_Payment_Profile_ID.get('Error_Code', False) == 'E00015' :
+                raise osv.except_osv(_('Warning'),_(Customer_Payment_Profile_ID.get('Error_Message')))
         createCustomerShippingAddressRequest_ID = self.createCustomerShippingAddressRequest(Param_Dic)
 
         cust_prof_ids = self.pool.get('cust.profile').search(cr, uid, [('name', '=', prof_id)])

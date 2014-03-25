@@ -24,7 +24,7 @@ from openerp.osv import osv, fields
 class res_company(osv.Model):
     _inherit = "res.company"
     _columns = {
-        'auth_config_id':fields.many2one('auth.config', 'Auth Configuration')}
-res_company()
+        'auth_config_id':fields.many2one('auth.config', 'Auth Configuration')
+    }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

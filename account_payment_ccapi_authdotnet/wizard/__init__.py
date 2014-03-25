@@ -20,33 +20,7 @@
 #
 ##############################################################################
 
-{
-    'name': 'CIM Transaction',
-    'version': '1.3',
-    'category': 'Generic Modules/Others',
-    'description': """
-    CIM Transactions using authorise.net
-    """,
-    'author': 'NovaPoint Group LLC',
-    'website': ' http://www.novapointgroup.com',
-    'depends': ['account_payment_ccapi_authdotnet'],
-    'data': [
-        'security/ir.model.access.csv',
-        'wizard/edit_payment_profile_view.xml',
-        'wizard/make_transaction_view.xml',
-        'wizard/delete_payment_profile_view.xml',
-        'wizard/create_payment_profile_view.xml',
-        'cim_transaction_view.xml',
-        'partner_view.xml',
-        'company_view.xml',
-        'account_voucher_view.xml'
-    ],
-    'demo': [
-    ],
-    'test': [
-        'test/account_payment_cim_authdotnet.yml'
-    ],
-    'installable': True,
-    'auto_install': False,
-}
+from . import account_post_voucher
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+
