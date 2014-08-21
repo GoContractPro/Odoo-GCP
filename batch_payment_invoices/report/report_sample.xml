@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<openerp>
+<data noupdate="1">
+    <record id="aeroo_multi_pay_invoice_report_id" model="ir.actions.report.xml">
+        <field name="name">Multi Pay Invoice Report</field>
+        <field name="type">ir.actions.report.xml</field>
+        <field name="model">account.invoice</field>
+        <field name="report_name">multi_pay_invoice_report</field>
+        <field name="report_type">aeroo</field>
+        <field name="in_format">oo-ods</field>
+        <field name="parser_loc">batch_payment_invoices/report/parser.py</field>
+        <field name="report_rml">batch_payment_invoices/report/printed_invoice.ods</field>
+        <field name="parser_state">loc</field>
+        <field name="tml_source">file</field>
+    </record>
+    <ir_set>
+        <field eval="'action'" name="key"/>
+        <field eval="'client_print_multi'" name="key2"/>
+        <field eval="['account.invoice']" name="models"/>
+        <field name="name">Multi Pay Invoice Report</field>
+        <field eval="'ir.actions.report.xml,'+str(aeroo_multi_pay_invoice_report_id)" name="value"/>
+        <field eval="True" name="isobject"/>
+        <field eval="True" name="replace"/>
+    </ir_set> 
+    <report id="account_check_writing.account_print_check_top1"
+            string="Print Check (Topdfdf)"
+            model="account.voucher"
+            name="account.print.check.top.multi"
+            rml="batch_payment_invoices/report/check_print_top.rml"
+            multi="True"
+            auto="False"
+    		menu="False"
+    		/> 
+	
+	<report id="report_account_voucher"
+            string="Voucher"
+            model="account.voucher"
+            name="voucher.cash_receipt.drcr"
+            rml="account_voucher/report/account_voucher.rml"
+            auto="False"
+            header = "False"
+            />
+	<report id="account_check_writing.account_print_check_top"
+            string="Print Check (Top)"
+            model="account.voucher"
+            name="account.print.check.top.multi"
+            rml="batch_payment_invoices/report/check_print_top.rml"
+            multi="False"
+            auto="False"
+			menu="True"/>
+
+    <report id="account_check_writing.account_print_check_middle"
+            string="Print Check (Middle)"
+            model="account.voucher"
+            name="account.print.check.middle"
+            rml="account_check_writing/report/check_print_middle.rml"
+            multi="True"
+            auto="False"
+    		menu="False"
+    		/>
+            
+    <report id="account_check_writing.account_print_check_bottom"
+            string="Print Check (Bottom)"
+            model="account.voucher"
+            name="account.print.check.bottom"
+            rml="account_check_writing/report/check_print_bottom.rml"
+            multi="True"
+            auto="False"
+    		menu="False"
+    		/>
+</data>
+</openerp>
+
+
