@@ -1,0 +1,3 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_mrp_disassemble_loc_manager","mrp.disassemble.location","model_mrp_disassemble_location","mrp.group_mrp_manager",1,1,1,1
+"access_mrp_disassemble_loc_user","mrp.disassemble.location","model_mrp_disassemble_location","mrp.group_mrp_user",1,0,0,0

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!-- Partner Form -->
+
+        <record id="view_partner_form_base_nat" model="ir.ui.view">
+            <field name="name">res.partner.form.base.nat</field>
+            <field name="model">res.partner</field>
+            <field name="type">form</field>
+			<field name="inherit_id"  ref="base.view_partner_form"/>
+			<field name="priority" eval="1"/>
+            <field name="arch" type="xml">
+				<xpath expr="//field[@name='date']" position="after" >
+	                <field name="nat_acc_parent" />
+				</xpath>
+			</field>
+		</record>
+
+      <!--  Partner List-->
+
+        <record id="view_partner_tree_base_nat" model="ir.ui.view">
+            <field name="name">res.partner.tree.base.nat</field>
+            <field name="model">res.partner</field>
+            <field name="type">tree</field>
+            <field eval="8" name="priority"/>
+            <field name="inherit_id" ref="base.view_partner_tree"/>
+            <field name="arch" type="xml">
+            	<xpath expr="//field[@name='user_id']" position="after">
+            		<field name="nat_acc_parent"/>
+            	</xpath>
+			</field>
+		</record>
+
+    </data>
+</openerp>

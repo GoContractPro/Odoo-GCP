@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+        <!-- Mrp Product Disassemble -->
+		<record id="product_disassemble_form_view" model="ir.ui.view">
+			<field name="name">product.disassemble.form</field>
+			<field name="model">mrp.product.disassemble</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Procurement Request">
+					<field name="product_id" required="1" on_change="onchange_product_id(product_id,location_id)" />
+					<field name="location_id" required="1" on_change="onchange_product_id(product_id, location_id)"
+					       context="{'filter_by_real_stock':True,'product_id':product_id}" />
+					<field name="product_qty" required="1" />
+					<field name="qty_available" readonly="0" />
+					<separator colspan="4"/>
+					<group colspan="4" col="6">
+						<button special="cancel" string="Cancel" icon="gtk-cancel"/>
+						<button name="do_disassemble" string="Disassemble" type="object" icon="gtk-execute"/>
+					</group>
+				</form>
+			</field>
+
+		</record>
+		<act_window name="Disassemble"
+            res_model="mrp.product.disassemble"
+            src_model="product.product"
+            view_mode="form"
+            view_id="product_disassemble_form_view"
+            target="new"
+            key2="client_action_multi"
+            id="act_product_disassemble"/>
+
+        <menuitem id="menu_disassemble_product" name="Disassemble a Product"
+        	parent="mrp.menu_mrp_manufacturing" action="act_product_disassemble"/>
+
+
+
+	</data>
+</openerp>

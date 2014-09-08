@@ -1,0 +1,37 @@
+====================================================================
+Version Change Log (Mrp Disassemble)
+====================================================================
+Version 1.11 (2012-07-19) By Rima
+	* Made the 'Real Quantity' in the wizard as readonly
+
+Version 1.10 (2012-04-23) By Rima
+	* Added menu action for Disassemble Products under Manufacturing.
+	* Changed the order of the fields displayed in the wizard
+	* Changed the default_get method on the wizard
+
+Version 1.09 (2012-03-27) By Rima
+	* Updated __openerp__.py description.
+
+Version 1.08 on 2012-03-21 by Sinoj
+	* Code clean-up
+
+Version 1.07 on 2011-07-27 by Arif
+	* Removed the conflict with the functionality of shortage location in
+	  stock_multilocation_picking and disassemble
+
+Version 1.06 on 2011-07-27 by Janeesh
+	* Overriding do_partial function to fix error with version 6.03
+Version 1.05 on 2011-07-18 by Arif
+	* Configuration menu to set the finished products location and corresponding changes
+
+Version 1.04 on 2011-07-15 by Arif
+	* Fixed the issue with location when disassembling from incoming shipments
+
+Version 1.03 on 2011-07-14 by Arif
+	* Resolving the issue with product components having quatity>0 on bom
+
+Version 1.02 on 2011-07-13 by Jabir & Arif
+	* Wizard on products view to disassemble
+
+Version 1.01 on 2011-07-13 by Jabir & Arif
+	* During Incoming shipment, option to disassemble
