@@ -51,6 +51,17 @@ class account_check_write(osv.TransientModel):
                 state = voucher_id.check_status
         return state
 
+    def _check_no(self, cr, uid, ids, context=None):
+        acc_vou_obj = self.pool.get('account.voucher')
+        new_no =self.browse(cr, uid, ids, context=context)[0].new_no
+        check_no_id = acc_vou_obj.search(cr, uid, [('chk_seq','=',new_no)])
+        if check_no_id:
+                raise osv.except_osv(_('Error!'),_("Check No. %s already exists. System can't use the existing check number for this payment.") % (new_no,))
+        return True
+
+    _constraints = [
+        (_check_no, "Error! Check No. already exists. System can't use the existing check number for this payment", ['new_no'])
+    ]
     def _get_msg(self, cr, uid, context=None):
         """
         Function to initialize preprint_msg
@@ -94,6 +105,7 @@ class account_check_write(osv.TransientModel):
         dummy, sequence_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_check_writing', 'sequence_check_number')
         voucher_ids = context.get('active_ids', [])
         new_value = self.browse(cr, uid, ids[0], context=context).new_no
+        
         check_status = self.browse(cr, uid, ids[0],context=None).check_print_choice
         if check_status == 're_print':
             if new_value:

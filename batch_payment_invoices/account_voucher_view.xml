@@ -33,7 +33,7 @@
                        </page> 
 				</xpath>
 				<xpath expr="//header/button[@string='Unreconcile']" postion='after'>
-					<button string='Print Check' name='print_checks' type='object' attrs="{'invisible': [('chk_seq','=',False)]}"/>
+					<button string='Print Check' name='print_checks' type='object' attrs="{'invisible': [('state','not in','posted')]}"/>
 				</xpath>
            </field>
         </record>

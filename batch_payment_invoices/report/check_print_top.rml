@@ -200,7 +200,7 @@
           <blockTable colWidths="82.0,140.0,64.0,70.0,76.0,52.0,78.0" style="Table10">
             <tr>
               <td>
-                <para style="P4">Due Date</para>
+                <para style="P4">Invoice Date</para>
               </td>
               <td>
                 <para style="P4">Description</para>
@@ -215,7 +215,7 @@
                 <para style="P4">Open Balance</para>
               </td>
               <td>
-                <para style="P4">Discount</para>
+                <para style="P4">Credit</para>
               </td>
               <td>
                 <para style="P4">Payment</para>
@@ -223,10 +223,10 @@
             </tr>
             <tr>
               <td>
-                <para style="P19">[[ repeatIn(get_lines(voucher.line_dr_ids),'l') ]] [[ formatLang(l['date_due'] ,date=True) or '' ]]</para>
+                <para style="P19">[[ repeatIn(get_lines(voucher.line_dr_ids),'l') ]] [[ formatLang(l['date_invoice'] ,date=True) or '' ]]</para>
               </td>
               <td>
-                <para style="P19">[[ l['name'] ]]</para>
+                <para style="P19">[[ l['supplier_invoice_number'] ]]</para>
               </td>
               <td>
                 <para style="P19">[[ voucher.log_ref or '' ]]</para>
@@ -236,16 +236,16 @@
                 <para style="P19">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
               <td>
-                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(l['amount_unreconciled']) ]]</para>
+                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(l['residual']) ]]</para>
                 <para style="P19">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
               <td>
                 <para style="P19">
-                  <font color="white"> </font>
+                  [[total_credit(l)]]
                 </para>
               </td>
               <td>
-                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(l['amount']) ]]</para>
+                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(l['amount']-total_credit(l)) ]]</para>
                 <para style="P19">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
             </tr>
@@ -284,7 +284,7 @@
           <blockTable colWidths="82.0,140.0,64.0,70.0,76.0,52.0,78.0" style="Table8">
             <tr>
               <td>
-                <para style="P4">Due Date</para>
+                <para style="P4">Invoice Date</para>
               </td>
               <td>
                 <para style="P4">Description</para>
@@ -299,7 +299,7 @@
                 <para style="P4">Open Balance</para>
               </td>
               <td>
-                <para style="P4">Discount</para>
+                <para style="P4">Credit</para>
               </td>
               <td>
                 <para style="P4">Payment</para>
@@ -307,10 +307,10 @@
             </tr>
             <tr>
               <td>
-                <para style="P19">[[ repeatIn(get_lines(voucher.line_dr_ids),'l') ]] [[ formatLang(l['date_due'] ,date=True) or '' ]]</para>
+                <para style="P19">[[ repeatIn(get_lines(voucher.line_dr_ids),'l') ]] [[ formatLang(l['date_invoice'] ,date=True) or '' ]]</para>
               </td>
               <td>
-                <para style="P19">[[ l['name'] ]]</para>
+                <para style="P19">[[ l['supplier_invoice_number'] ]]</para>
               </td>
               <td>
                 <para style="P19">[[ voucher.log_ref or '' ]]</para>
@@ -320,16 +320,16 @@
                 <para style="P19">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
               <td>
-                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]][[ formatLang(l['amount_unreconciled']) ]]</para>
+                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]][[ formatLang(l['residual']) ]]</para>
                 <para style="P19">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
               <td>
                 <para style="P19">
-                  <font color="white"> </font>
+                  [[total_credit(l)]]
                 </para>
               </td>
               <td>
-                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(l['amount']) ]]</para>
+                <para style="P19">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(l['amount'] - total_credit(l)) ]]</para>
                 <para style="P19">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
             </tr>

@@ -49,13 +49,13 @@ class account_invoice(osv.Model):
         for inv in self.browse(cr, uid, ids, context=context):
             if inv.type == 'in_invoice':
                 if not inv.pay and not inv.print_check:
-                    vals = {'pay': True, 'print_check':False, 'amount_paid':inv.residual or 0.0, 'use_credit_available': inv.use_credit_available_dummy}
+                    vals = {'pay': True, 'print_check':True, 'amount_paid':inv.residual or 0.0}
                 elif inv.pay and not inv.print_check:
-                    vals = {'pay': True, 'print_check':True , 'amount_paid':inv.residual or 0.0, 'use_credit_available': inv.use_credit_available_dummy}
+                    vals = {'pay': True, 'print_check':True , 'amount_paid':inv.residual or 0.0}
                 elif inv.pay and inv.print_check:
-                    vals = {'pay': False, 'print_check':False, 'amount_paid':0.0, 'use_credit_available': 0.0,'use_credit_available_dummy' :inv.use_credit_available}
+                    vals = {'pay': False, 'print_check':False, 'amount_paid':0.0}
                 elif not inv.pay and  inv.print_check:
-                    vals = {'pay': False, 'print_check':False,'amount_paid':0.0 ,'use_credit_available': 0.0, 'use_credit_available_dummy' :inv.use_credit_available}
+                    vals = {'pay': False, 'print_check':True,'amount_paid':0.0}
             else:
                 if not inv.pay:
                     vals = {'pay': True, 'amount_paid':inv.residual or 0.0 ,'use_credit_available': inv.use_credit_available_dummy}
@@ -426,8 +426,9 @@ class account_multi_pay_invoice(osv.Model):
                 vals ={'use_credit_available' : 0,
                        'credit_available': 0.0,
                        'amount_paid': inv.residual or 0.0,
-                       'pay':True,
-                       'print_check':True}
+#                        'pay':True,
+                       'pay':False,
+                       'print_check':False}
                 vals['use_credit_available'] = partners[partner]
                 # Only credit show in first invoices 
                 
@@ -457,8 +458,10 @@ class account_multi_pay_invoice(osv.Model):
                             vals ={'credit_available':  0.0,
                                    'use_credit_available':remain_credit_amount or 0.0,
                                'amount_paid': inv.residual or 0.0,
-                               'pay':True,
-                               'print_check':True}
+#                                'pay':True,
+                               'pay':False,
+#                                'print_check':True
+                               'print_check':False}
 #                                else:
 #                                    vals ={'credit_available': 0.0,
 #                                           'use_credit_available':remain_credit_amount or 0.0,
@@ -475,8 +478,10 @@ class account_multi_pay_invoice(osv.Model):
                             vals ={'credit_available': 0.0,
                                    'use_credit_available':0.0,
                                    'amount_paid': inv.residual or 0.0,
-                                   'pay':True,
-                                   'print_check':True}
+#                                    'pay':True,
+                                   'pay':False,
+#                                    'print_check':True
+                                   'print_check':False}
 #                   elif not multipay.apply_credit and inv.partner_id.credit:
 #                        vals ={'credit_available': 0.0,
 #                               'use_credit_available':0.0,
@@ -487,8 +492,10 @@ class account_multi_pay_invoice(osv.Model):
                             vals ={'credit_available': 0.0,
                                    'use_credit_available': 0.0,
                                    'amount_paid': inv.residual  or 0.0,
-                                   'pay':True,
-                                   'print_check':True}
+#                                    'pay':True,
+                                   'pay':False,
+#                                    'print_check':True
+                                   'print_check':False}
                 elif context.get('default_inv_type') == 'out':
                     lines_cr = []
                     if multipay.apply_credit:
@@ -508,8 +515,9 @@ class account_multi_pay_invoice(osv.Model):
                                 vals ={'credit_available':  0.0,
                                        'use_credit_available':remain_credit_amount or 0.0,
                                    'amount_paid': inv.residual or 0.0,
-                                   'pay':True,
-                                   'print_check':True}
+#                                    'pay':True,
+                                   'pay':False,
+                                   'print_check':False}
 #                                else:
 #                                    vals ={'credit_available': 0.0,
 #                                           'use_credit_available':remain_credit_amount or 0.0,
@@ -526,8 +534,9 @@ class account_multi_pay_invoice(osv.Model):
                             vals ={'credit_available':  0.0,
                                    'use_credit_available': 0.0,
                                    'amount_paid': inv.residual or 0.0,
-                                   'pay':True,
-                                   'print_check':True}
+#                                    'pay':True,
+                                   'pay':False,
+                                   'print_check':False}
 #                    elif not multipay.apply_credit and inv.partner_id.credit:
 #                        vals ={'credit_available': 0.0,
 #                               'use_credit_available':0.0,
@@ -538,8 +547,9 @@ class account_multi_pay_invoice(osv.Model):
                             vals ={'credit_available': 0.0,
                                    'use_credit_available': 0.0,
                                    'amount_paid': inv.residual  or 0.0,
-                                   'pay':True,
-                                   'print_check':True}
+#                                    'pay':True,
+                                   'pay':False,
+                                   'print_check':False}
 
             invoice_obj.write(cr, uid, [inv.id], vals, context=context)
         if not invoice_ids:

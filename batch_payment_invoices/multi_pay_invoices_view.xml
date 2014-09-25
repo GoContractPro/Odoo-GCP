@@ -162,7 +162,7 @@
                 </header>
                 <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
                     <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">                    
-	                    <field name="amount_due_by" string="Payment Due By" help="Find the invoices on due on or before this date" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+	                    <field name="amount_due_by" string="Invoice Date" help="Find the invoices on due on or before this date" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
 	                    <field name="payment_date" help="Date to be displayed on payments" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
 	                    <field name="payment_journal" domain="['|',('allow_check_writing','=','True'),('use_preprint_check','=','True')]" help="Select the Bank journal to post payments too" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
 	                </group>
@@ -183,7 +183,7 @@
 	                    <field name='pay' attrs="{'readonly':True}"  />
 						<field name="date_due" />
 						<field name="partner_id" groups="base.group_user" />
-<!--		                <field name="number"/>-->
+		                <field name="supplier_invoice_number" string="Description"/>
 		                <field name="reference" invisible="1"/>
 		                <field name="name" invisible="1"/>
 		                <field name="journal_id" invisible="1"/>
