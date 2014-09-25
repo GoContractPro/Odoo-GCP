@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+		<record id="multi_payment_form_view_npg_inherit" model="ir.ui.view">
+            <field name="name">multi.payment.form.view.npg.inherit</field>
+            <field name="model">account.multi.pay.invoice</field>
+            <field name = "inherit_id" ref = "batch_payment_invoices.multi_payment_form_view_customer"/>
+            <field name="arch" type="xml"> 
+				<xpath expr="//field[@name='apply_credit']" position="attributes">
+					<attribute name="invisible">1</attribute>
+				</xpath>
+			</field>
+	</record>
+	<record id="multi_payment_form_view_npg_inherit1" model="ir.ui.view">
+            <field name="name">multi.payment.form.view.npg.inherit1</field>
+            <field name="model">account.multi.pay.invoice</field>
+            <field name = "inherit_id" ref = "batch_payment_invoices.multi_payment_form_view"/>
+            <field name="arch" type="xml"> 
+				<xpath expr="//field[@name='apply_credit']" position="attributes">
+					<attribute name="invisible">1</attribute>
+				</xpath>
+			</field>
+	</record>
+	<record id="batch_payment_invoices.action_multi_payment" model="ir.actions.act_window">
+            <field name="name">Multi-pay Checks</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.multi.pay.invoice</field>
+            <field name="context">{'default_inv_type':'in'}</field>
+            <field name="domain">[('inv_type','=','in')]</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+	</data>
+</openerp>
