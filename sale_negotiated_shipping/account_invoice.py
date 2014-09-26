@@ -57,6 +57,61 @@ class account_invoice(osv.osv):
             if invoice.shipcharge:
                 res[invoice.id]['amount_total'] = res[invoice.id]['amount_untaxed'] + res[invoice.id]['amount_tax'] + invoice.shipcharge
         return res
+    
+    def _get_invoice_from_reconcile(self, cr, uid, ids, context=None):
+        move = {}
+        for r in self.pool.get('account.move.reconcile').browse(cr, uid, ids, context=context):
+            for line in r.line_partial_ids:
+                move[line.move_id.id] = True
+            for line in r.line_id:
+                move[line.move_id.id] = True
+
+        invoice_ids = []
+        if move:
+            invoice_ids = self.pool.get('account.invoice').search(cr, uid, [('move_id','in',move.keys())], context=context)
+        return invoice_ids
+    
+    def _amount_residual(self, cr, uid, ids, name, args, context=None):
+        """Function of the field residua. It computes the residual amount (balance) for each invoice"""
+        if context is None:
+            context = {}
+        ctx = context.copy()
+        result = {}
+        currency_obj = self.pool.get('res.currency')
+        for invoice in self.browse(cr, uid, ids, context=context):
+            nb_inv_in_partial_rec = max_invoice_id = 0
+            result[invoice.id] = 0.0
+            if invoice.move_id:
+                for aml in invoice.move_id.line_id:
+                    if aml.account_id.type in ('receivable','payable'):
+                        if aml.currency_id and aml.currency_id.id == invoice.currency_id.id:
+                            result[invoice.id] += aml.amount_residual_currency
+                        else:
+                            ctx['date'] = aml.date
+                            result[invoice.id] += currency_obj.compute(cr, uid, aml.company_id.currency_id.id, invoice.currency_id.id, aml.amount_residual, context=ctx)
+
+                        if aml.reconcile_partial_id.line_partial_ids:
+                            #we check if the invoice is partially reconciled and if there are other invoices
+                            #involved in this partial reconciliation (and we sum these invoices)
+                            for line in aml.reconcile_partial_id.line_partial_ids:
+                                if line.invoice and invoice.type == line.invoice.type:
+                                    nb_inv_in_partial_rec += 1
+                                    #store the max invoice id as for this invoice we will make a balance instead of a simple division
+                                    max_invoice_id = max(max_invoice_id, line.invoice.id)
+            if nb_inv_in_partial_rec:
+                #if there are several invoices in a partial reconciliation, we split the residual by the number
+                #of invoice to have a sum of residual amounts that matches the partner balance
+                new_value = currency_obj.round(cr, uid, invoice.currency_id, result[invoice.id] / nb_inv_in_partial_rec)
+                if invoice.id == max_invoice_id:
+                    #if it's the last the invoice of the bunch of invoices partially reconciled together, we make a
+                    #balance to avoid rounding errors
+                    result[invoice.id] = result[invoice.id] - ((nb_inv_in_partial_rec - 1) * new_value)
+                else:
+                    result[invoice.id] = new_value 
+            #prevent the residual amount on the invoice to be less than 0
+            result[invoice.id] = max(result[invoice.id], 0.0) 
+            result[invoice.id]=result[invoice.id]+ invoice.shipcharge          
+        return result
 
     def _get_invoice_tax(self, cr, uid, ids, context=None):
         invoice = self.pool.get('account.invoice')
@@ -145,6 +200,16 @@ class account_invoice(osv.osv):
                 'account.invoice.tax': (_get_invoice_tax, None, -10),
                 'account.invoice.line': (_get_invoice_line, ['price_unit', 'invoice_line_tax_id', 'quantity', 'discount', 'invoice_id'], -10),
                 }, multi='all'),
+                
+        'residual': fields.function(_amount_residual, digits_compute=dp.get_precision('Account'), string='Balance',
+            store={
+                'account.invoice': (lambda self, cr, uid, ids, c={}: ids, ['invoice_line','move_id','shipcharge'], 50),
+                'account.invoice.tax': (_get_invoice_tax, None, 50),
+                'account.invoice.line': (_get_invoice_line, ['price_unit','invoice_line_tax_id','quantity','discount','invoice_id'], 50),
+                'account.move.line': (_get_invoice_from_line, None, 50),
+                'account.move.reconcile': (_get_invoice_from_reconcile, None, 50),
+            },
+            help="Remaining amount due."),
         'total_weight_net': fields.function(_total_weight_net, method=True, string='Total Net Weight',
             store = {
                 'account.invoice': (lambda self, cr, uid, ids, c={}: ids, ['invoice_line'], 10),
