@@ -1,15 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 	<data>
-	
+		
 		<!-- Delivery Order Form View -->
 	 	<record id="view_picking_shipping_inherit" model="ir.ui.view">
 			<field name="name">stock.picking.shipping.inherit.out</field>
 			<field name="model">stock.picking.out</field>
 			<field name="inherit_id" ref="stock.view_picking_out_form" />
 			<field name="arch" type="xml">
+				<field name="move_lines" position="replace">
+					<field name="move_lines" context="{'address_out_id': partner_id, 'picking_type': 'out', 'form_view_ref':'view_stock_move_shipping_inherit', 'tree_view_ref':'stock_move_tree_inherit_stock_move'}" options='{"reload_on_button": true}'>
+						<tree colors="grey:state == 'cancel'" string="Moves" editable="bottom" >
+		                    <field name="product_id" />
+		                    <field name="product_qty"  />
+		                    <field name="sale_line_id"  />
+		                    <field name="package_id"  />
+		                    <field name="cost"  />
+		                    <field name="product_uom"  string="Unit of Measure" groups="product.group_uom"/>
+		                    <field name="prodlot_id"  groups="stock.group_production_lot"/>
+		                    <field name="tracking_id" groups="stock.group_tracking_lot"/>
+		                    <field name="product_packaging" domain="[('product_id','=',product_id)]" groups="product.group_stock_packaging"/>
+		                    <field name="picking_id"/>
+		                    <field name="location_id" groups="stock.group_locations"/>
+		                    <field name="location_dest_id" groups="stock.group_locations"/>
+		                    <field name="create_date" groups="base.group_no_one"/>
+		                    <field name="date" string="Date" groups="base.group_no_one"/>
+		                    <field name="date_expected" string="Date Expected"/>
+		                    <field name="state"/>
+		                </tree>
+					</field>			
+			  </field>
+				
 				<xpath expr="//field[@name='partner_id']" position="replace">
-					<field name="partner_id" on_change="onchange_partner_in(partner_id)" context="{'contact_display':'partner'}" colspan="2"/>
+					<field name="partner_id"  on_change="onchange_partner_in(partner_id)" context="{'contact_display':'partner'}" colspan="2"/>
 				</xpath>
 				<xpath expr="//page[@string='Additional Info']" position="after">
 					<page string="Shipping" attrs="{'invisible': [('state','in',['draft', 'cancel'])]}">
@@ -121,13 +144,14 @@
 				</xpath>
 			</field>
 		</record>  
+		
 
      	<record id="view_stock_move_shipping_inherit" model="ir.ui.view">
 			<field name='name'>stock.move.shipping.inherit</field>
 			<field name="model">stock.move</field>
 			<field name="inherit_id" ref="stock.view_move_picking_form"/>
             <field name="arch" type="xml">
-				<field name="prodlot_id" position="before">
+				<field name="partner_id" position="after">
 					    <field name="sale_line_id" />
 						<field name="package_id" class="oe_inline"  on_change="onchange_quantity(product_id, product_qty, product_uom, product_uos, location_id, sale_line_id)"/> 
 						<field name="cost" />
@@ -140,12 +164,15 @@
             </field>
            </field>
 		</record>
+		
+		
 
 		<record id="view_picking_shipping_sale_inherit" model="ir.ui.view">
 			<field name="name">stock.picking.shipping.inherit.internal</field>
 			<field name="model">stock.picking</field>
 			<field name="inherit_id" ref="stock.view_picking_form" />
 			<field name="arch" type="xml">
+				
 				<xpath expr="//field[@name='partner_id']" position="replace">
 					<field name="partner_id" on_change="onchange_partner_in(partner_id)" context="{'contact_display':'partner'}" colspan="2"/>
 				</xpath>
