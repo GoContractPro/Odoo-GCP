@@ -122,7 +122,7 @@ class account_multi_pay_invoice(osv.Model):
     _defaults = {
         'payment_date': lambda *args: time.strftime('%Y-%m-%d %H:%M:%S'),
         'state':'new',
-        'payment_method': 'on_due_date',
+        'payment_method': 'before_due_date',
     }
 
     def search(self, cr, uid, args, offset=0, limit=None, order=None,
