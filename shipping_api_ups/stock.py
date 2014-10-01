@@ -656,7 +656,7 @@ class stock_picking_out(osv.osv):
                                     control_log_image = items['GraphicImage']
                                     im_in_raw = base64.decodestring(control_log_image)
                                     file_name = tempfile.mktemp()
-                                    path = file_name = '.html'
+                                    path = file_name + '.html'
                                     temp = file(path, 'wb')
                                     temp.write(im_in_raw)
                                     temp.close()
