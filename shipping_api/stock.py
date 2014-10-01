@@ -26,16 +26,27 @@ import time
 import decimal_precision as dp
 from openerp.osv import fields, osv
 
+class ups_commodity_code(osv.osv):
+    _name = 'ups.commodity.code'
+    
+    _columns = {
+                'name':fields.char("Code",size=32),
+                'desc':fields.text("Description")
+                }
+    
+ups_commodity_code()
+
 class stock_picking(osv.osv):
     
     _inherit = "stock.picking"
     
     def onchange_logis_company(self, cr, uid, ids, logistic_company_id, context=None):
         company_code = ''
+        ups = ''
         if logistic_company_id:
             logistic_company_obj = self.pool.get('logistic.company')
             company_code = logistic_company_obj.read(cr, uid, logistic_company_id, ['ship_company_code'], context=context)['ship_company_code']
-        res = {'value': {'ship_company_code': company_code}}
+        res = {'value': {'ship_company_code': company_code,'exp_carrier':company_code}}
         return res
 
     def init(self, cr):
@@ -177,7 +188,9 @@ class stock_picking(osv.osv):
         'inv_address_id': fields.many2one('res.partner', 'Sold To Address', help='Only applicable when Sold to option is empty or not present.'),
         'blanket_begin_date': fields.date('Blanket Begin Date'),
         'blanket_end_date': fields.date('Blanket End Date'),
-        'comm_code': fields.char('Commodity Code', size=256,),
+#        'comm_code': fields.char('Commodity Code', size=256,),
+        'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
+
         'exp_carrier': fields.char('ExportingCarrier', size=256),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account'))
@@ -191,7 +204,8 @@ class stock_picking(osv.osv):
         'sed': False,
         'ship_state' : 'draft',
         'bill_shipping': 'shipper',
-        'ship_charge': 0.0
+        'ship_charge': 0.0,
+        'exp_carrier':"United Parcel Service"
     }
     
     
@@ -393,7 +407,9 @@ class stock_picking_out(osv.osv):
         'inv_address_id': fields.many2one('res.partner', 'Sold To Address', help='Only applicable when Sold to option is empty or not present.'),
         'blanket_begin_date': fields.date('Blanket Begin Date'),
         'blanket_end_date': fields.date('Blanket End Date'),
-        'comm_code': fields.char('Commodity Code', size=256,),
+   #     'comm_code': fields.char('Commodity Code', size=256,),
+        'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
+        
         'exp_carrier': fields.char('ExportingCarrier', size=256),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account'))
@@ -526,4 +542,14 @@ class Prod(osv.osv):
         return super(Prod, self).search(cr, uid, args, offset, limit,
                 order, context=context, count=count)
 Prod()
+
+class ups_commodity_code(osv.osv):
+    _name = 'ups.commodity.code'
+    
+    _columns = {
+                'name':fields.char("Code",size=32),
+                'desc':fields.text("Description")
+                }
+    
+ups_commodity_code()
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

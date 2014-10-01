@@ -85,6 +85,9 @@ class ups_account_shipping_service(osv.osv):
         'shipping_service_code': fields.char('Shipping Service Code', size=8, select=1),
         'rating_service_code': fields.char('Rating Service Code', size=8, select=1),
         'ups_account_id': fields.many2one('ups.account.shipping', 'Parent Shipping Account'),
+        
+        'common':fields.boolean("Common?",help="Is Service Applicable for both domestic or international ups shippings"),
+        'is_intnl':fields.boolean("International?",help="Service Applicable for International ups shippings or Domestic if unchecked"),
         }
     
 ups_account_shipping_service()

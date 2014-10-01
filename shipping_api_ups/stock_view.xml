@@ -20,10 +20,11 @@
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='logis_company']" position="after">
 					<field name='shipper' domain="[('logistic_company_id','=',logis_company)]"/>
+					<field name="is_intnl" invisible="1"/>
 				</xpath>
 
 				<xpath expr="//field[@name='freight']" position="after">
-					<field name='ups_service' string="Shipping Service" domain="[]"/>
+					<field name='ups_service' string="Shipping Service" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]"/>
 					<field name='label_format_id' string="Label Format Code"/>
 				</xpath>
 
@@ -77,10 +78,11 @@
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='logis_company']" position="after">
 					<field name='shipper' domain="[('logistic_company_id','=',logis_company)]" />
+					<field name="is_intnl" invisible="1"/>
 				</xpath>
 
 				<xpath expr="//field[@name='address_validate']" position="after">
-					<field name='ups_service' string="Shipping Service" domain="[]"/>
+					<field name='ups_service' string="Shipping Service" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]"/>
 					<field name='label_format_id' string="Label Format Code"/>
 					<field name="bill_shipping" on_change="onchange_bill_shipping(bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id, shipper)"/>
 					

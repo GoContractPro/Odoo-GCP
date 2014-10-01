@@ -82,6 +82,17 @@ class stock_picking(osv.osv):
         res.append(('ups', 'UPS'))
         return res
     
+    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
+        """This functional fields compute if the shipping is domestic or international
+        """
+        register_pool = self.pool.get('event.registration')
+        res = {}
+        for do in self.browse(cr, uid, ids, context=context):
+            res[do.id] = False
+            if do.partner_id and do.partner_id.country_id and do.partner_id.country_id.code and not (do.partner_id.country_id.code == 'US' or do.partner_id.country_id.code == 'USA' or do.partner_id.country_id.code == 'CA' or do.partner_id.country_id.code == 'PR'):
+                res[do.id] = True
+        return res
+    
     
     _columns = {
         'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
@@ -122,6 +133,8 @@ class stock_picking(osv.osv):
         'ups_bill_receiver_account': fields.char('Receiver Account', size=32, help="The UPS account number of Freight Collect"),
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
+        
+        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
     }
     
     def on_change_sale_id(self, cr, uid, ids, sale_id=False, state=False, context=None):
@@ -164,7 +177,9 @@ class stock_picking_out(osv.osv):
     def _get_company_code(self, cr, user, context=None):
         return self.pool.get('stock.picking')._get_company_code(cr, user, context)
     
-
+    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
+        return self.pool.get('stock.picking')._get_ship_type(cr, uid, ids, fields, args, context)
+    
     _columns = {
         'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
         'shipper': fields.many2one('ups.account.shipping', 'Shipper', help='The specific user ID and shipper. Setup in the company configuration.'),
@@ -204,6 +219,8 @@ class stock_picking_out(osv.osv):
         'ups_bill_receiver_account': fields.char('Receiver Account', size=32, help="The UPS account number of Freight Collect"),
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
+        
+        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
         }
 
     def onchange_bill_shipping(self, cr, uid, ids, bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id,
@@ -647,7 +664,7 @@ class stock_picking_out(osv.osv):
                                     control_log_image = base64.encodestring(label_from_file.read())
                                     label_from_file.close()
                                     package_obj.write(cr, uid, packages_ids, {'control_log_receipt': control_log_image, }, context=context)
-            do.write({'ship_state': 'ready_pick', 'ship_charge': ship_charge, 'internal_note': tracking_number_notes}, context=context)
+            do.write({'ship_state': 'ready_pick', 'shipcharge': ship_charge, 'internal_note': tracking_number_notes}, context=context)
         return status, label_code
 
     def add_product(self, cr, uid, package_obj):
@@ -668,7 +685,7 @@ class stock_picking_out(osv.osv):
                     'Value': str((move_lines.product_id.list_price * move_lines.product_qty) or 0),
                     'UnitOfMeasurement': {'Code': "LBS", 'Description': "Pounds"}
                     },
-                'CommodityCode': package_obj.pick_id.comm_code or "",
+                'CommodityCode': package_obj.pick_id.comm_code and package_obj.pick_id.comm_code.name or "",
                 'PartNumber': "",
                 'OriginCountryCode': package_obj.pick_id.address_id and package_obj.pick_id.address_id.country_id and  \
                                      package_obj.pick_id.address_id.country_id.code or "",
@@ -1131,6 +1148,26 @@ class stock_picking_out(osv.osv):
                     </UnitOfMeasurement>
                     <Weight>%(package_dimension_weight)s</Weight>
                 </PackageWeight>
+                <PackageServiceOptions>
+                    <InsuredValue>
+                        <CurrencyCode>USD</CurrencyCode>
+                        <MonetaryValue>%(package_insured_value)s</MonetaryValue>
+                    </InsuredValue>
+                </PackageServiceOptions>
+                """ % {
+            'package_description': lines.description or '',
+            'packaging_type_code': lines.package_type.code or '',
+            'packaging_type_description': lines.package_type.name or '',
+            'package_dimension_length':  str(lines.length) or '',
+            'package_dimension_width': str(lines.width) or '',
+            'package_dimension_height': str(lines.height) or '',
+            'package_dimension_weight': str(lines.weight) or '',
+            'package_insured_value': str(lines.decl_val) or '',
+            }
+                
+        if (do.ship_from_address and do.ship_from_address.country_id and do.ship_from_address.country_id.code and (do.ship_from_address.country_id.code=='US') and do.partner_id.country_id and do.partner_id.country_id.code and do.partner_id.country_id.code == 'US')\
+            or (do.ship_from_address and do.ship_from_address.country_id and do.ship_from_address.country_id.code and (do.ship_from_address.country_id.code=='PR') and do.partner_id.country_id and do.partner_id.country_id.code and do.partner_id.country_id.code == 'PR'):        
+            xml_ship_confirm_request += """       
                 <ReferenceNumber>
                     <Code>01</Code>
                     <Value>%(package_reference_value1)s</Value>
@@ -1139,29 +1176,18 @@ class stock_picking_out(osv.osv):
                     <Code>02</Code>
                     <Value>%(package_reference_value2)s</Value>
                 </ReferenceNumber>
-                <PackageServiceOptions>
-                    <InsuredValue>
-                        <CurrencyCode>USD</CurrencyCode>
-                        <MonetaryValue>%(package_insured_value)s</MonetaryValue>
-                    </InsuredValue>
-                </PackageServiceOptions>
-            </Package>
-            </Shipment>
-            </ShipmentConfirmRequest>
+           
             """ % {
-            'package_description': lines.description or '',
-            'packaging_type_code': lines.package_type.code or '',
-            'packaging_type_description': lines.package_type.name or '',
-            'package_dimension_length':  str(lines.length) or '',
-            'package_dimension_width': str(lines.width) or '',
-            'package_dimension_height': str(lines.height) or '',
-            'package_dimension_weight': str(lines.weight) or '',
             'package_reference_code1': lines.ref1 or '',
             'package_reference_value1': lines.ref2 or '',
             'package_reference_code2': lines.ref2_code or '',
             'package_reference_value2': lines.ref2_number or '',
-            'package_insured_value': str(lines.decl_val) or '',
          }
+            
+        xml_ship_confirm_request += """ 
+            </Package>
+            </Shipment>
+            </ShipmentConfirmRequest>"""
         return xml_ship_confirm_request
 
     def process_ship(self, cr, uid, ids, context=None):
@@ -1258,8 +1284,9 @@ class stock_picking_out(osv.osv):
                                 break
                         deliv_order.write({'shipment_digest': shipment_digest, 'shipment_identific_no': shipment_identification_number, }, context=context)
                         do = self.browse(cr, uid, deliv_order.id, context=context)
-                        status = self.process_ship_accept(cr, uid, do, packages, context=context)[0]
-                        label_code = self.process_ship_accept(cr, uid, do, packages, context=context)[1]
+                        sh_accept = self.process_ship_accept(cr, uid, do, packages, context=context) 
+                        status = sh_accept[0]
+                        label_code = sh_accept[1]
                 packages += 1
                            
             if status:
