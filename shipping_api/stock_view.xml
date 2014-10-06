@@ -41,6 +41,7 @@
 						<group colspan="1" col="8">
 							<field name="logis_company" on_change="onchange_logis_company(logis_company)"  />
 							<field name="ship_company_code"/>
+							<field name="is_intnl" invisible="1"/>
 						</group>
 						<newline/>
 						<notebook>
@@ -110,7 +111,7 @@
 						</page>
 						<page string="Packages">
 						<group colspan="8" col="8">
-							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'ssss':active_id}">
+							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'active_id':active_id, 'default_is_intnl'=is_intnl}">
 								<tree string='Shipping Packages'>
 									<field name='packge_no' on_change="onchange_packge_no(parent.packages_ids,packge_no)"/>
 									<field name='weight' on_change="onchange_weight(parent.packages_ids, parent.tot_del_order_weight, weight)"/>
@@ -131,8 +132,9 @@
 										<group colspan="4" col="4">
 											<group colspan="2" col="2">
 											    <field name='id' invisible="1"/>
+											    <field name='is_intnl' invisible="1"/>
 												<field name='packge_no' on_change="onchange_packge_no(packge_no, parent.packages_ids)"/>
-												<field name='package_type' required='1' widget="selection" on_change="onchange_stock_package(package_type)"/>
+												<field name='package_type' required='1' domain="['|',('common','=',True),('is_intnl','=',is_intnl)]" on_change="onchange_stock_package(package_type)"/>
 												<field name='weight' on_change="onchange_weight(parent.packages_ids,parent.tot_del_order_weight, weight)"/>
 												<field name='length'/>
 												<field name='width'/>
@@ -246,6 +248,7 @@
 						  <group colspan="1" col="8">
 							<field name="logis_company" on_change="onchange_logis_company(logis_company)"/>
 							<field name="ship_company_code" invisible="1"  />
+							<field name="is_intnl" invisible="1"/>
 						</group>
 						<newline />
 						<notebook>
@@ -312,7 +315,7 @@
 						</page>
 						<page string="Packages">
 						<group colspan="8" col="8">
-							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'ssss':active_id}">
+							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'active_id':active_id, 'default_is_intnl'=is_intnl}">
 								<tree string='Shipping Packages'>
 									<field name='packge_no' on_change="onchange_packge_no(parent.packages_ids,packge_no)"/>
 									<field name='weight' on_change="onchange_weight(parent.packages_ids, parent.tot_del_order_weight, weight)"/>
@@ -333,8 +336,9 @@
 										<group colspan="4" col="4">
 											<group colspan="2" col="2">
 											    <field name='id' invisible="1"/>
+											    <field name='is_intnl' invisible="1"/>
 												<field name='packge_no' on_change="onchange_packge_no(packge_no, parent.packages_ids)"/>
-												<field name='package_type' required='1' widget="selection" on_change="onchange_stock_package(package_type)"/>
+												<field name='package_type' required='1' domain="['|',('common','=',True),('is_intnl','=',is_intnl)]" on_change="onchange_stock_package(package_type)"/>
 												<field name='weight' on_change="onchange_weight(parent.packages_ids,parent.tot_del_order_weight, weight)"/>
 												<field name='length'/>
 												<field name='width'/>
@@ -376,7 +380,7 @@
 										</notebook>
 									</sheet>
 								</form>
-							</field>	
+							</field>
 						</group>
 						</page>
 						</notebook>

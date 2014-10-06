@@ -40,6 +40,17 @@ class stock_picking(osv.osv):
     
     _inherit = "stock.picking"
     
+    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
+        """This functional fields compute if the shipping is domestic or international
+        """
+        register_pool = self.pool.get('event.registration')
+        res = {}
+        for do in self.browse(cr, uid, ids, context=context):
+            res[do.id] = False
+            if do.partner_id and do.partner_id.country_id and do.partner_id.country_id.code and not (do.partner_id.country_id.code == 'US' or do.partner_id.country_id.code == 'USA' or do.partner_id.country_id.code == 'CA' or do.partner_id.country_id.code == 'PR'):
+                res[do.id] = True
+        return res
+    
     def onchange_logis_company(self, cr, uid, ids, logistic_company_id, context=None):
         company_code = ''
         ups = ''
@@ -193,7 +204,9 @@ class stock_picking(osv.osv):
 
         'exp_carrier': fields.char('ExportingCarrier', size=256),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
-        'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account'))
+        'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account')),
+        
+        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
     }
 
     _defaults = {
@@ -322,6 +335,10 @@ class stock_picking_out(osv.osv):
     def process_ship(self, cr, uid, ids, context=None):
         return self.pool.get('stock.picking').process_ship(cr, uid, ids, context)
     
+    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
+        return self.pool.get('stock.picking')._get_ship_type(cr, uid, ids, fields, args, context)
+  
+    
     
     _columns = {
         'logis_company': fields.many2one('logistic.company', 'Shipper Company', help='Name of the Logistics company providing the shipper services.'),
@@ -412,7 +429,9 @@ class stock_picking_out(osv.osv):
         
         'exp_carrier': fields.char('ExportingCarrier', size=256),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
-        'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account'))
+        'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account')),
+        
+         'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
     }
 
     _defaults = {
@@ -547,7 +566,7 @@ class ups_commodity_code(osv.osv):
     _name = 'ups.commodity.code'
     
     _columns = {
-                'name':fields.char("Code",size=32),
+                'name':fields.char("Code",size=32,required=True),
                 'desc':fields.text("Description")
                 }
     

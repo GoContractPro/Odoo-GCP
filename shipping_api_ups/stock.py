@@ -82,17 +82,6 @@ class stock_picking(osv.osv):
         res.append(('ups', 'UPS'))
         return res
     
-    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
-        """This functional fields compute if the shipping is domestic or international
-        """
-        register_pool = self.pool.get('event.registration')
-        res = {}
-        for do in self.browse(cr, uid, ids, context=context):
-            res[do.id] = False
-            if do.partner_id and do.partner_id.country_id and do.partner_id.country_id.code and not (do.partner_id.country_id.code == 'US' or do.partner_id.country_id.code == 'USA' or do.partner_id.country_id.code == 'CA' or do.partner_id.country_id.code == 'PR'):
-                res[do.id] = True
-        return res
-    
     
     _columns = {
         'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
@@ -134,7 +123,7 @@ class stock_picking(osv.osv):
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
         
-        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
+       
     }
     
     def on_change_sale_id(self, cr, uid, ids, sale_id=False, state=False, context=None):
@@ -177,9 +166,6 @@ class stock_picking_out(osv.osv):
     def _get_company_code(self, cr, user, context=None):
         return self.pool.get('stock.picking')._get_company_code(cr, user, context)
     
-    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
-        return self.pool.get('stock.picking')._get_ship_type(cr, uid, ids, fields, args, context)
-    
     _columns = {
         'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
         'shipper': fields.many2one('ups.account.shipping', 'Shipper', help='The specific user ID and shipper. Setup in the company configuration.'),
@@ -220,7 +206,7 @@ class stock_picking_out(osv.osv):
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
         
-        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
+#        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
         }
 
     def onchange_bill_shipping(self, cr, uid, ids, bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id,
