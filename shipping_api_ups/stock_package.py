@@ -33,7 +33,7 @@ class stock_packages(osv.osv):
             context = {}
         for rec in self.browse(cr, uid, ids, context=context):
             highvalue = False
-            if rec.decl_val > 1000:
+            if rec.decl_val >= 1000:
                 highvalue = True
             res[rec.id] = highvalue
         return res
