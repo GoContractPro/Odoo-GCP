@@ -60,8 +60,8 @@
 			<field name="model">stock.packages</field>
 			<field name="arch" type="xml">
 				<tree string='Shipping Packages'>
-					<field name='packge_no' on_change="onchange_packge_no(parent.packages_ids,packge_no)"/>
-					<field name='weight' on_change="onchange_weight(parent.packages_ids, parent.tot_del_order_weight, weight)"/>
+					<field name='packge_no' on_change="onchange_packge_no(False,packge_no)"/>
+					<field name='weight' on_change="onchange_weight(False, 0.0, weight)"/>
 					<field name='package_type' required='1' on_change="onchange_stock_package(package_type)"/>
 					<field name='length'/>
 					<field name='width'/>
@@ -111,9 +111,9 @@
 						<group colspan="4" col="4">
 							<group colspan="2" col="2">
 							    <field name='id' invisible="1"/>
-								<field name='packge_no' on_change="onchange_packge_no(packge_no, parent.packages_ids)"/>
+								<field name='packge_no' on_change="onchange_packge_no(packge_no, False)"/>
 								<field name='package_type' required='1' widget="selection" on_change="onchange_stock_package(package_type)"/>
-								<field name='weight' on_change="onchange_weight(parent.packages_ids,parent.tot_del_order_weight, weight)"/>
+								<field name='weight' on_change="onchange_weight(False,0.0, weight)"/>
 								<field name='length'/>
 								<field name='width'/>
 								<field name='height'/>
