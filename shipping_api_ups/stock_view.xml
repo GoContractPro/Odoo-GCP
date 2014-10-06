@@ -20,6 +20,7 @@
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='logis_company']" position="after">
 					<field name='shipper' domain="[('logistic_company_id','=',logis_company)]"/>
+					<field name="is_intnl" invisible="1"/>
 				</xpath>
 
 				<xpath expr="//field[@name='freight']" position="after">
@@ -77,6 +78,7 @@
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='logis_company']" position="after">
 					<field name='shipper' domain="[('logistic_company_id','=',logis_company)]" />
+					<field name="is_intnl" invisible="1"/>
 				</xpath>
 
 				<xpath expr="//field[@name='address_validate']" position="after">
