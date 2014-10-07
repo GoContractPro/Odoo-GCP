@@ -29,6 +29,9 @@ class shipping_package_type(osv.osv):
         'length': fields.float('Length', help='Indicates the longest length of the box in inches.'),
         'width': fields.float('Width'),
         'height': fields.float('Height'),
+        
+        'common':fields.boolean("Common?",help="Is Package type allowed for both domestic or international ups shippings"),
+        'is_intnl':fields.boolean("International?",help="Package type allowed for International ups shippings or Domestic if unchecked"),
     }
 
 shipping_package_type()
@@ -128,7 +131,9 @@ class stock_packages(osv.osv):
         'show_button': fields.function(_button_visibility, method=True, type='boolean', string='Show'),
         #'package_item_ids' : fields.one2many('shipment.package.item','package_id','Package Items'),
         'stock_move_ids' : fields.one2many('stock.move','package_id','Package Items'),
-        'decl_val': fields.function(_get_decl_val, method=True, string='Declared Value', type='float', help='The declared value of the package.')
+        'decl_val': fields.function(_get_decl_val, method=True, string='Declared Value', type='float', help='The declared value of the package.'),
+        
+        'is_intnl':fields.boolean("International?",help="Package type allowed for International ups shippings or Domestic if unchecked"),
     }
 
     _defaults = {
