@@ -1448,9 +1448,7 @@ class stock_move(osv.osv):
     
     _inherit = "stock.move"
     
-    #Verts Change: -> Created => create
-    
-    def create(self, cr, uid, vals, context=None):
+    def created(self, cr, uid, vals, context=None):
         if not context: context = {}
         package_obj = self.pool.get('stock.packages')
         pack_id = None
