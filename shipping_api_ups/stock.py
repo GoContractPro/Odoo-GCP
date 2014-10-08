@@ -220,6 +220,7 @@ class stock_picking_out(osv.osv):
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
         
+        #Verts
         'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
         }
 
@@ -925,14 +926,80 @@ class stock_picking_out(osv.osv):
                 'invoice_currency_code': do.sale_id and do.sale_id.pricelist_id.currency_id.name or 'USD',
                 'invoice_value': do.sale_id and str(int(do.sale_id.amount_untaxed)) or '',
                 }
-        if do.sat_delivery:
+                
+#         Verts Changes for EEI Forms  
+############### Starts Here #####################################      
+        if do.sat_delivery or do.eei_file:
             xml_ship_confirm_request += """
             <ShipmentServiceOptions>
+            """
+        if do.sat_delivery:
+            xml_ship_confirm_request += """
                 <ShipmentNotification>
                    <SaturdayDelivery/>
                 </ShipmentNotification>
+                """
+        if do.eei_file:
+            xml_ship_confirm_request += """
+                   <InternationalForms>
+                       <EEIFilingOption>
+                         <Code>%(eei_code)s</code>
+                         <Description>%(eei_desc)s</Description>
+                         <EMailAddress>%(eei_email)s</EMailAddress>
+                """% {
+                'eei_code': do.eei_code,
+                'eei_desc': do.eei_desc or '',
+                'eei_email':do.eei_email,
+                }
+            if do.eei_code=='3':
+                xml_ship_confirm_request += """
+                      <UPSFiled>
+                        <POA>
+                         <Code>%(eei_poa_code)s</code>
+                         <Description>%(eei_poa_desc)s</Description>
+                        </POA>
+                      </UPSFiled>
+                """% {
+                'eei_poa_code': do.eei_poa_code,
+                'eei_poa_desc': do.eei_poa_desc or '',
+                }
+            if do.eei_code=='1':
+                xml_ship_confirm_request += """
+                      <ShipperFiled>
+                         <Code>%(eei_shipper_code)s</code>
+                         <Description>%(eei_shipper_desc)s</Description>
+                """% {
+                'eei_shipper_code': do.eei_shipper_code,
+                'eei_shipper_desc': do.eei_shipper_desc or '',
+                }
+                
+                if do.eei_shipper_code=='A':
+                    xml_ship_confirm_request += """
+                         <PreDepartureITNNumber>%(eei_predep_itn_number)s</PreDepartureITNNumber>
+                """% {
+                'eei_predep_itn_number': do.eei_predep_itn_number,
+                }
+                if do.eei_shipper_code=='B':
+                    xml_ship_confirm_request += """
+                         <ExemptionLegend>%(eei_exemptionlegend)s</ExemptionLegend>
+                """% {
+                'eei_exemptionlegend': do.eei_exemptionlegend,
+                }
+                xml_ship_confirm_request += """
+                </ShipperFiled>
+                """
+            xml_ship_confirm_request += """
+                       </EEIFilingOption>
+                   </InternationalForms>
+                       """    
+        if do.sat_delivery or do.eei_file:
+            xml_ship_confirm_request += """
             </ShipmentServiceOptions>
             """
+            
+############### Verts Ends Here #####################################
+
+
         if do.ship_from:
             shipfrom_address_lines = ['', '', '']
             j = 0
@@ -1225,6 +1292,7 @@ class stock_picking_out(osv.osv):
             packages = 0
             for lines in deliv_order.packages_ids:
                 ship_confirm_request_xml = self.create_ship_confirm_request_new(cr, uid, deliv_order, lines)
+                print ship_confirm_request_xml
                 ship_confirm_web = ''
                 ship_confirm_port = ''
                 if deliv_order.logis_company:
@@ -1247,6 +1315,7 @@ class stock_picking_out(osv.osv):
                     result = res.read()
     #                 result[:result.find('PUBLIC')+ len('PUBLIC')]+''+result[result.find('PUBLIC')+ len('PUBLIC'):]
                     response_dic = xml2dic.main(result)
+                    print "----------*********Response Dict*********--------------",response_dic
                     response = ''
                     status_description = ''
                     status = 0
@@ -1379,7 +1448,9 @@ class stock_move(osv.osv):
     
     _inherit = "stock.move"
     
-    def created(self, cr, uid, vals, context=None):
+    #Verts Change: -> Created => create
+    
+    def create(self, cr, uid, vals, context=None):
         if not context: context = {}
         package_obj = self.pool.get('stock.packages')
         pack_id = None

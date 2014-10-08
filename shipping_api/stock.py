@@ -206,7 +206,24 @@ class stock_picking(osv.osv):
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account')),
         
-        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
+                #Verts
+        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping"),
+        
+#         Verts EEI Filing options
+        'eei_file': fields.boolean('EEI Filing'),
+         
+        'eei_code':fields.selection([('1', 'Shipper filed'),('3', 'UPS filed'),],'EEI Code'),
+        'eei_desc':fields.char("Description",size=256),
+        'eei_email':fields.char("Email",size=256),
+        #UPS Filed
+            #POA
+        'eei_poa_code':fields.selection([('1', 'OneTime POA'),('2', 'Blanket POA'),],'POA Code'),
+        'eei_poa_desc':fields.char("Description",size=256),
+#         Shipper Filed
+        'eei_shipper_code':fields.selection([('A', 'Requires the ITN'),('B', 'Requires the Exemption Legend'),('C','Requires the post departure filing citation')],'Shipper Code'),
+        'eei_shipper_desc':fields.char("Description",size=256),
+        'eei_predep_itn_number':fields.char("PreDepartureITNNumber",size=256),#Requred if eei_shipper_code = A
+        'eei_exemptionlegend':fields.char("Exemption Legend"),#Requred if eei_shipper_code = B
     }
 
     _defaults = {
@@ -431,7 +448,24 @@ class stock_picking_out(osv.osv):
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account')),
         
-         'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
+        #Verts Changes
+         'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping"),
+         
+        #         Verts EEI Filing options
+        'eei_file': fields.boolean('EEI Filing'),
+         
+        'eei_code':fields.selection([('1', 'Shipper filed'),('3', 'UPS filed'),],'EEI Code'),
+        'eei_desc':fields.char("Description",size=256),
+        'eei_email':fields.char("Email",size=256),
+        #UPS Filed
+            #POA
+        'eei_poa_code':fields.selection([('1', 'OneTime POA'),('2', 'Blanket POA'),],'POA Code'),
+        'eei_poa_desc':fields.char("Description",size=256),
+#         Shipper Filed
+        'eei_shipper_code':fields.selection([('A', 'Requires the ITN'),('B', 'Requires the Exemption Legend'),('C','Requires the post departure filing citation')],'Shipper Code'),
+        'eei_shipper_desc':fields.char("Description",size=256),
+        'eei_predep_itn_number':fields.char("PreDepartureITNNumber",size=256),#Requred if eei_shipper_code = A
+        'eei_exemptionlegend':fields.char("Exemption Legend"),#Requred if eei_shipper_code = B
     }
 
     _defaults = {

@@ -76,6 +76,7 @@
 									<field name='comm_inv' />
 									<field name='cer_orig' />
 									<field name='nafta_cer_orig' />
+									<field name="eei_file"/>
 								</group>
 							</page>
 
@@ -109,6 +110,28 @@
 							<field name='blanket_end_date'  attrs="{'required':[('nafta_cer_orig','=',True)]}"/>
 						</group>
 						</page>
+						
+<!--						Verts Changes-->
+						
+						<page string="EEI Filing" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False)]}" >
+							<group attrs="{'invisible':[('eei_file','=',False)]}">
+								<field name='eei_code' attrs="{'required':[('eei_file','=',True)]}"/>
+								<field name='eei_desc'/>
+								<field name='eei_email' attrs="{'required':[('eei_file','=',True)]}"/>
+							</group>
+							
+							<group string="Shipper Filed" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','3')]}">
+								<field name='eei_shipper_code' attrs="{'required':[('eei_code','=','1')]}"/>
+								<field name='eei_shipper_desc'/>
+								<field name='eei_predep_itn_number' attrs="{'required':[('eei_shipper_code','=','A')]}"/>
+								<field name='eei_exemptionlegend' attrs="{'required':[('eei_shipper_code','=','B')]}"/>
+							</group>
+							<group string="POA" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','1')]}">
+								<field name='eei_poa_code' attrs="{'required':[('eei_code','=','3')]}"/>
+								<field name='eei_poa_desc'/>
+							</group>
+						</page>
+						
 						<page string="Packages">
 						<group colspan="8" col="8">
 							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'active_id':active_id, 'default_is_intnl'=is_intnl}">

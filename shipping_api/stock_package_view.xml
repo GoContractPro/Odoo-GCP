@@ -113,7 +113,7 @@
 							    <field name='id' invisible="1"/>
 								<field name='packge_no' on_change="onchange_packge_no(packge_no, False)"/>
 								<field name="is_intnl" invisible="1"/>
-								<field name='package_type' required='1' widget="selection" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]" on_change="onchange_stock_package(package_type)"/>
+								<field name='package_type' required='1' widget="selection" on_change="onchange_stock_package(package_type)"/>
 								<field name='weight' on_change="onchange_weight(False,0.0, weight)"/>
 								<field name='length'/>
 								<field name='width'/>
