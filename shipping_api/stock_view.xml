@@ -121,14 +121,14 @@
 							</group>
 							
 							<group string="Shipper Filed" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','3')]}">
-								<field name='eei_shipper_code' attrs="{'required':[('eei_code','=','1')]}"/>
+								<field name='eei_shipper_code' attrs="{'required':[('eei_file','=',True),('eei_code','=','1')]}"/>
 								<field name='eei_shipper_desc'/>
-								<field name='eei_predep_itn_number' attrs="{'required':[('eei_shipper_code','=','A')]}"/>
-								<field name='eei_exemptionlegend' attrs="{'required':[('eei_shipper_code','=','B')]}"/>
+								<field name='eei_predep_itn_number' attrs="{'required':[('eei_file','=',True),('eei_shipper_code','=','A')]}"/>
+								<field name='eei_exemptionlegend' attrs="{'required':[('eei_file','=',True),('eei_shipper_code','=','B')]}"/>
 							</group>
 							<group string="POA" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','1')]}">
-								<field name='eei_poa_code' attrs="{'required':[('eei_code','=','3')]}"/>
-								<field name='eei_poa_desc'/>
+								<field name='eei_poa_code' attrs="{'required':[('eei_file','=',True),('eei_code','=','3')],'invisible':[('eei_file','=',False),('eei_code','=','1')]}"/>
+								<field name='eei_poa_desc' attrs="{'invisible':[('eei_file','=',False),('eei_code','=','1')]}"/>
 							</group>
 						</page>
 						

@@ -990,8 +990,31 @@ class stock_picking_out(osv.osv):
                 """
             xml_ship_confirm_request += """
                        </EEIFilingOption>
+                       <Contacts>
+                           <UltimateConsignee>
+                        <CompanyName>%(shipto_company)s</CompanyName>
+                        <Address>
+                            <AddressLine1>%(shipto_address_line1)s</AddressLine1>
+                            <AddressLine2>%(shipto_address_line2)s</AddressLine2>
+                            <AddressLine3>%(shipto_address_line3)s</AddressLine3>
+                            <City>%(shipto_city)s</City>
+                            <StateProvinceCode>%(shipto_state)s</StateProvinceCode>
+                            <CountryCode>%(shipto_country)s</CountryCode>
+                            <PostalCode>%(shipto_postal)s</PostalCode>
+                        </Address>
+                           </UltimateConsignee>
+                    </Contacts>
                    </InternationalForms>
-                       """    
+                       """ % {
+                'shipto_company': do.partner_id.name or '',
+                'shipto_address_line1': shipto_address_lines[0],
+                'shipto_address_line2': shipto_address_lines[1],
+                'shipto_address_line3': shipto_address_lines[2],
+                'shipto_city': do.partner_id.city or '',
+                'shipto_state': do.partner_id.state_id and do.partner_id.state_id.code or '',
+                'shipto_country': do.partner_id.country_id and do.partner_id.country_id.code or '',
+                'shipto_postal': do.partner_id.zip or '',
+                }    
         if do.sat_delivery or do.eei_file:
             xml_ship_confirm_request += """
             </ShipmentServiceOptions>
