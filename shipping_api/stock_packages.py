@@ -134,6 +134,55 @@ class stock_packages(osv.osv):
         'decl_val': fields.function(_get_decl_val, method=True, string='Declared Value', type='float', help='The declared value of the package.'),
         
         'is_intnl':fields.boolean("International?",help="Package type allowed for International ups shippings or Domestic if unchecked"),
+        
+        'eei_file': fields.boolean('EEI Filing'),
+        
+        # EEI Information
+        'product_eei_info_export_information':fields.selection([('lc', 'LC'),('lv', 'LV'),('ss', 'SS'),('ms', 'MS'),('gs', 'GS'),('dp', 'DP'),('hr', 'HR'),('ug', 'UG'),('ic', 'IC'),
+                                        ('sc', 'SC'),('dd', 'DD'),('hh', 'HH'),('dp', 'DP'),('hr', 'HR'),('ug', 'UG'),('ic', 'IC'),('sc', 'SC'),('dd', 'DD'),('hh', 'HH'),
+                                        ('sr', 'SR'),('te', 'TE'),('tl', 'TL'),('is', 'IS'),('cr', 'CR'),('gp', 'GP'),('rj', 'RJ'),('tp', 'TP'),('ip', 'IP'),('ir', 'IR'),('db', 'DB'),('ch', 'CH'),('rs', 'RS'),('os', 'OS'),],'ExportInformation'),
+      # License
+      'product_eei_info_license_number':fields.char("Number",size=256),
+      'product_eei_info_license_code':fields.char("Code",size=256),
+      'product_eei_info_license_line_value':fields.char("License Line Value",size=256),
+      'product_eei_info_license_eccn_number':fields.char("ECCN Number" ,size=256),
+      # DDTC Information
+      'product_eei_info_license_ddtc_info_itar_exemption_number':fields.char("ITAR Exemption Number" ,size=256),
+      'product_eei_info_license_ddtc_info_usml_category_code':fields.char("USML Category Code" ,size=256),
+      'product_eei_info_license_ddtc_info_eligible_prty_indicator':fields.char("Eligible Party Indicator" ,size=256),
+      'product_eei_info_license_ddtc_info_registration_number':fields.char("Registration Number" ,size=256),
+      'product_eei_info_license_ddtc_info_quantity':fields.integer("Quantity"),
+      'product_eei_info_license_ddtc_info_code':fields.char("Code",size=256),
+      'product_eei_info_license_ddtc_info_description':fields.char("Description",size=256),
+      'product_eei_info_license_ddtc_info_significant_mili_equip_ind':fields.char("Significant Military Equipment Indicator",size=256),
+      'product_eei_info_license_ddtc_info_acm_number':fields.char("ACM Number",size=256),
+      
+      #EEI > Product > ScheduleB Tags.
+        
+        'eei_prod_schedule_number':fields.char("Commodity classification code",size=256),#10Digits code
+        'eei_prod_schedule_qty':fields.float("Quantity"),
+        #EEI > Product > ScheduleB >UoM Tags.
+        'eei_prod_schedule_uom_code':fields.selection([('BBL', 'Barrels'),('CAR', 'Carat'),('CKG', 'Content Kilogram'),('CM2', 'Square Centimeters'),
+                                                       ('CTN', 'Content Ton'),('CUR', 'Curie'),('CYK', 'Clean Yield Kilogram'),('DOZ', 'Dozen'),
+                                                       ('DPC', 'Dozen Pieces'),('DPR', 'Dozen Pairs'),('FBM', 'Fiber Meter'),('GCN', 'Gross Containers'),
+                                                       ('GM', 'Gram'),('GRS', 'Gross'),('HUN', 'Hundred'),('KG', 'Kilogram'),
+                                                       ('KM3', '1,000 Cubic Meters'),('KTS', 'Kilogram Total Sugars'),('L', 'Liter'),('M', 'Meter'),
+                                                       ('M2', 'Square Meters'),('M3', 'Cubic Meters'),('MC', 'Millicurie'),('NO', 'Number'),
+                                                       ('PCS', 'Pieces'),('PFL', 'Proof Liter'),('PK', 'Pack'),('PRS', 'Pairs'),
+                                                       ('RBA', 'Running Bales'),('SQ', 'Square'),('T', 'Ton'),('THS', '1,000'),
+                                                       ('X', 'No Quantity required')],'UoM Code'),
+        'eei_prod_schedule_uom_desc':fields.char("Description",size=256),
+        
+        #EEI > Product > 
+        'eei_prod_exoprt_type':fields.selection([('D', 'Domestic'),('F', 'Foreign'),],'Exoprt Type', help="""
+        Code indicating Domestic: Exports that have been produced, manufactured, or grown in the United States or Puerto Rico.
+        This includes imported merchandise which has been enhanced in value or changed from the form in which imported by further
+        manufacture or processing in the United States or Puerto Rico.
+        Foreign: Merchandise that has entered the United States and is being exported again in the same condition as when imported.
+        """),
+           #EEI > Product >       
+        'eei_prod_sed_tot_val':fields.float("SED Total Value", help="This amount will always be USD. This attribute represents the LicenseLineValue for EEI."),
+        
     }
 
     _defaults = {

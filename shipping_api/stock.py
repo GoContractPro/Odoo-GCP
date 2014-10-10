@@ -224,6 +224,13 @@ class stock_picking(osv.osv):
         'eei_shipper_desc':fields.char("Description",size=256),
         'eei_predep_itn_number':fields.char("PreDepartureITNNumber",size=256),#Requred if eei_shipper_code = A
         'eei_exemptionlegend':fields.char("Exemption Legend"),#Requred if eei_shipper_code = B
+       'eei_ulti_consignee_type':fields.selection([('D', 'Direct Consumer'),('G', 'Government Entity'),('R', 'Reseller'),('O', 'Other/Unknown'),],'Ultimate Consignee Type'),
+        'eei_ulti_consignee_desc':fields.char("Description",size=256),
+        #EEI Intl forms> ExportDate
+        'eei_export_date':fields.date('Export Date'),
+
+        
+        
     }
 
     _defaults = {
@@ -466,6 +473,10 @@ class stock_picking_out(osv.osv):
         'eei_shipper_desc':fields.char("Description",size=256),
         'eei_predep_itn_number':fields.char("PreDepartureITNNumber",size=256),#Requred if eei_shipper_code = A
         'eei_exemptionlegend':fields.char("Exemption Legend"),#Requred if eei_shipper_code = B
+      'eei_ulti_consignee_type':fields.selection([('D', 'Direct Consumer'),('G', 'Government Entity'),('R', 'Reseller'),('O', 'Other/Unknown'),],'Ultimate Consignee Type'),
+      'eei_ulti_consignee_desc':fields.char("Description",size=256),
+      #EEI Intl forms> ExportDate
+      'eei_export_date':fields.date('Export Date'),
     }
 
     _defaults = {
@@ -596,13 +607,4 @@ class Prod(osv.osv):
                 order, context=context, count=count)
 Prod()
 
-class ups_commodity_code(osv.osv):
-    _name = 'ups.commodity.code'
-    
-    _columns = {
-                'name':fields.char("Code",size=32,required=True),
-                'desc':fields.text("Description")
-                }
-    
-ups_commodity_code()
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
