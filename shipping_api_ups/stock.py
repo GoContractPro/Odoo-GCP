@@ -561,7 +561,7 @@ class stock_picking_out(osv.osv):
                                         if label.get('GraphicImage'):
                                             label_image = label['GraphicImage']
                                             im_in_raw = base64.decodestring(label_image)
-                                            path = tempfile.mktemp('.txt')
+                                            path = tempfile.mktemp('.gif')
                                             temp = file(path, 'wb')
                                             temp.write(im_in_raw)
                                             result = base64.b64encode(im_in_raw)
