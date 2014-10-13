@@ -196,7 +196,7 @@
 											</page>
 											<page string="Result">
 												<group string="Shipping Results Details">
-													<field name='eei_file'/>
+													<field name='eei_file' invisible="1"/>
 													<field name='negotiated_rates' readonly="1"/>
 				 									<field name='shipment_identific_no' readonly="1"/> 
 				 									<field name='tracking_no' readonly="1"/> 
