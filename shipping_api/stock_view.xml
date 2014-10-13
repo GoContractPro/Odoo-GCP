@@ -134,8 +134,8 @@
 							</group>
 							<group string="International Forms" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False)]}">
 								<field name='eei_export_date'/>
+								<field name='eei_inbond_code'/>
 								<field name='eei_exporting_carrier'/>
-                                <field name='eei_inbond_code'/>
 								<field name='eei_entry_number'/>
 								<field name='eei_point_of_origin'/>
 								<field name='eei_point_origin_type'/>
