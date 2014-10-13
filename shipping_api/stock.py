@@ -226,9 +226,14 @@ class stock_picking(osv.osv):
         'eei_exemptionlegend':fields.char("Exemption Legend"),#Requred if eei_shipper_code = B
        'eei_ulti_consignee_type':fields.selection([('D', 'Direct Consumer'),('G', 'Government Entity'),('R', 'Reseller'),('O', 'Other/Unknown'),],'Ultimate Consignee Type'),
         'eei_ulti_consignee_desc':fields.char("Description",size=256),
-        #EEI Intl forms> ExportDate
-        'eei_export_date':fields.date('Export Date'),
-        'eei_exporting_carrier':fields.char("Exporting Carrier",size=256),
+        #EEI Intl forms> 
+      'eei_export_date':fields.date('Export Date'),
+      'eei_exporting_carrier':fields.char("Exporting Carrier",size=256),
+      'eei_inbond_code':fields.selection([('70', 'OneTime POA'),('67', 'IE Form a FTZ'),('68', 'T&E from a FTZ')],'Inbond Code'),
+      'eei_entry_number':fields.char("Entry Number",size=256),
+      'eei_point_of_origin':fields.char("Point Of Origin",size=256),
+      'eei_point_origin_type':fields.char("Point Of Origin Type",size=256),
+      'eei_mode_of_transport':fields.char("Mode Of Transport",size=256),
         
     }
 
@@ -474,9 +479,14 @@ class stock_picking_out(osv.osv):
         'eei_exemptionlegend':fields.char("Exemption Legend"),#Requred if eei_shipper_code = B
       'eei_ulti_consignee_type':fields.selection([('D', 'Direct Consumer'),('G', 'Government Entity'),('R', 'Reseller'),('O', 'Other/Unknown'),],'Ultimate Consignee Type'),
       'eei_ulti_consignee_desc':fields.char("Description",size=256),
-      #EEI Intl forms> ExportDate
+      #EEI Intl forms> 
       'eei_export_date':fields.date('Export Date'),
       'eei_exporting_carrier':fields.char("Exporting Carrier",size=256),
+      'eei_inbond_code':fields.selection([('70', 'OneTime POA'),('67', 'IE Form a FTZ'),('68', 'T&E from a FTZ')],'Inbond Code'),
+      'eei_entry_number':fields.char("Entry Number",size=256),
+      'eei_point_of_origin':fields.char("Point Of Origin",size=256),
+      'eei_point_origin_type':fields.char("Point Of Origin Type",size=256),
+      'eei_mode_of_transport':fields.char("Mode Of Transport",size=256),
     }
 
     _defaults = {

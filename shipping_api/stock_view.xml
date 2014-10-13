@@ -120,8 +120,7 @@
 								<field name='eei_email' attrs="{'required':[('eei_file','=',True)]}"/>
 								<field name='eei_ulti_consignee_type'/>
 								<field name='eei_ulti_consignee_desc'/>
-								<field name='eei_export_date'/>
-								<field name='eei_exporting_carrier'/>
+								
 							</group>
 							<group string="Shipper Filed" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','3')]}">
 								<field name='eei_shipper_code' attrs="{'required':[('eei_file','=',True),('eei_code','=','1')]}"/>
@@ -132,6 +131,15 @@
 							<group string="POA" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','1')]}">
 								<field name='eei_poa_code' attrs="{'required':[('eei_file','=',True),('eei_code','=','3')],'invisible':[('eei_file','=',False),('eei_code','=','1')]}"/>
 								<field name='eei_poa_desc' attrs="{'invisible':[('eei_file','=',False),('eei_code','=','1')]}"/>
+							</group>
+							<group string="International Forms" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False)]}">
+								<field name='eei_export_date'/>
+								<field name='eei_exporting_carrier'/>
+                                <field name='eei_inbond_code'/>
+								<field name='eei_entry_number'/>
+								<field name='eei_point_of_origin'/>
+								<field name='eei_point_origin_type'/>
+								<field name='eei_mode_of_transport'/>
 							</group>
 						</page>
 						
