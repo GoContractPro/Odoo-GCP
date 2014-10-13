@@ -228,8 +228,7 @@ class stock_picking(osv.osv):
         'eei_ulti_consignee_desc':fields.char("Description",size=256),
         #EEI Intl forms> ExportDate
         'eei_export_date':fields.date('Export Date'),
-
-        
+        'eei_exporting_carrier':fields.char("Exporting Carrier",size=256),
         
     }
 
@@ -477,6 +476,7 @@ class stock_picking_out(osv.osv):
       'eei_ulti_consignee_desc':fields.char("Description",size=256),
       #EEI Intl forms> ExportDate
       'eei_export_date':fields.date('Export Date'),
+      'eei_exporting_carrier':fields.char("Exporting Carrier",size=256),
     }
 
     _defaults = {

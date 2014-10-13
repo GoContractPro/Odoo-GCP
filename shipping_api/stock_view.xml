@@ -113,7 +113,7 @@
 						
 <!--						Verts Changes -->
 						
-						 <page string="EEI Filing" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False)]}" >
+						 <page string="EEI Filing" colspan="2" col="4" attrs="{'invisible':[('eei_file','!=',True)]}" >
 							<group  colspan="2" col="4"  attrs="{'invisible':[('eei_file','=',False)]}">
 								<field name='eei_code' attrs="{'required':[('eei_file','=',True)]}"/>
 								<field name='eei_desc'/>
@@ -121,6 +121,7 @@
 								<field name='eei_ulti_consignee_type'/>
 								<field name='eei_ulti_consignee_desc'/>
 								<field name='eei_export_date'/>
+								<field name='eei_exporting_carrier'/>
 							</group>
 							<group string="Shipper Filed" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','3')]}">
 								<field name='eei_shipper_code' attrs="{'required':[('eei_file','=',True),('eei_code','=','1')]}"/>
@@ -136,7 +137,7 @@
 						
 						<page string="Packages">
 						<group colspan="8" col="8">
-							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_eei_file':eei_file,'default_packge_no':False,'active_id':active_id, 'default_is_intnl':is_intnl}">
+							<field name='packages_ids' nolabel="1" colspan="2" height="50"  context="{'default_weight':False,'eei_file':eei_file,'default_packge_no':False,'active_id':active_id, 'default_is_intnl':is_intnl}">
 								<tree string='Shipping Packages'>
 									<field name='packge_no' on_change="onchange_packge_no(parent.packages_ids,packge_no)"/>
 									<field name='weight' on_change="onchange_weight(parent.packages_ids, parent.tot_del_order_weight, weight)"/>
@@ -199,7 +200,7 @@
 													<field name='ship_message' nolabel='1' colspan="4"/>
 												</group>
 											</page>
-											<page string="EEI Filing" colspan="2" col="4"  >
+											<page string="EEI Filing" colspan="2" col="4" attrs="{'invisible':[('eei_file','!=',True)]}" >
 												<group string="EEI Information"   >
 													<field name='product_eei_info_export_information'  colspan="2"/>
 												</group>
@@ -338,7 +339,8 @@
 									<field name='comm_inv' />
 									<field name='cer_orig' />
 									<field name='nafta_cer_orig' />
-								</group>
+								    <field name='eei_file' />
+							   </group>
 							</page>
 
 						<page string="Producer Details" attrs="{'invisible':[('nafta_cer_orig','=',False)]}" >
@@ -373,7 +375,7 @@
 						</page>
 						<page string="Packages">
 						<group colspan="8" col="8">
-							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'active_id':active_id, 'default_is_intnl'=is_intnl}">
+							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'eei_file':eei_file,'default_packge_no':False,'active_id':active_id, 'default_is_intnl':is_intnl}">
 								<tree string='Shipping Packages'>
 									<field name='packge_no' on_change="onchange_packge_no(parent.packages_ids,packge_no)"/>
 									<field name='weight' on_change="onchange_weight(parent.packages_ids, parent.tot_del_order_weight, weight)"/>
@@ -435,6 +437,39 @@
 													<field name='ship_message' nolabel='1' colspan="4"/>
 												</group>
 											</page>
+											<page string="EEI Filing" colspan="2" col="4" attrs="{'invisible':[('eei_file','!=',True)]}" >
+												<group string="EEI Information"   >
+													<field name='product_eei_info_export_information'  colspan="2"/>
+												</group>
+												<group string="EEI Product"   >
+													<field name='eei_prod_exoprt_type'/>
+													<field name='eei_prod_sed_tot_val'/>
+												</group>
+												<group string="ScheduleB"   >
+													<field name='eei_prod_schedule_number'/>
+													<field name='eei_prod_schedule_qty'/>
+                                                    <field name='eei_prod_schedule_uom_code'/>
+                                                    <field name='eei_prod_schedule_uom_desc'/>
+												</group>
+												<group string="License" colspan="2" col="4" >
+													<field name='product_eei_info_license_number'/>
+													<field name='product_eei_info_license_code'/>
+													<field name='product_eei_info_license_line_value' />
+													<field name='product_eei_info_license_eccn_number'/>
+												</group>
+												<group string="DDTC Information" colspan="2" col="4" >
+													<field name='product_eei_info_license_ddtc_info_itar_exemption_number'/>
+													<field name='product_eei_info_license_ddtc_info_usml_category_code'/>
+													<field name='product_eei_info_license_ddtc_info_eligible_prty_indicator'/>
+													<field name='product_eei_info_license_ddtc_info_registration_number'/>
+													<field name='product_eei_info_license_ddtc_info_quantity'/>
+													<field name='product_eei_info_license_ddtc_info_code'/>
+													<field name='product_eei_info_license_ddtc_info_description'/>
+													<field name='product_eei_info_license_ddtc_info_significant_mili_equip_ind'/>
+													<field name='product_eei_info_license_ddtc_info_acm_number'/>
+												</group>
+											</page>
+											
 										</notebook>
 									</sheet>
 								</form>

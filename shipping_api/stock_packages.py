@@ -188,6 +188,19 @@ class stock_packages(osv.osv):
     _defaults = {
         'weight': 0.0
     }
+    
+    
+    
+    def default_get(self, cr, uid, fields, context=None):
+        if context is None: context = {}
+        res = super(stock_packages, self).default_get(cr, uid, fields, context=context)
+#         move_ids = context.get('active_ids', [])
+        active_model = context.get('active_model')
+        eei_file = context.get('eei_file')
+        print("*************",eei_file)
+        if eei_file :
+            res.update(eei_file=eei_file)
+        return res
 
 
     def print_label(self, cr, uid, ids, context=None):
