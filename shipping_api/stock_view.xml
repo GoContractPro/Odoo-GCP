@@ -134,12 +134,16 @@
 							</group>
 							<group string="International Forms" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False)]}">
 								<field name='eei_export_date'/>
-								<field name='eei_inbond_code'/>
-								<field name='eei_exporting_carrier'/>
-								<field name='eei_entry_number'/>
-								<field name='eei_point_of_origin'/>
-								<field name='eei_point_origin_type'/>
-								<field name='eei_mode_of_transport'/>
+								<field name='eei_inbond_code' attrs="{'required':[('eei_file','=',True)]}"/>
+								<field name='eei_exporting_carrier' />
+								<field name='eei_entry_number'  attrs="{'required':[('eei_inbond_code','!=','70')]}"/>
+								<field name='eei_point_of_origin' attrs="{'required':[('eei_file','=',True)]}"/>
+								<field name='eei_point_origin_type' attrs="{'required':[('eei_file','=',True)]}"/>
+								<field name='eei_mode_of_transport' attrs="{'required':[('eei_file','=',True)]}"/>
+								<field name='eei_port_of_export'/>
+								<field name='eei_port_of_unloading'/>
+								<field name='eei_loading_pier'/>
+
 							</group>
 						</page>
 						
@@ -224,8 +228,8 @@
 												</group>
 												<group string="License" colspan="2" col="4" >
 													<field name='product_eei_info_license_number'/>
-													<field name='product_eei_info_license_code'/>
-													<field name='product_eei_info_license_line_value' />
+													<field name='product_eei_info_license_code' />
+													<field name='product_eei_info_license_line_value' " />
 													<field name='product_eei_info_license_eccn_number'/>
 												</group>
 												<group string="DDTC Information" colspan="2" col="4" >

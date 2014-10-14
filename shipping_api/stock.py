@@ -234,6 +234,9 @@ class stock_picking(osv.osv):
       'eei_point_of_origin':fields.char("Point Of Origin",size=256),
       'eei_point_origin_type':fields.char("Point Of Origin Type",size=256),
       'eei_mode_of_transport':fields.char("Mode Of Transport",size=256),
+      'eei_port_of_export':fields.char("Port Of Export",size=256),
+      'eei_port_of_unloading':fields.char("Port Of Unloading",size=256),
+      'eei_loading_pier':fields.char("Loading Pier",size=256),
         
     }
 
@@ -487,6 +490,9 @@ class stock_picking_out(osv.osv):
       'eei_point_of_origin':fields.char("Point Of Origin",size=256),
       'eei_point_origin_type':fields.char("Point Of Origin Type",size=256),
       'eei_mode_of_transport':fields.char("Mode Of Transport",size=256),
+      'eei_port_of_export':fields.char("Port Of Export",size=256),
+      'eei_port_of_unloading':fields.char("Port Of Unloading",size=256),
+      'eei_loading_pier':fields.char("Loading Pier",size=256),
     }
 
     _defaults = {

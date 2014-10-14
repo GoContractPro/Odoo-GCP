@@ -140,7 +140,7 @@ class stock_packages(osv.osv):
         # EEI Information
         'product_eei_info_export_information':fields.selection([('lc', 'LC'),('lv', 'LV'),('ss', 'SS'),('ms', 'MS'),('gs', 'GS'),('dp', 'DP'),('hr', 'HR'),('ug', 'UG'),('ic', 'IC'),
                                         ('sc', 'SC'),('dd', 'DD'),('hh', 'HH'),('dp', 'DP'),('hr', 'HR'),('ug', 'UG'),('ic', 'IC'),('sc', 'SC'),('dd', 'DD'),('hh', 'HH'),
-                                        ('sr', 'SR'),('te', 'TE'),('tl', 'TL'),('is', 'IS'),('cr', 'CR'),('gp', 'GP'),('rj', 'RJ'),('tp', 'TP'),('ip', 'IP'),('ir', 'IR'),('db', 'DB'),('ch', 'CH'),('rs', 'RS'),('os', 'OS'),],'ExportInformation'),
+                                        ('sr', 'SR'),('te', 'TE'),('tl', 'TL'),('is', 'IS'),('cr', 'CR'),('gp', 'GP'),('rj', 'RJ'),('tp', 'TP'),('ip', 'IP'),('ir', 'IR'),('db', 'DB'),('ch', 'CH'),('rs', 'RS'),('os', 'OS'),],'Export Information'),
       # License
       'product_eei_info_license_number':fields.char("Number",size=256),
       'product_eei_info_license_code':fields.char("Code",size=256),
@@ -197,7 +197,6 @@ class stock_packages(osv.osv):
 #         move_ids = context.get('active_ids', [])
         active_model = context.get('active_model')
         eei_file = context.get('eei_file')
-        print("*************",eei_file)
         if eei_file :
             res.update(eei_file=eei_file)
         return res
