@@ -229,7 +229,7 @@
 												<group string="License" colspan="2" col="4" >
 													<field name='product_eei_info_license_number'/>
 													<field name='product_eei_info_license_code' />
-													<field name='product_eei_info_license_line_value' " />
+													<field name='product_eei_info_license_line_value' />
 													<field name='product_eei_info_license_eccn_number'/>
 												</group>
 												<group string="DDTC Information" colspan="2" col="4" >
