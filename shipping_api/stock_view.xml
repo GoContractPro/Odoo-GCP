@@ -66,9 +66,7 @@
 									<field name='freight' string="Freight" />
 									<field name='sat_delivery' />
 									<field name='with_ret_service' />
-									
 								</group>
-								
 							  </group>
 							</page>
 							<page string="Documents">
@@ -111,7 +109,7 @@
 						</group>
 						</page>
 						
-<!--						Verts Changes -->
+<!--						Verts Changes         -->
 						
 						 <page string="EEI Filing" colspan="2" col="4" attrs="{'invisible':[('eei_file','!=',True)]}" >
 							<group  colspan="2" col="4"  attrs="{'invisible':[('eei_file','=',False)]}">
@@ -120,7 +118,6 @@
 								<field name='eei_email' attrs="{'required':[('eei_file','=',True)]}"/>
 								<field name='eei_ulti_consignee_type'/>
 								<field name='eei_ulti_consignee_desc'/>
-								
 							</group>
 							<group string="Shipper Filed" colspan="2" col="4" attrs="{'invisible':[('eei_file','=',False),('eei_code','=','3')]}">
 								<field name='eei_shipper_code' attrs="{'required':[('eei_file','=',True),('eei_code','=','1')]}"/>
@@ -136,14 +133,13 @@
 								<field name='eei_export_date'/>
 								<field name='eei_inbond_code' attrs="{'required':[('eei_file','=',True)]}"/>
 								<field name='eei_exporting_carrier' />
-								<field name='eei_entry_number'  attrs="{'required':[('eei_inbond_code','!=','70')]}"/>
+								<field name='eei_entry_number'  attrs="{'required':[('eei_file','=',True),('eei_inbond_code','!=','70')]}"/>
 								<field name='eei_point_of_origin' attrs="{'required':[('eei_file','=',True)]}"/>
 								<field name='eei_point_origin_type' attrs="{'required':[('eei_file','=',True)]}"/>
 								<field name='eei_mode_of_transport' attrs="{'required':[('eei_file','=',True)]}"/>
 								<field name='eei_port_of_export'/>
 								<field name='eei_port_of_unloading'/>
 								<field name='eei_loading_pier'/>
-
 							</group>
 						</page>
 						
@@ -200,7 +196,7 @@
 											</page>
 											<page string="Result">
 												<group string="Shipping Results Details">
-													<field name='eei_file' invisible="1"/>
+													
 													<field name='negotiated_rates' readonly="1"/>
 				 									<field name='shipment_identific_no' readonly="1"/> 
 				 									<field name='tracking_no' readonly="1"/> 
@@ -210,38 +206,41 @@
 												<newline/>
 												<group string="Shipment Status">
 													<field name='ship_message' nolabel='1' colspan="4"/>
+													<field name='eei_file' invisible="1"/>
+													<field name='eei_code' invisible="1"/>
+													<field name='eei_shipper_code' invisible="1"/>
 												</group>
 											</page>
 											<page string="EEI Filing" colspan="2" col="4" attrs="{'invisible':[('eei_file','!=',True)]}" >
 												<group string="EEI Information"   >
-													<field name='product_eei_info_export_information'  colspan="2"/>
+													<field name='product_eei_info_export_information' attrs="{'required':[('eei_file','=',True),('eei_code','=','3')]}"  colspan="2"/>
 												</group>
 												<group string="EEI Product"   >
-													<field name='eei_prod_exoprt_type'/>
-													<field name='eei_prod_sed_tot_val'/>
+													<field name='eei_prod_exoprt_type'  attrs="{'required':[('eei_file','=',True)]}"/>
+													<field name='eei_prod_sed_tot_val' attrs="{'required':[('eei_file','=',True)]}"/>
 												</group>
 												<group string="ScheduleB"   >
-													<field name='eei_prod_schedule_number'/>
-													<field name='eei_prod_schedule_qty'/>
-                                                    <field name='eei_prod_schedule_uom_code'/>
-                                                    <field name='eei_prod_schedule_uom_desc'/>
+													<field name='eei_prod_schedule_number' attrs="{'required':[('eei_file','=',True)]}"/>
+													<field name='eei_prod_schedule_qty' attrs="{'required':[('eei_file','=',True),('eei_prod_schedule_uom_code','!=','X')]}"/>
+                                                    <field name='eei_prod_schedule_uom_code' attrs="{'required':[('eei_file','=',True)]}"/>
+                                                    <field name='eei_prod_schedule_uom_desc' attrs="{'required':[('eei_file','=',True)]}"/>
 												</group>
 												<group string="License" colspan="2" col="4" >
 													<field name='product_eei_info_license_number'/>
-													<field name='product_eei_info_license_code' />
-													<field name='product_eei_info_license_line_value' />
-													<field name='product_eei_info_license_eccn_number'/>
+													<field name='product_eei_info_license_code'  attrs="{'required':[('eei_file','=',True),('eei_code','=','3')]}" />
+                                                    <field name='product_eei_info_license_line_value' attrs="{'required':[('eei_file','=',True),'|','&amp;',('eei_code','=','1'),('eei_shipper_code','=','A'),('eei_code','=','3')]}" />
+													<field name='product_eei_info_license_eccn_number'  attrs="{'required':[('eei_file','=',True),('eei_code','=','3')]}"/>
 												</group>
 												<group string="DDTC Information" colspan="2" col="4" >
-													<field name='product_eei_info_license_ddtc_info_itar_exemption_number'/>
-													<field name='product_eei_info_license_ddtc_info_usml_category_code'/>
+													<field name='product_eei_info_license_ddtc_info_itar_exemption_number' attrs="{'required':[('eei_file','=',True),'|','&amp;',('eei_code','=','1'),('eei_shipper_code','=','A'),('eei_code','=','3')]}"/>
+													<field name='product_eei_info_license_ddtc_info_usml_category_code' attrs="{'required':[('eei_file','=',True),('eei_code','=','3')]}" />
 													<field name='product_eei_info_license_ddtc_info_eligible_prty_indicator'/>
-													<field name='product_eei_info_license_ddtc_info_registration_number'/>
-													<field name='product_eei_info_license_ddtc_info_quantity'/>
-													<field name='product_eei_info_license_ddtc_info_code'/>
-													<field name='product_eei_info_license_ddtc_info_description'/>
+													<field name='product_eei_info_license_ddtc_info_registration_number' attrs="{'required':[('eei_file','=',True),('eei_code','=','3')]}" />
+													<field name='product_eei_info_license_ddtc_info_quantity' attrs="{'required':[('eei_file','=',True),('eei_code','=','3')]}"/>
+													<field name='product_eei_info_license_ddtc_info_code' attrs="{'required':[('eei_file','=',True),'|','&amp;',('eei_code','=','1'),('eei_shipper_code','=','A'),('eei_code','=','3')]}" />
+													<field name='product_eei_info_license_ddtc_info_description' attrs="{'required':[('eei_file','=',True),('eei_code','=','3')]}"/>
 													<field name='product_eei_info_license_ddtc_info_significant_mili_equip_ind'/>
-													<field name='product_eei_info_license_ddtc_info_acm_number'/>
+													<field name='product_eei_info_license_ddtc_info_acm_number'  attrs="{'required':[('eei_file','=',True),'|','&amp;',('eei_code','=','1'),('eei_shipper_code','=','A'),('eei_code','=','3')]}"/>
 												</group>
 											</page>
 										</notebook>

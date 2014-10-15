@@ -136,6 +136,8 @@ class stock_packages(osv.osv):
         'is_intnl':fields.boolean("International?",help="Package type allowed for International ups shippings or Domestic if unchecked"),
         
         'eei_file': fields.boolean('EEI Filing'),
+        'eei_code':fields.selection([('1', 'Shipper filed'),('3', 'UPS filed'),],'EEI Code'),
+        'eei_shipper_code':fields.selection([('A', 'Requires the ITN'),('B', 'Requires the Exemption Legend'),('C','Requires the post departure filing citation')],'Shipper Code'),
         
         # EEI Information
         'product_eei_info_export_information':fields.selection([('lc', 'LC'),('lv', 'LV'),('ss', 'SS'),('ms', 'MS'),('gs', 'GS'),('dp', 'DP'),('hr', 'HR'),('ug', 'UG'),('ic', 'IC'),
@@ -152,6 +154,7 @@ class stock_packages(osv.osv):
       'product_eei_info_license_ddtc_info_eligible_prty_indicator':fields.char("Eligible Party Indicator" ,size=256),
       'product_eei_info_license_ddtc_info_registration_number':fields.char("Registration Number" ,size=256),
       'product_eei_info_license_ddtc_info_quantity':fields.integer("Quantity"),
+      # Unit of Measurment
       'product_eei_info_license_ddtc_info_code':fields.char("Code",size=256),
       'product_eei_info_license_ddtc_info_description':fields.char("Description",size=256),
       'product_eei_info_license_ddtc_info_significant_mili_equip_ind':fields.char("Significant Military Equipment Indicator",size=256),
@@ -197,8 +200,11 @@ class stock_packages(osv.osv):
 #         move_ids = context.get('active_ids', [])
         active_model = context.get('active_model')
         eei_file = context.get('eei_file')
+        eei_code = context.get('eei_code')
+        eei_shipper_code = context.get('eei_shipper_code')
+        print("eei_code",eei_code)
         if eei_file :
-            res.update(eei_file=eei_file)
+            res.update({'eei_file':eei_file,'eei_code':eei_code,'eei_shipper_code':eei_shipper_code})
         return res
 
 
