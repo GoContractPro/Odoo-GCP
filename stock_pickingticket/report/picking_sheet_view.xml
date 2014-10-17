@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    	
+        <report id="stock.report_picking_list" 
+        		model="stock.picking" 
+        		name="hotp.stock.picking.list" 
+        		string="Picking Ticket" 
+        		rml="stock_pickingticket/report/hotp_picking.rml"
+        		header="False"/>
+        
+        <report id="stock.report_picking_list_in" model="stock.picking.in" 
+           name="stock.picking.list.in" string="Picking Ticket"
+           rml="stock_pickingticket/report/hotp_picking.rml" />
+        
+        <report id="stock.report_picking_list_out" model="stock.picking.out" name="stock.picking.list.out"
+         string="Picking Ticket" rml="stock_pickingticket/report/hotp_picking.rml"/>
+        			
+       </data>
+</openerp>
