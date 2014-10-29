@@ -175,13 +175,12 @@ class account_check_write(osv.TransientModel):
             'middle' : 'account.print.check.middle',
             'bottom' : 'account.print.check.bottom',
         }
-        check_layout = voucher_obj.browse(cr, uid, voucher_ids[0], context=context).company_id.check_layout
-        if not check_layout:
-            check_layout = 'top'
-        report_name=check_layout_report[check_layout]    
+#        check_layout = voucher_obj.browse(cr, uid, voucher_ids[0], context=context).company_id.check_layout
+#        if not check_layout:
+#            check_layout = 'top'
         return {
             'type': 'ir.actions.report.xml', 
-            'report_name':report_name,
+            'report_name':"account.print.check.top.multi",
             'datas': {
                 'model':'account.voucher',
                 'ids': voucher_ids,
