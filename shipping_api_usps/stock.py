@@ -29,7 +29,7 @@ import xml2dic
 # import time
 # import datetime
 # from urlparse import urlparse
-import Image
+from PIL import Image
 import tempfile
 import re
 

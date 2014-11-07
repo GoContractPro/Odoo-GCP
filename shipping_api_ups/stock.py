@@ -26,7 +26,7 @@ import base64
 import time
 import datetime
 from urlparse import urlparse
-import Image
+from PIL import Image
 import tempfile
 from mako.template import Template
 import logging

@@ -25,7 +25,7 @@ import httplib
 import xml2dic
 import base64
 import tempfile
-import Image
+from PIL import Image
 from urlparse import urlparse
 
 from openerp.osv import orm, fields, osv
