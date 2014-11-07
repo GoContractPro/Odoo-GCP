@@ -53,20 +53,20 @@
             string="Print Check (Middle)"
             model="account.voucher"
             name="account.print.check.middle"
-            rml="account_check_writing/report/check_print_middle.rml"
+            rml="batch_payment_invoices/report/check_print_middle.rml"
             multi="True"
             auto="False"
-    		menu="False"
+    		menu="True"
     		/>
             
     <report id="account_check_writing.account_print_check_bottom"
             string="Print Check (Bottom)"
             model="account.voucher"
             name="account.print.check.bottom"
-            rml="account_check_writing/report/check_print_bottom.rml"
+            rml="batch_payment_invoices/report/check_print_bottom.rml"
             multi="True"
             auto="False"
-    		menu="False"
+    		menu="True"
     		/>
 </data>
 </openerp>

@@ -70,7 +70,7 @@
     <paraStyle name="P6" fontName="Helvetica-Bold" fontSize="9.0" leading="11"/>
     <paraStyle name="P7" fontName="Helvetica-Bold" fontSize="9.0" leading="11" alignment="RIGHT"/>
     <paraStyle name="P8" fontName="Helvetica" fontSize="9.0" leading="11"/>
-    <paraStyle name="P9" fontName="Helvetica" fontSize="10.0" leading="13"/>
+    <paraStyle name="P9" fontName="Helvetica" fontSize="10.0" leading="13" alignment="RIGHT"/>
     <paraStyle name="P10" fontName="Helvetica-Bold" fontSize="10.0" leading="13" alignment="RIGHT"/>
     <paraStyle name="P11" fontName="Helvetica-Bold" fontSize="10.0" leading="13" alignment="LEFT"/>
     <paraStyle name="P12" fontName="Helvetica" fontSize="12.0" leading="15"/>
@@ -98,7 +98,7 @@
   </stylesheet>
   <story>
     <para style="P1">[[repeatIn(objects,'voucher')]]</para>
-    <blockTable colWidths="568.0" style="Table2" rowHeights="320">
+    <blockTable colWidths="568.0" style="Table2" rowHeights="280">
       <tr>
         <td>
           <blockTable colWidths="485.0,67.0" style="Table6">
@@ -173,7 +173,7 @@
               </td>
             </tr>
           </blockTable>
-          <blockTable colWidths="485.0,77.0"  rowHeights="158,10" style="Table11">
+          <blockTable colWidths="485.0,77.0"  rowHeights="130,10" style="Table11">
             <tr>
               <td>
               </td>
@@ -194,7 +194,7 @@
         </td>
       </tr>
     </blockTable>
-    <blockTable colWidths="550.0" rowHeights="10" style="Table5">
+    <blockTable colWidths="550.0" rowHeights="20" style="Table5">
             <tr>
               <td>
                 <para style="P26">[[ str(fill_stars(voucher.amount_in_word)) ]]</para>
@@ -204,7 +204,7 @@
     <blockTable colWidths="568.0"  style="Table1">
       <tr>
         <td>
-          <blockTable colWidths="370.0,130.0,55.0" rowHeights=".95cm" style="Table5">
+          <blockTable colWidths="370.0,55.0,110.0" rowHeights=".35cm" style="Table5">
             <tr>
               <td>
                 <para style="P9"></para>
@@ -241,7 +241,7 @@
               </td>
             </tr>
           </blockTable>
-          <blockTable colWidths="25.0,500" rowHeights="30.5" style="Table12">
+          <blockTable colWidths="25.0,500" rowHeights="45" style="Table12">
             <tr>
               <td>
                 <para style="P3">
