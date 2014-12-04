@@ -94,7 +94,7 @@ class shipping_rate(osv.osv):
 
     def find_cost(self, cr, uid, config_id, address, model_obj, context=None):
         """
-        Function to calculate shipping cost
+        Function to Shipping Rates cost
         """
         cost = 0
         table_pool = self.pool.get('shipping.rate')
@@ -132,7 +132,7 @@ class shipping_rate(osv.osv):
                     else:
                         cost = weight * table_obj.over_cost
                 else:
-                    logger.notifyChannel(_("Calculate Shipping"), netsvc.LOG_WARNING, _("Unable to find rate table with Shipping Table = %s and \
+                    logger.notifyChannel(_("Shipping Rates"), netsvc.LOG_WARNING, _("Unable to find rate table with Shipping Table = %s and \
                                             Country = %s and Over Cost > 0."%(config_obj.rate_card_id.name, address.country_id.name)))
 
         elif config_obj.calc_method == 'state_zone_weight':
@@ -153,10 +153,10 @@ class shipping_rate(osv.osv):
                     else:
                         cost = weight*table_obj.over_cost
                 else:
-                    logger.notifyChannel(_("Calculate Shipping"), netsvc.LOG_WARNING, _("Unable to find rate table with Shipping Table = %s and \
+                    logger.notifyChannel(_("Shipping Rates"), netsvc.LOG_WARNING, _("Unable to find rate table with Shipping Table = %s and \
                                             Zone = %s."%(config_obj.shipmethodname, zone)))
             else:
-                logger.notifyChannel(_("Calculate Shipping"), netsvc.LOG_WARNING, _("Unable to find Zone Mapping Table with Shipping Rate \
+                logger.notifyChannel(_("Shipping Rates"), netsvc.LOG_WARNING, _("Unable to find Zone Mapping Table with Shipping Rate \
                                         Configuration = %s and State = %s."%(config_obj.shipmethodname, address.state_id.name)))
         elif config_obj.calc_method == 'manual':
             cost = 0.0

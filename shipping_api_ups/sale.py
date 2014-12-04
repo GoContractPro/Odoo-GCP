@@ -21,6 +21,7 @@
 ##############################################################################
 
 from openerp.osv import fields, osv
+from tools.translate import _
 
 class sale_order(osv.osv):
     _inherit = "sale.order"
@@ -85,7 +86,8 @@ class sale_order(osv.osv):
             ('19', 'Letter Center'),
             ('20', 'Air Service Center'),
             ], 'Pickup Type'),
-        'ups_packaging_type': fields.many2one('shipping.package.type', 'Packaging Type')
+        'ups_packaging_type': fields.many2one('shipping.package.type', 'Packaging Type'),
+        'shipping_rates': fields.one2many('shipping.rates.sales', 'sales_id', 'Rate Quotes'),
     }
 
     def _get_sale_account(self, cr, uid, context=None):
@@ -100,8 +102,49 @@ class sale_order(osv.osv):
 
     _defaults = {
         'sale_account_id': _get_sale_account,
-    }
+        }
 
+
+    
 sale_order()
+
+class shipping_rates_sales(osv.osv):
+    
+    _name = "shipping.rates.sales"
+    _description = "Shipping Rate Estimate Charges"
+    _columns = {    
+        'totalcharges': fields.float('Total Charges'),
+        'ratedshipmentwarning': fields.char('Shipment Warning', size=512),
+        'sales_id': fields.many2one('sale.order', 'Sales Order', required=True, ondelete='cascade',),
+        'daystodelivery': fields.integer('Days to Delivery'),
+        'service': fields.many2one('ups.shipping.service.type', 'Shipping Service' ),
+        }
+    
+    def select_ship_method(self,cr,uid,ids,context=None):
+        sale_obj = self.pool.get('sale.order')
+        vals = {}
+        for service in self.browse(cr, uid, ids, context=context):
+            self.pool.get('sale.order')
+            vals['ups_service_id']  = service.service.id
+            vals['shipcharge'] = service.totalcharges
+            sale_obj.write(cr,uid,[service.sales_id.id],vals,context)
+        mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')
+        return {
+            'name':_("Sale Order"),
+            'view_mode': 'form',
+            'view_id': modid,
+            'view_type': 'form',
+            'res_model': 'sale.order',
+            'type': 'ir.actions.act_window',
+        #    'target':'new',
+         #   'nodestroy': True,
+            'domain': '[]',
+            'res_id': service.sales_id.id,
+            'context':context,
+        }
+                      
+        return True
+    
+shipping_rates_sales()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

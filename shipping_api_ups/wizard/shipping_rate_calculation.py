@@ -107,6 +107,7 @@ class shipping_rate_wizard(orm.TransientModel):
 
     def get_rate(self, cr, uid, ids, context=None):
         sale_obj = self.pool.get('sale.order')
+        
         data = self.browse(cr, uid, ids[0], context=context)
         sale_obj.write(cr,uid,context.get('active_ids'),{'ups_shipper_id':data.ups_shipper_id.id,
                                                          'ups_service_id':data.ups_service_id.id,
@@ -138,7 +139,23 @@ class shipping_rate_wizard(orm.TransientModel):
             packaging_type_ups = data.ups_packaging_type.code
             test_mode = False
             test_mode = data.logis_company and data.logis_company.test_mode or True
-            url = 'https://wwwcie.ups.com/ups.app/xml/Rate' or 'https://onlinetools.ups.com/ups.app/xml/Rate'
+            
+            if test_mode:
+                url = unicode(data.logis_company.ship_rate_test_web)
+#                port = data.logis_company.ship_rate_test_port
+            else:
+                url = unicode(data.logis_company.ship_rate_web)
+#                port = data.logis_company.ship_rate_port
+                
+            if data.ups_service_id:
+                request_action ="rate"
+                request_option ="rate"
+            else:
+                request_action ="shop"
+                request_option ="shop"
+            
+#            url = 'https://wwwcie.ups.com/ups.app/xml/Rate' or 'https://onlinetools.ups.com/ups.app/xml/Rate'
+
             rate_request = """<?xml version=\"1.0\"?>
             <AccessRequest xml:lang=\"en-US\">
                 <AccessLicenseNumber>%s</AccessLicenseNumber>
@@ -152,8 +169,8 @@ class shipping_rate_wizard(orm.TransientModel):
                         <CustomerContext>Rating and Service</CustomerContext>
                         <XpciVersion>1.0001</XpciVersion>
                     </TransactionReference>
-                    <RequestAction>Rate</RequestAction>
-                    <RequestOption>Rate</RequestOption>
+                    <RequestAction>%s</RequestAction>
+                    <RequestOption>%s</RequestOption>
                 </Request>
             <PickupType>
                 <Code>%s</Code>
@@ -194,13 +211,23 @@ class shipping_rate_wizard(orm.TransientModel):
                     </PackageWeight>
                 </Package>
             </Shipment>
-            </RatingServiceSelectionRequest>""" % (access_license_no, user_id, password, pickup_type_ups, shipper_zip,shipper_country_code, 
+            </RatingServiceSelectionRequest>""" % (access_license_no, user_id, password,request_action,request_option, pickup_type_ups, shipper_zip,shipper_country_code, 
                                                    ups_info_shipper_no,receipient_zip, receipient_country_code, shipper_zip, shipper_country_code, 
                                                    service_type_ups, packaging_type_ups, weight)
+            
+            rates_obj = self.pool.get('shipping.rates.sales')
+            so = context.get('active_id')
+            rids = rates_obj.search(cr,uid,[('sales_id','=', so )])
+            rates_obj.unlink(cr, uid, rids, context)
+            serv_obj = self.pool.get('ups.shipping.service.type')
+            
             try:
+                print rate_request
                 from urllib2 import Request, urlopen, URLError, quote
                 request = Request(url, rate_request)
                 response_text = urlopen(request).read()
+                print response_text
+                
                 response_dic = xml2dic.main(response_text)
                 str_error = ''
                 for response in response_dic['RatingServiceSelectionResponse'][0]['Response']:
@@ -210,12 +237,48 @@ class shipping_rate_wizard(orm.TransientModel):
                                 str_error = item['ErrorDescription']
                                 self.write(cr, uid, [data.id], {'status_message': "Error : " + item['ErrorDescription'] })
                 if not str_error:
-                    for response in response_dic['RatingServiceSelectionResponse'][1]['RatedShipment']:
-                        if response.get('TotalCharges'):
-                            amount = response['TotalCharges'][1]['MonetaryValue']
-                            sale_obj.write(cr, uid, context.get('active_ids'), {'shipcharge': amount or 0.00, 'status_message': 'Success!'},context=context)
-                    return True
+#                     print response_dic
 
+                    amount = None
+                    ups_service_id = None
+# Get all the return Shipping rates as options                    
+                    for response in response_dic['RatingServiceSelectionResponse']:
+                        
+                        
+                        if response.get('RatedShipment'):
+                            
+                            warning = None
+                            vals = {}
+                            for val in response['RatedShipment']:
+                                if val.get('TotalCharges'):
+                                    vals['totalcharges'] = float(val['TotalCharges'][1]['MonetaryValue'])
+                                if val.get('GuaranteedDaysToDelivery'):
+                                    vals['daystodelivery'] = val['GuaranteedDaysToDelivery']
+                                if val.get('Service'):
+                                    service_code = val['Service'][0]['Code'] 
+                                    service = serv_obj.search(cr,uid,[('shipping_service_code','=',service_code)])                 
+                                    vals['service'] =service[0]
+                                if val.get('RatedShipmentWarning'):
+                                    if not warning:
+                                         warning =  val['RatedShipmentWarning']
+                                    else:
+                                         warning = warning + ", " + val['RatedShipmentWarning']
+                                         
+                            # get the lowest cost shipping rate as default on Sales Order                                       
+                                         
+                            if (amount is None) or amount > vals['totalcharges']: 
+                                amount = vals['totalcharges']
+                                ups_service_id = vals['service']
+                                status_mesage = warning 
+                                
+                            vals['ratedshipmentwarning'] = warning
+                            vals['sales_id'] = context.get('active_id')
+                            rates_obj.create(cr,uid,vals,context)
+                            
+                    sale_obj.write(cr,uid,context.get('active_ids'),{'shipcharge':amount or 0.00,'ups_service_id':ups_service_id,'status_message':warning},context=context)
+   
+                    return True
+                    rates_obj.write(cr, uid, context.get('active_ids'), { 'status_message': 'Success!'},context=context)
             except URLError, e:
                 if hasattr(e, 'reason'):
                     print 'Could not reach the server, reason: %s' % e.reason
@@ -250,7 +313,7 @@ class shipping_rate_wizard(orm.TransientModel):
     
     _columns= {
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
-        'ups_shipper_id': fields.many2one('ups.account.shipping', 'Shipper'),
+        'ups_shipper_id': fields.many2one('ups.account.shipping', 'Shipping Account'),
         'ups_service_id': fields.many2one('ups.shipping.service.type', 'Shipping Service'),
         'ups_pickup_type': fields.selection([
             ('01', 'Daily Pickup'),
@@ -263,7 +326,9 @@ class shipping_rate_wizard(orm.TransientModel):
         ], 'Pickup Type'),
         'ups_packaging_type': fields.many2one('shipping.package.type','Packaging Type'),
         'partner_id': fields.many2one('res.partner', 'Customer'),
-        'partner_shipping_id': fields.many2one('res.partner', 'Shipping Address'),
+        'partner_shipping_id': fields.many2one('res.partner', 'Shipping To Address'),
         }
 shipping_rate_wizard()
+
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -46,9 +46,33 @@ class logistic_company(osv.osv):
         'ship_void_port': fields.integer('Ship Void Port'),
         'ship_void_test_web': fields.char('Test Ship Void Website', size=256),
         'ship_void_test_port': fields.integer('Test Ship Void Port'),
+        'ship_rate_web': fields.char('Ship Rate Website', size=256 ),
+        'ship_rate_port': fields.integer('Ship Rate Port'),
+        'ship_rate_test_web': fields.char('Test Ship Rate Website', size=256 ),
+        'ship_rate_test_port': fields.integer('Test Ship Rate Port'),
         'ship_tracking_url': fields.char('Tracking URL', size=256),
         'ups_shipping_account_ids': fields.one2many('ups.account.shipping', 'logistic_company_id', 'Shipping Account'),
         }
+    _defaults = {
+        'ship_req_web': "https://onlinetools.ups.com/webservices/shipconfirm",
+        'ship_req_port': 443,
+        'ship_req_test_web': "https://wwwcie.ups.com/ups.app/xml/ShipConfirm",
+        'ship_req_test_port': 443,
+        'ship_accpt_web': "https://onlinetools.ups.com/ups.app/ShipAccept",
+        'ship_accpt_port': 443,
+        'ship_accpt_test_web': "https://wwwcie.ups.com/ups.app/xml/ShipAccept",
+        'ship_accpt_test_port': 443,
+        'ship_void_web': "https://onlinetools.ups.com/xml/ups.app/void",
+        'ship_void_port': 443,
+        'ship_void_test_web': "https://wwwcie.ups.com/ups.app/xml/Void",
+        'ship_void_test_port': 443,
+        'ship_rate_web': "https://onlinetools.ups.com/ups.app/xml/Rate",
+        'ship_rate_port': 443,
+        'ship_rate_test_web': "https://wwwcie.ups.com/ups.app/xml/Rate",
+        'ship_rate_test_port': 443,
+        'ship_tracking_url': "https://wwwapps.ups.com/WebTracking/processInputRequest?sort_by=status&tracknums_displayed=1&TypeOfInquiryNumber=T&loc=en_US&InquiryNumber1=%s&track.x=0&track.y=0",
+
+                 }
 
     def onchange_shipping_number(self, cr, uid, ids, shipping_no, url, context=None):
         ret = {}

@@ -8,12 +8,12 @@
 			<field name="model">fedex.account</field>
 			<field name="arch" type="xml">
 				<form string='Fedex'>
-					<field name="name" required="1" />
-					<field name="test_mode"/>
+<!--  				<field name="name" required="1" /> -->						
 					<field name="fedex_key" required="1"/>
-					<field name="fedex_password" required="1" password="True"/>
 					<field name="fedex_account_number" required="1"/>
 					<field name="fedex_meter_number" required="1"/>
+					<field name="fedex_password" required="1" password="True"/>					
+					<field name="test_mode"/>
 				</form>
 			</field>
 		</record>
@@ -23,7 +23,7 @@
 			<field name="model">fedex.account</field>
 			<field name="arch" type="xml">
 				<tree string='Fedex'>
-					<field name="name" />
+<!--  				<field name="name" /> -->	
 					<field name="fedex_key"/>
 					<field name="fedex_password"/>
 					<field name="fedex_account_number"/>
@@ -34,7 +34,7 @@
 		</record>
 	
 		<record id="action_for_fedex_account_menu" model="ir.actions.act_window">
-			<field name="name">FedEx Account</field>
+<!--  			<field name="name">FedEx Account</field> -->
 			<field name="res_model">fedex.account</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">tree,form</field>

@@ -43,8 +43,8 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
-		<menuitem name="Logistic Company" id="logistic_company_main" parent="base.menu_administration" />
-		<menuitem name="Logistic Company" id="logistic_company" parent="logistic_company_main" action="action_for_logistic_company"/>
+<!--		<menuitem name="Shipping" id="Shipping_company_main" parent="base.menu_administration" /> -->
+		<menuitem name="Logistic Company" id="logistic_company" parent="partner_address_validation.menu_address_validation_accounts" action="action_for_logistic_company"/>
 
 		<record id="partner_form_inherit_01" model="ir.ui.view">
 			<field name="name">partner_form_inherit_01</field>

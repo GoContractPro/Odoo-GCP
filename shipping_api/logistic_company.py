@@ -38,7 +38,7 @@ class logistic_company(osv.osv):
            'account.account',
            type='many2one',
            relation='account.account',
-           string="Ship Account",
+           string="Cost Account",
            view_load=True),
         'note': fields.text('Notes'),
     }
