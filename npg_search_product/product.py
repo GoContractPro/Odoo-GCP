@@ -35,9 +35,9 @@ class product_product(osv.osv):
 
     def search(self, cr, uid, args, offset=0, limit=None, order=None,
             context=None, count=False):
-        if context.get('partner_id', False):
+        if context.get('supplier_id', False):
             prod_supp_info = self.pool.get('product.supplierinfo')
-            prod_supp_ids = prod_supp_info.search(cr, uid, [('name', '=', context['partner_id'])], context=context)
+            prod_supp_ids = prod_supp_info.search(cr, uid, [('name', '=', context['supplier_id'])], context=context)
             IDS = [x.product_id.id for x in prod_supp_info.browse(cr, uid, prod_supp_ids, context=context)]
             args += [('id', 'in', IDS)]
 
