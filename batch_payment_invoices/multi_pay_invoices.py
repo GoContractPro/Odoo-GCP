@@ -295,7 +295,7 @@ class account_multi_pay_invoice(osv.Model):
                                         move_line_is = self.pool.get('account.move.line').browse(cr, uid, ml['move_line_id'], context=context).move_id.id
                                         for inv in account_invoice.browse(cr, uid, inv_ids, context=context):
                                             if move_line_is == inv.move_id.id:
-                                                ml.update({'voucher_id': voucher_id, 'amount': ml['amount']})
+                                                ml.update({'voucher_id': voucher_id, 'amount': ml['amount_original']})
                                                 self.pool.get('account.voucher.line').create(cr, uid, ml)
                             # Credit manage for customer
                             elif context.get('default_inv_type') == 'out':
