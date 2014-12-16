@@ -10,3 +10,4 @@
 "security_ups_account_shipping_employee","security.ups.account.shipping.employee","model_ups_account_shipping","base.group_user",1,1,1,1
 "security_ups_shipping_service_type_employee","security.ups.shipping.service.type.employee","model_ups_shipping_service_type","base.group_user",1,1,1,1
 "security_shipping_package_type_employee","security.shipping.package.type.employee","shipping_api.model_shipping_package_type","base.group_user",1,1,1,1
+"security_shipping_rates_sales_user","security.shipping.rates.sales.user","shipping_api_ups.model_shipping_rates_sales","base.group_sale_salesman",1,1,1,1
