@@ -61,5 +61,10 @@
           <field name="shipping_service_code">65</field>
         </record>
         
+        <record id="service13" model="ups.shipping.service.type">
+          <field name="description">UPS World Wide Express PlusSM</field>
+          <field name="shipping_service_code">54</field>
+        </record>
+        
     </data>
  </openerp>

@@ -16,7 +16,7 @@
 				<xpath expr="//button[@name='button_reset_taxes']" position="replace">
 					<button colspan="1" name="button_reset_taxes" states="draft" string="Compute Taxes" type="object" 
                     		groups="base.group_user" icon="terp-stock_format-scientific"/>
-					<button colspan="1" name="%(action_view_for_shipping_rate_wizard)d" string="Calculate Shipping" type="action" 
+					<button colspan="1" name="%(action_view_for_shipping_rate_wizard)d" string="Shipping Rates" type="action" 
                     		help="Displays the shipping wizard." states="draft" groups="base.group_user" />
 				</xpath>
 				<xpath expr="//field[@name='amount_untaxed']" position="replace">
@@ -41,7 +41,7 @@
 				<xpath expr="//button[@name='button_reset_taxes']" position="replace">
 					<button colspan="1" name="button_reset_taxes" states="draft" string="Compute Taxes" type="object" 
 							groups="base.group_user" icon="terp-stock_format-scientific"/>
-					<button colspan="1" name="%(action_view_for_shipping_rate_wizard)d" string="Calculate Shipping" type="action" 
+					<button colspan="1" name="%(action_view_for_shipping_rate_wizard)d" string="Shipping Rates" type="action" 
 							help="Displays the shipping wizard." states="draft" groups="base.group_user" />
 				</xpath>
 				<xpath expr="//field[@name='amount_untaxed']" position="replace">

@@ -28,9 +28,10 @@ class fedex_account(osv.osv):
     '''
     FedEx Account details
     '''
+    _rec_name = "fedex_key"
     _columns = {
-        'name' : fields.char('Comapny Name', size=64),
-        'fedex_key' : fields.char('FedEx Key', size=64),
+#        'name' : fields.char('Name', size=64),
+        'fedex_key' : fields.char('FedEx Key', size=64, select=1),
         'fedex_password': fields.char('Password', size=128),
         'fedex_account_number' : fields.char('Account Number', size=64),
         'fedex_meter_number' : fields.char('Meter Number', size=64),

@@ -143,7 +143,7 @@
     ups_bill_receiver_address_id: base.res_partner_12
     label_format_id: shipping_label_type_1
 - 
-  I create a shipping rate wizard record by clicking on 'Calculate Shipping' button.
+  I create a shipping rate wizard record by clicking on 'Shipping Rates' button.
 - 
   !record {model: shipping.rate.wizard, id: shipping_rate_wizard_0}:
     logis_company: shipping_api.logistic_company_1

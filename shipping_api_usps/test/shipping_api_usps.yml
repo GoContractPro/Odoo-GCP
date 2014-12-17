@@ -45,7 +45,7 @@
 -
   !workflow {model: sale.order, action: order_confirm, ref: sale_order_so4}
 - 
-  I create a shipping rate wizard record by clicking on 'Calculate Shipping' button.
+  I create a shipping rate wizard record by clicking on 'Shipping Rates' button.
 - 
   !record {model: shipping.rate.wizard, id: shipping_rate_wizard_1}:
     logis_company: shipping_api.logistic_company_1

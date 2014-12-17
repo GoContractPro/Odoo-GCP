@@ -55,7 +55,7 @@
     * Error fixing voiding Shipment
 
 1.48 2012-07-17 Janeesh
-    * Error fixing with Calculate Shipping wizard in Invoice
+    * Error fixing with Shipping Rates wizard in Invoice
 
 1.47 2012-07-12 By Janeesh
     * Merging of highvalue shipment  module
@@ -73,10 +73,10 @@
     * Bug fix with module installation
 
 1.42 2012-06-06 By Janeesh
-    * Modification in calculate shipping
+    * Modification in Shipping Rates
 
 1.41 on 2012-06-04 by Janeesh
-    * Bug fix with opening calculate shipping wizard
+    * Bug fix with opening Shipping Rates wizard
 
 1.40 on 2012-06-01 by Janeesh
 	* Bug fix with shipping rate calculation and process shipping

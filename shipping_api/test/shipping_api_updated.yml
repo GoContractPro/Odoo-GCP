@@ -175,7 +175,7 @@
     exp_carrier: post
     ship_state: draft
 - 
-  I create a shipping rate wizard record by clicking on 'Calculate Shipping' button.
+  I create a shipping rate wizard record by clicking on 'Shipping Rates' button.
 - 
   !record {model: shipping.rate.wizard, id: shipping_rate_wizard_1}:
     rate_selection: 'rate_card'
