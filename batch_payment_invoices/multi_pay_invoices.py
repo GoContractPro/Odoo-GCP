@@ -6,6 +6,7 @@ from openerp import SUPERUSER_ID
 
 class account_invoice(osv.Model):
     _inherit = 'account.invoice'
+
     _columns = {
                 'amount_paid': fields.float('Amount paid'),
                 'check_log_ref': fields.char("Check-log Reference",size=128),
@@ -200,7 +201,6 @@ class account_multi_pay_invoice(osv.Model):
                         CREDIT += inv.credit_available
                         inv_ids.append(inv.id)
                     total_paid_amt = 0.0
-                    print "\n\n",CREDIT,"CREDIT\n\n"
                     if invoice.pay:
                         if invoice.state in ('open',):
                             ctx = dict(context)
@@ -224,7 +224,6 @@ class account_multi_pay_invoice(osv.Model):
                                 raise osv.except_osv(_('Error!'),_("Pay Amount should not be negative!"))
                             ttype = invoice.type in ['in_invoice', 'out_refund'] and 'payment' or 'receipt'
                             ctx.update({'inv_ids' : MOVE_LINES[partner],'batch_pay_credit':CREDIT ,'MOVE_CONN': MOVE_CONN})
-                            print "\n\n",amt,"amt\n\n"
                             lines = []
                             lines_cr = []
                             lines_dr = []
@@ -260,7 +259,6 @@ class account_multi_pay_invoice(osv.Model):
                                 dist.pop('line_ids')
                             dist.pop('line_cr_ids')
                             dist.pop('line_dr_ids')
-                            print "\n\n",dist,context,"dist\n\n"
                             voucher_id = voucher_obj.create(cr, uid, dist,context=context)
                             account_invoice.write(cr, uid, inv_ids, {'voucher_id': voucher_id},context=context)
                             if invoice.print_check:
