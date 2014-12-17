@@ -88,7 +88,7 @@ class shipping_rate_wizard(orm.TransientModel):
 
     _columns= {
         'rate_selection': fields.selection([('rate_card', 'Rate Card'), ('rate_request', 'Rate Request')], 'Ship Rate Method'),
-        'logis_company': fields.many2one('logistic.company', 'Shipper Company', help='Name of the Logistics company providing the shipper services.'),
+        'logis_company': fields.many2one('logistic.company', 'Logistics Company', help='Name of the Logistics company providing the shipper services.'),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'status_message': fields.char('Status', size=128, readonly=True),
         }

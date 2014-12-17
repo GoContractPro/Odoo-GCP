@@ -324,7 +324,7 @@ class stock_picking_out(osv.osv):
     
     
     _columns = {
-        'logis_company': fields.many2one('logistic.company', 'Shipper Company', help='Name of the Logistics company providing the shipper services.'),
+        'logis_company': fields.many2one('logistic.company', 'Logistics Account', help='Name of the Logistics company providing the shipper services.'),
         'freight': fields.boolean('Shipment', help='Indicates if the shipment is a freight shipment.'),
         'sat_delivery': fields.boolean('Saturday Delivery', help='Indicates is it is appropriate to send delivery on Saturday.'),
         'package_type': fields.selection([
@@ -411,7 +411,7 @@ class stock_picking_out(osv.osv):
         'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
         
         'exp_carrier': fields.char('ExportingCarrier', size=256),
-        'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
+        'ship_company_code': fields.selection(_get_company_code, 'Logistics Company', method=True, size=64),
         'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account'))
     }
 

@@ -55,12 +55,13 @@
 				<form string="Fedex" version="7.0">
 					<sheet>
 						<group>
-							<field name="name" required="1" select="1" />
-							<field name="test_mode" select="1" />
-							<field name="fedex_key" required="1" />
-							<field name="fedex_password" required="1" password="True"/>
+<!--  							<field name="name" required="1" select="1" /> -->
+							
+							<field name="fedex_key" required="1" />					
 							<field name="fedex_account_number" required="1" />
+							<field name="fedex_password" required="1" password="True"/>
 							<field name="fedex_meter_number" required="1" />
+							<field name="test_mode" select="1" />
 						</group>
 					</sheet>
 				</form>
@@ -68,11 +69,11 @@
 		</record>
 
 		<record id="tree_view_for_fedex_account" model="ir.ui.view">
-			<field name="name">tree.view.for.fedex</field>
+ 		<field name="name">tree.view.for.fedex</field>  
 			<field name="model">fedex.account</field>
 			<field name="arch" type="xml">
 				<tree string="Fedex">
-					<field name="name" />
+<!--					<field name="name" /> -->	
 					<field name="fedex_key" />
 <!--					<field name="fedex_password" password="True"/-->
 					<field name="fedex_account_number" />
@@ -131,7 +132,7 @@
 			<field name="view_id" ref="tree_view_for_usps_account" />
 		</record>
 
-		<menuitem id="menu_address_validation_accounts" name="Address Validation Accounts"
+		<menuitem id="menu_address_validation_accounts" name="Shipping Accounts"
 			parent="base.menu_administration" />
 
 		<menuitem id="ups_account_menu" name="UPS Account"

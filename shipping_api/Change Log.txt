@@ -71,7 +71,7 @@
     * Added Shipping tab in Delivery Order in the view of picking in Sale Order History tab
 
 1.26 2012-06-06 By Janeesh
-    * Modification in calculate shipping
+    * Modification in Shipping Rates
 
 1.25 2012-03-20 By sinoj
 	* Code cleanup
@@ -96,7 +96,7 @@
 
 1.18 2011-12-22 by Arif
 	* Ship rate request and processing
-	* Modifications on wizard for Calculate shipping charge
+	* Modifications on wizard for Shipping Rates charge
 
 1.17 2011-11-23 by Janeesh
 	* Fixed webclient error with on_change in shipping packages
