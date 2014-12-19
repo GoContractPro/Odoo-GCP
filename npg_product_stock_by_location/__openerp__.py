@@ -1,21 +1,22 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'NPG Product Enhancement o',
+    'name': 'NPG Product Stock Value by Location',
     'version': '1.0',
     'category': '',
     "sequence": 14,
     'complexity': "easy",
     'category': 'Hidden',
     'description': """
-    Default  Search on Supplier on Purchase Order Lines
+        Adds functionality to display stock level by location on Products
+        Extends Stock Location functionality
         
     """,
     'author': 'NovaPoint Group Inc',
     'website': 'www.novapointgroup.com',
-    'depends': ["base","purchase","product"],
+    'depends': ['stock','stock_location'],
     'init_xml': [],
     'data': [
-        "views/purchase_view.xml", 
+        "views/stock_location.xml"
     ],
     'demo_xml': [],
     'test': [
