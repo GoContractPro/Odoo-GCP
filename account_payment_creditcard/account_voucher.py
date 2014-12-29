@@ -388,8 +388,7 @@ class account_voucher(osv.Model):
         account_move_lines = move_line_pool.browse(cr, uid, ids, context=context)
 
         INV_IDS = []
-        
-        if context.get('sale_id'):
+        if context.get('sale_id') and context.has_key('default_inv_type') and context['default_inv_type']=='out':
             INV_IDS = [x.id for x in self.pool.get('sale.order').browse(cr, uid, context['sale_id'], context=context).invoice_ids]
         
         #compute the total debit/credit and look for a matching open amount or invoice
@@ -397,12 +396,18 @@ class account_voucher(osv.Model):
             if _remove_noise_in_o2m():
                 continue
 
-            if INV_IDS:
+            if INV_IDS and context.has_key('default_inv_type') and context['default_inv_type']=='out':
                 if line.invoice.id in INV_IDS:
                     #if the invoice linked to the voucher line is equal to the invoice_id in context
                     #then we assign the amount on that line, whatever the other voucher lines
                     move_line_found = line.id
                     break
+            elif invoice_id and context.has_key('default_inv_type') and context['default_inv_type']=='in':
+                if line.invoice.id == invoice_id:
+                    #if the invoice linked to the voucher line is equal to the invoice_id in context
+                    #then we assign the amount on that line, whatever the other voucher lines
+                    move_line_found = line.id   
+                    break 
             elif currency_id == company_currency:
                 #otherwise treatments is the same but with other field names
                 if line.amount_residual == price:
@@ -447,7 +452,6 @@ class account_voucher(osv.Model):
             }
             #in case a corresponding move_line hasn't been found, we now try to assign the voucher amount
             #on existing invoices: we split voucher amount by most old first, but only for lines in the same currency
-            inv_ids = []
             REC = False
             if line.invoice.id and context.get('sale_id'):
                 if INV_IDS and line.invoice.id in INV_IDS:
@@ -463,11 +467,17 @@ class account_voucher(osv.Model):
                     else:
                         amount = min(amount_unreconciled, abs(total_credit))
 #                         amount = 0.0
-                        if REC:
+                        if REC and context.has_key('default_inv_type') and context['default_inv_type']=='out':
                             rs['amount'] = amount
                             total_credit -= amount
-            if REC:
+                        if context.has_key('default_inv_type') and context['default_inv_type']=='in':
+                            rs['amount'] = amount
+                            total_credit -= amount     
+            if REC and context.has_key('default_inv_type') and context['default_inv_type']=='out':
                 rs['reconcile'] = True
+            
+            if context.has_key('default_inv_type') and context['default_inv_type']=='in':
+                rs['reconcile'] = True    
 
             if rs['type'] == 'cr':
                 default['value']['line_cr_ids'].append(rs)
