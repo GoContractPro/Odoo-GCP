@@ -1,0 +1,36 @@
+<openerp>
+    <data>
+
+        <act_window
+            context="{'product_id': active_id, 'only_with_stock': True}"
+            id="act_stock_product_location_open"
+            name="Stock by Location"
+            res_model="stock.location"
+            src_model="product.product"/>
+
+
+        <record id="npg_view_normal_procurement_locations_form" model="ir.ui.view">
+            <field name="name">npg_product.normal.procurement.locations.inherit</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="stock.view_normal_procurement_locations_form"/>
+            <field name="arch" type="xml">
+
+                <group name="status" position="before">
+                    <group name="npg_locations" string="Locations" attrs="{'invisible': [('type', '=', 'service')]}" groups="base.group_user" colspan="2">
+
+                        <field name="stock_locations" nolabel="1" context="{'product_id': active_id,'only_with_stock':True}">
+                            <tree string="Stock Location">
+                                <field name="complete_name"/>
+                                <field name="stock_real"/>
+                                <field name="stock_virtual"/>
+                            </tree>
+                        </field>
+
+                    </group>
+                </group>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>
