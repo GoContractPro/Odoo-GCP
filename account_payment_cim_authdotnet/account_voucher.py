@@ -448,7 +448,7 @@ class auth_net_cc_api(osv.Model):
                     self.pool.get('sale.order').write(cr, uid, [acc_voucher_obj.rel_sale_order_id.id], so_vals)
 
                 ret_dic = {}
-                
+
                 if trans_type == 'AuthOnly':
                     status = 'Authorization: ' + str(Transaction[3])
                     ret_dic.update({
@@ -481,6 +481,31 @@ class auth_net_cc_api(osv.Model):
                              Validating sales reciept
                          '''
 #                         self.validate_sales_reciept(cr, uid, ids, context=context)
+                         '''
+                             Posting payment voucher
+                         '''
+                         voucher_obj.action_move_line_create(cr, uid, ids, context)
+                         pay_profile_ids = self.pool.get('cust.payment.profile').search(cr, uid, [('name', '=', customerPaymentProfileId)])
+                         for pay_id in pay_profile_ids:
+                             vals = {'trans_id':Transaction[6],
+                                 'payment_profile_id':pay_id,
+                                 'amount':amount,
+                                 'status':status,
+                                 'trans_type':trans_type,
+                                 'transaction_date':time.strftime('%m/%d/%Y %H:%M:%S'),
+                                 'voucher_id':acc_voucher_obj.id
+                                 }
+                             self.pool.get('transaction.details').create(cr, uid, vals)
+                         ret = True
+                if trans_type == 'AuthCapture':
+                    status = 'Authorization and Capture: ' + str(Transaction[3])
+                    ret_dic['amount'] = acc_voucher_obj.cc_order_amt
+                    ret_dic['cc_status'] = status
+                    ret_dic['cc_trans_id'] = Transaction[6]
+                    ret_dic['cc_transaction'] = True
+                    ret_dic['is_charged'] = True
+                    voucher_obj.write(cr, uid, ids[0], ret_dic)
+                    if Transaction[0] == '1':
                          '''
                              Posting payment voucher
                          '''
@@ -698,13 +723,14 @@ class account_voucher(osv.Model):
         'cc_comment':fields.char('Comment', size=128),
         'trans_type': fields.selection([('AuthOnly', 'Authorization Only'),
                                  ('PriorAuthCapture', 'Prior Authorization And Capture'),
-                                 ('Refund', 'Credit/Refund'), ], 'Type', size=32),
+                                 ('Refund', 'Credit/Refund'),
+                                 ('AuthCapture', 'Authorization And Capture') ], 'Type', size=32),
 #    'transaction_details':
 
     }
 
     _defaults = {
-         'trans_type' : 'AuthOnly'
+         'trans_type' : 'AuthCapture'
     }
 
 class Stock_Picking(osv.Model):
