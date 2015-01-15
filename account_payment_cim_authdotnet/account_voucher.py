@@ -68,7 +68,7 @@ class auth_net_cc_api(osv.Model):
             url_path = dic.get('url_extension', False)
             url = dic.get('url', False)
             xsd = dic.get('xsd', False)
-            trans_type_list = ['AuthOnly', 'PriorAuthCapture', 'Refund']
+            trans_type_list = ['AuthOnly', 'PriorAuthCapture', 'AuthCapture', 'Refund']
 
             createCustomerProfileTransactionRequest = doc1.createElement("createCustomerProfileTransactionRequest")
             createCustomerProfileTransactionRequest.setAttribute("xmlns", xsd)
