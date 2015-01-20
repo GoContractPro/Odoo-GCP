@@ -146,11 +146,14 @@ class sale_order(osv.Model):
         return ret
     
     def write(self, cr, uid, ids, vals, context=None):
+        if isinstance(ids, (int, long)):
+           ids = [ids]
         res = super(sale_order, self).write(cr, uid, ids, vals, context=context)
         cr.commit()
+	
         for sale_obj in self.browse(cr, uid, ids, context=context):
-            if sale_obj.shipped and sale_obj.invoiced and sale_obj.state != 'done':
-                sale_obj.write({'state':'done'})
+           if sale_obj.shipped and sale_obj.invoiced and sale_obj.state != 'done':
+              sale_obj.write({'state':'done'})
         return res
     
     def _get_invoice(self, cr, uid, ids, context=None):

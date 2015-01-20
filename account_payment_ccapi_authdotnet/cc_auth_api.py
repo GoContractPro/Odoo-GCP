@@ -246,7 +246,7 @@ class auth_net_cc_api(osv.Model):
         parameters = voucher_obj.setParameter(parameters, 'x_type', x_type)
         parameters = voucher_obj.setParameter(parameters, 'x_login', login)
         parameters = voucher_obj.setParameter(parameters, 'x_tran_key', transkey)
-        
+        parameters = voucher_obj.setParameter(parameters, 'x_test_request', 'TRUE')  
         if acc_voucher_obj.cc_charge and x_type !='CREDIT':
             parameters = voucher_obj.setParameter(parameters, 'x_auth_code', acc_voucher_obj.cc_auth_code)
 
