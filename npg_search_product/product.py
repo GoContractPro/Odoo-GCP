@@ -35,6 +35,8 @@ class product_product(osv.osv):
 
     def search(self, cr, uid, args, offset=0, limit=None, order=None,
             context=None, count=False):
+        if context is None:
+            context = {}
         if context.get('supplier_id', False):
             prod_supp_info = self.pool.get('product.supplierinfo')
             prod_supp_ids = prod_supp_info.search(cr, uid, [('name', '=', context['supplier_id'])], context=context)

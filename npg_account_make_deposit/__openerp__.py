@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011 NovaPoint Group LLC (<http://www.novapointgroup.com>)
+#    Copyright (C) 2011 NovaPoint Group INC (<http://www.novapointgroup.com>)
 #    Copyright (C) 2004-2010 OpenERP SA (<http://www.openerp.com>)
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ This module is seen as a prerequisite to support efficient Bank Account Statemen
 ''',
     'category': 'Generic Modules/Accounting',
     'version': '1.4',
-    'author': 'Novapoint Group LLC',
+    'author': 'Novapoint Group INC',
     'website': 'www.novapointgroup.com',
     'depends': ['account_cancel', 'report_webkit'],
     'init_xml': [],
