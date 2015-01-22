@@ -58,9 +58,13 @@ class account_invoice(osv.Model):
                     vals = {'pay': False, 'print_check':True,'amount_paid':0.0}
             else:
                 if not inv.pay:
-                    vals = {'pay': True, 'amount_paid':inv.residual or 0.0 ,'use_credit_available': inv.use_credit_available_dummy}
-                elif inv.pay:
-                    vals = {'pay': False, 'amount_paid':0.0, 'use_credit_available': 0.0,'use_credit_available_dummy' :inv.use_credit_available}
+                    vals = {'pay': True, 'amount_paid':inv.residual or 0.0}
+                elif inv.pay :
+                    vals = {'pay': False, 'amount_paid':0.0}
+#                 if not inv.pay:
+#                     vals = {'pay': True, 'amount_paid':inv.residual or 0.0 ,'use_credit_available': inv.use_credit_available_dummy}
+#                 elif inv.pay:
+#                     vals = {'pay': False, 'amount_paid':0.0, 'use_credit_available': 0.0,'use_credit_available_dummy' :inv.use_credit_available}
         return self.write(cr, uid, ids, vals)
 
 #    def cal_end_balance(self, cr, uid, ids, context=None):
