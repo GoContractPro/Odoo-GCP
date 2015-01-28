@@ -390,8 +390,9 @@ class account_voucher(osv.Model):
         INV_IDS = []
         if context.get('sale_id') and context.has_key('default_inv_type') and context['default_inv_type']=='out':
             INV_IDS = [x.id for x in self.pool.get('sale.order').browse(cr, uid, context['sale_id'], context=context).invoice_ids]
-        if not INV_IDS:
+        elif invoice_id:
             INV_IDS=[invoice_id]
+           
         #compute the total debit/credit and look for a matching open amount or invoice
         for line in account_move_lines:
             if _remove_noise_in_o2m():
@@ -457,7 +458,8 @@ class account_voucher(osv.Model):
             if line.invoice.id and context.get('sale_id'):
                 if INV_IDS and line.invoice.id in INV_IDS:
                     REC = True
-
+            elif not INV_IDS:
+                REC = True   
             if not move_line_found:
                 if currency_id == line_currency_id:
                     if line.credit:
@@ -474,7 +476,7 @@ class account_voucher(osv.Model):
                         if context.has_key('default_inv_type') and context['default_inv_type']=='in':
                             rs['amount'] = amount
                             total_credit -= amount     
-            if REC and context.has_key('default_inv_type') and context['default_inv_type']=='out':
+            if context.has_key('default_inv_type') and context['default_inv_type']=='out':
                 rs['reconcile'] = True
             
             if context.has_key('default_inv_type') and context['default_inv_type']=='in':
