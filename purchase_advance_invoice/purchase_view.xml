@@ -13,8 +13,8 @@
 	                    	<field name="amount_tax" widget="monetary" options="{'currency_field': 'currency_id'}"/>
 	                    	<div class="oe_subtotal_footer_separator oe_inline"> 
 								<label for="amount_total"/>
-	                    		<button name="button_dummy" states="draft" string="Compute" type="object" class="oe_edit_only oe_link"/>
-	                    		<button name="%(action_view_purchase_advance_invoice)d" states="draft" string="Advance Invoice" type="action" class="oe_edit_only oe_link"/>
+	                    		<button name="button_dummy" states="approved" string="Compute" type="object" class="oe_edit_only oe_link"/>
+	                    		<button name="%(action_view_purchase_advance_invoice)d" states="approved" string="Advance Invoice" type="action" class="oe_edit_only oe_link"/>
 	                    	</div>
 	                    	<field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget="monetary" options="{'currency_field': 'currency_id'}"/>
                    		</group>
