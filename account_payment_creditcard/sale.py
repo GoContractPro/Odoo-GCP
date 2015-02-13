@@ -31,7 +31,7 @@ class sale_order(osv.Model):
 #         if part_id:
 #             result.update({'payment_method':'cc_pre_auth', 'order_policy':'credit_card'})#Default values for the shiping policy
 #         return {'value': result}
-    
+
     def on_change_payment_method(self, cr, uid, ids, payment_method, order, part):
         order_policy = order
         if payment_method:
@@ -40,7 +40,7 @@ class sale_order(osv.Model):
             elif payment_method == 'cc_pre_auth':
                     order_policy = 'credit_card'
         return {'value': {'order_policy':order_policy}}
-    
+
     def pay(self, cr, uid, ids, context=None):
         '''
         Display Pay invoice form when clicking on Pay button from sale order
@@ -52,13 +52,13 @@ class sale_order(osv.Model):
             if invoice.state != 'open':
                 wf_service.trg_validate(uid, 'account.invoice', invoice.id, 'invoice_open', cr)
             invoice_id = invoice.id
-        
+
         if not invoice_id:
             raise osv.except_osv(_('Warning!'),_('No invoice has been created!'))
         if not ids: return []
         user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
         self.pool.get('account.invoice').write(cr, uid, invoice_id, {'credit_card': True}, context=context)
-        
+
         ctx = {
                 'invoice_type':'out_invoice',
                 'type': 'receipt',
@@ -75,7 +75,7 @@ class sale_order(osv.Model):
             'target': 'current',
             'domain': '[]',
             'context': ctx
-                    
+
         }
         voucher_ids = self.pool.get('account.voucher').search(cr, uid, [('rel_sale_order_id','=',so.id),('state','not in',['cancel','posted'])], context=context)
         if voucher_ids:
@@ -144,18 +144,18 @@ class sale_order(osv.Model):
                     if so.rel_account_voucher_id.state == 'posted':
                         ret[key] = True
         return ret
-    
+
     def write(self, cr, uid, ids, vals, context=None):
         if isinstance(ids, (int, long)):
            ids = [ids]
         res = super(sale_order, self).write(cr, uid, ids, vals, context=context)
         cr.commit()
-	
+
         for sale_obj in self.browse(cr, uid, ids, context=context):
            if sale_obj.shipped and sale_obj.invoiced and sale_obj.state != 'done':
               sale_obj.write({'state':'done'})
         return res
-    
+
     def _get_invoice(self, cr, uid, ids, context=None):
         return self.pool.get('sale.order').search(cr, uid, [('invoice_ids', 'in', ids)], context=context)
 
@@ -165,7 +165,7 @@ class sale_order(osv.Model):
             if line.rel_sale_order_id:
                 result[line.rel_sale_order_id.id] = True
         return result.keys()
-    
+
     _columns = {
 
         'payment_method':fields.selection([('cc_pre_auth', 'Credit Card – PreAuthorized'),
@@ -174,7 +174,7 @@ class sale_order(osv.Model):
                                            ('p_i_a', 'Pay In Advance'), ], 'Payment Method'),
         'order_policy': fields.selection([
             ('prepaid', 'Payment Before Delivery'),
-            ('manual', 'Shipping & Manual Invoice'),
+            ('manual', 'On Demand'),
             ('postpaid', 'Invoice On Order After Delivery'),
             ('picking', 'Invoice From The Picking'),
             ('credit_card', 'CC Pre-Auth Pick Charge Ship'),
@@ -208,7 +208,7 @@ class sale_order(osv.Model):
          }),
         'cc_ship_refund' : fields.boolean('Ship Refunded', readonly=True),
     }
-    
+
     def copy(self, cr, uid, id, default=None, context=None):
         if default is None:
             default = {}
@@ -219,12 +219,12 @@ class sale_order(osv.Model):
         default['cc_pre_auth'] = False
         default['cc_ship_refund'] = False
         return super(sale_order, self).copy(cr, uid, id, default, context=context)
-    
+
     _defaults = {
           'cc_ship_refund': lambda * a : False,
           'payment_method': lambda * a: 'cc_pre_auth'
     }
-    
+
     def action_ship_create(self, cr, uid, ids, context=None):
         ret = super(sale_order, self).action_ship_create(cr, uid, ids, context=context)
         for sale_obj in self.browse(cr, uid, ids, context=context):

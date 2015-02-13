@@ -25,7 +25,7 @@ from openerp.report import report_sxw
 
 class npg_po(report_sxw.rml_parse):
     def __init__(self, cr, uid, name, context=None):
-        super(oddello_po, self).__init__(cr, uid, name, context=context)
+        super(npg_po, self).__init__(cr, uid, name, context=context)
         self.localcontext.update({
             'time': time,
             'get_tax': self.get_tax,
@@ -46,6 +46,12 @@ class npg_po(report_sxw.rml_parse):
             return ''
         for acc in line:
             return acc.acc_number or ''
+
+    def get_type(self,state):
+        if state == 'draft':
+            return 'RFQ'
+        else:
+            return 'Purchase Order'
 
 report_sxw.report_sxw('report.npg.purchase.order', 'purchase.order', 'addons/npg_purchasing/report/purchase_order.rml', parser=npg_po, header="external")
 

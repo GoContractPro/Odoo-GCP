@@ -10,7 +10,7 @@
 				<lineMode width="0.7"/>
 				<!-- <drawRightString x="15.5cm" y="25.1cm"> <pageNumber/> of <pageCount/></drawRightString>-->
 				 <drawCentredString x="10.5cm" y="1.0cm">Proprietary and Confidential</drawCentredString>
-				 <!--<lines>0.5cm 3.70cm 19.6cm 3.70cm</lines> --> 
+				 <!--<lines>0.5cm 3.70cm 19.6cm 3.70cm</lines> -->
 			</pageGraphics>
 		</header>
     </pageTemplate>
@@ -161,7 +161,7 @@
       <lineStyle kind="LINEAFTER" colorName="#000000" start="1,0" stop="1,-1"/>
       <lineStyle kind="LINEABOVE" colorName="#000000" start="1,0" stop="1,0"/>
       <lineStyle kind="LINEBELOW" colorName="#000000" start="1,-1" stop="1,-1"/>
-      
+
             <lineStyle kind="LINEBEFORE" colorName="#000000" start="2,0" stop="1,-1"/>
       <lineStyle kind="LINEAFTER" colorName="#000000" start="2,0" stop="2,-1"/>
       <lineStyle kind="LINEABOVE" colorName="#000000" start="2,0" stop="2,0"/>
@@ -169,7 +169,7 @@
       <blockBackground colorName="#c0c0c0" start="1,0" stop="1,1"/>
       <blockBackground colorName="yellow" start="2,0" stop="2,2"/>
     </blockTableStyle>
-    
+
         <blockTableStyle id="headerTable1">
       <blockAlignment value="LEFT"/>
       <blockValign value="TOP"/>
@@ -180,14 +180,14 @@
       <lineStyle kind="LINEAFTER" colorName="#000000" start="1,0" stop="1,-1"/>
       <lineStyle kind="LINEABOVE" colorName="#000000" start="1,0" stop="1,0"/>
       <lineStyle kind="LINEBELOW" colorName="#000000" start="1,-1" stop="1,-1"/>
-      
+
       <lineStyle kind="LINEBEFORE" colorName="#000000" start="2,0" stop="1,-1"/>
       <lineStyle kind="LINEAFTER" colorName="#000000" start="2,0" stop="2,-1"/>
       <lineStyle kind="LINEABOVE" colorName="#000000" start="2,0" stop="2,0"/>
       <lineStyle kind="LINEBELOW" colorName="#000000" start="2,-1" stop="2,-1"/>
       <blockBackground colorName="#c0c0c0" start="1,0" stop="1,1"/>
     </blockTableStyle>
-    
+
     <blockTableStyle id="Table3">
       <blockAlignment value="LEFT"/>
       <blockValign value="TOP"/>
@@ -428,7 +428,7 @@
     <paraStyle name="Frame contents" fontName="Helvetica" spaceBefore="0.0" spaceAfter="6.0"/>
     <paraStyle name="Header" fontName="Helvetica"/>
     <paraStyle name="terp_default_Bold_9_Right" fontName="Helvetica-Bold" fontSize="9.0" leading="11" alignment="RIGHT" spaceBefore="0.0" spaceAfter="0.0"/>
-    <paraStyle name="terp_default_8_Italic" rightIndent="0.0" fontName="Helvetica-Oblique" fontSize="8.0" leading="10" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/> 
+    <paraStyle name="terp_default_8_Italic" rightIndent="0.0" fontName="Helvetica-Oblique" fontSize="8.0" leading="10" alignment="LEFT" spaceBefore="0.0" spaceAfter="0.0"/>
    <images/>
   </stylesheet>
   <story>
@@ -436,7 +436,7 @@
   <pto_header>
       <para style="P6">
       <font color="white"> </font>
-    </para>    
+    </para>
     <para style="P6">
       <font color="white"> </font>
     </para>
@@ -445,13 +445,13 @@
             	<td>
 				<para style="P6">
 		      <font color="white"> </font>
-		    </para>		
+		    </para>
             	</td>
               <td>
                 <para style="P3">Type</para>
               </td>
               <td>
-                <para style="P1">Standard Purchase Order</para>
+                <para style="P1">[[get_type(o.state)]]</para>
               </td>
             </tr>
      </blockTable>
@@ -460,7 +460,7 @@
             <td>
 				<para style="P6">
 		      <font color="white"> </font>
-		    </para>		
+		    </para>
             	</td>
               <td>
                 <para style="P3">Order</para>
@@ -477,7 +477,7 @@
             <td>
 				<para style="P6">
 		      <font color="white"> </font>
-		    </para>		
+		    </para>
             	</td>
               <td>
                 <para style="P3">Order Date</para>
@@ -494,7 +494,7 @@
             <td>
 				<para style="P6">
 		      <font color="white"> </font>
-		    </para>		
+		    </para>
             	</td>
               <td>
                 <para style="P3">Created By</para>
@@ -511,7 +511,7 @@
             <td>
 				<para style="P6">
 		      <font color="white"> </font>
-		    </para>		
+		    </para>
             	</td>
               <td>
                 <para style="P3">
@@ -567,7 +567,7 @@
           <blockTable colWidths="255" style="Tableau2">
             <tr>
               <td>
-     			  
+
      			  <image>[[ company.logo or removeParentNode('image') ]]</image>
                   <para style="terp_default_9">[[company.partner_id.name]]</para>
                   <para style="terp_default_9">[[company.partner_id and company.partner_id.street or  '' ]]</para>
@@ -660,7 +660,7 @@
                 <para style="P3">Type</para>
               </td>
               <td>
-                <para style="P1">Standard Purchase Order</para>
+                <para style="P1">[[get_type(o.state)]]</para>
               </td>
             </tr>
           </blockTable>
@@ -726,21 +726,19 @@
           <para style="P2">Supplier Account No.</para>
         </td>
         <td>
-         <para style="terp_default_9">
-      		<font color="white"> </font>
-    	</para>
-        </td>
-        <td>
           <para style="P2">Payment Terms</para>
         </td>
         <td>
-          <para style="P2">Freight Terms</para>
+          <para style="P2">Inco Terms</para>
         </td>
         <td>
-          <para style="P2">Transportation </para>
+       		<para style="P2">F.O.B.</para>
         </td>
         <td>
-          <para style="P2">Ship Via</para>
+          <para style="P2">Delivery Method </para>
+        </td>
+        <td>
+          <para style="P2">Transportation Company</para>
         </td>
       </tr>
       <tr>
@@ -748,25 +746,19 @@
           <para style="P2">[[get_bank_account(o.partner_address_id.partner_id.bank_ids)]] </para>
         </td>
         <td>
-            <para style="terp_default_9">
-      			<font color="white"> </font>
-    		</para>
-        </td>
-        <td>
           <para style="P2">[[o.payment_term_id and o.payment_term_id.name or o.partner_id.property_payment_term and o.partner_id.property_payment_term.name or '']] </para>
         </td>
         <td>
-            <para style="P2">[[o.incoterm_id and o.incoterm_id.code or '']] </para>
+            <para style="P2">[[o.incoterm_id and o.incoterm_id.name or '']] </para>
         </td>
         <td>
-          <para style="P2">
-            <font color="white"> </font>
-          </para>
+            <para style="P2">[[o.comment_code and o.comment_code.comment or '']] </para>
         </td>
         <td>
-          <para style="P2">
-            <font color="white"> </font>
-          </para>
+            <para style="P2">[[o.delivery_method and o.delivery_method.name or '']] </para>
+        </td>
+        <td>
+            <para style="P2">[[o.carrier_id and o.carrier_id.name or '']] </para>
         </td>
       </tr>
     </blockTable>
@@ -840,7 +832,7 @@
                 </td>
                 <td>
                   <para style="P2">
-	                    [[ line.name or '']] 
+	                    [[ line.name or '']]
                   </para>
                 </td>
                 <td>
@@ -863,13 +855,13 @@
                 <td>
                   <para style="P4">[[line.price_subtotal]]</para>
                 </td>
-              </tr> 
+              </tr>
               <tr>
-                <td> 
+                <td>
              	   <para style="P2">
                      <font color="white"> </font>
                   </para>
-                </td>               
+                </td>
               <td>
                  <para style="terp_default_8_Italic">[[ format(line.notes or removeParentNode('tr')) ]]</para>
               </td>

@@ -1,0 +1,26 @@
+<openerp><data>
+
+		<record id="npg_supp_invoice_prepaid" model="ir.ui.view">
+            <field name="name">Supplier Invoice</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+	            <field name="reference" position="after">
+	           	 	<field name="prepaid"/>
+	           </field>
+			</field>
+		</record>
+
+		<record id="npg_supp_invoice_prepaid_list" model="ir.ui.view">
+            <field name="name">Supplier Invoice</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_tree"/>
+            <field name="arch" type="xml">
+	            <field name="origin" position="after">
+	           	 	<field name="prepaid"/>
+	           </field>
+			</field>
+		</record>
+
+
+</data></openerp>

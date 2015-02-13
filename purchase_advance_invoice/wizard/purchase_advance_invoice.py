@@ -92,7 +92,9 @@ class purchase_advance_invoice(osv.osv_memory):
                     'invoice_line': [(6, 0, inv_line_ids)],
                     'currency_id': purchase_order.pricelist_id.currency_id.id,
                     'comment': '',
-                    'fiscal_position': purchase_order.fiscal_position.id or purchase_order.partner_id.property_account_position.id
+                    'payment_term_id': purchase.payment_term_id or purchase.payment_term_id.id or False,
+                    'fiscal_position': purchase_order.fiscal_position.id or purchase_order.partner_id.property_account_position.id,
+                    'prepaid': True
                 }
 
                 inv_id = inv_obj.create(cr, uid, inv_vals, context=context)
@@ -155,7 +157,7 @@ class purchase_open_invoice(osv.osv_memory):
             form_id = form_res and form_res[1] or False
             tree_res = mod_obj.get_object_reference(cr, uid, 'account', 'invoice_tree')
             tree_id = tree_res and tree_res[1] or False
-            
+
         return {
             'name': _('Advance Invoice'),
             'view_type': 'form',
