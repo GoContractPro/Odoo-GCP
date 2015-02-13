@@ -92,7 +92,7 @@ class purchase_advance_invoice(osv.osv_memory):
                     'invoice_line': [(6, 0, inv_line_ids)],
                     'currency_id': purchase_order.pricelist_id.currency_id.id,
                     'comment': '',
-                    'payment_term': purchase_order.payment_term_id or purchase_order.payment_term_id.id or False,
+                    'payment_term': purchase_order.payment_term_id and purchase_order.payment_term_id.id or False,
                     'fiscal_position': purchase_order.fiscal_position.id or purchase_order.partner_id.property_account_position.id,
                     'prepaid': True
                 }
