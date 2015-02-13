@@ -49,11 +49,10 @@ class npg_po(report_sxw.rml_parse):
             return acc.acc_number or ''
 
     def get_type(self, state):
-        print 'state', state
         if state == 'draft':
             return 'RFQ'
-        else:
-            return 'Purchase Order'
+        elif state == 'approved':
+            return 'PURCHASE ORDER'
 
 report_sxw.report_sxw('report.npg.purchase.order', 'purchase.order', 'addons/npg_purchasing/report/purchase_order.rml', parser=npg_po, header="external")
 
