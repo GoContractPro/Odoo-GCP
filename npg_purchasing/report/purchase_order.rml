@@ -723,18 +723,13 @@
     <blockTable colWidths="125.0,75.0,95.0,75.0,90.0,80.0" style="Table8">
       <tr>
         <td>
-          <para style="P2">
-            <font color="white"> </font>
-          </para>
-        </td>
-        <td>
           <para style="P2">Payment Terms</para>
         </td>
         <td>
-          <para style="P2">Inco Terms</para>
+          <para style="P2">F.O.B.</para>
         </td>
         <td>
-       		<para style="P2">F.O.B.</para>
+       		<para style="P2">Freight Payment Terms</para>
         </td>
         <td>
           <para style="P2">Delivery Method </para>
@@ -742,13 +737,11 @@
         <td>
           <para style="P2">Transportation Company</para>
         </td>
+        <td>
+          <para style="P2">Delivery Service</para>
+        </td>
       </tr>
       <tr>
-        <td>
-          <para style="P2">
-            <font color="white"> </font>
-          </para>
-        </td>
         <td>
           <para style="P2">[[o.payment_term_id and o.payment_term_id.name or o.partner_id.property_payment_term and o.partner_id.property_payment_term.name or '']] </para>
         </td>
@@ -760,6 +753,9 @@
         </td>
         <td>
             <para style="P2">[[o.delivery_method and o.delivery_method.name or '']] </para>
+        </td>
+        <td>
+            <para style="P2">[[o.transport_id and o.transport_id.name or '']] </para>
         </td>
         <td>
             <para style="P2">[[o.carrier_id and o.carrier_id.name or '']] </para>
