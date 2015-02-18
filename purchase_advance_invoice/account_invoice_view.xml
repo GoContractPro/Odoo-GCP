@@ -16,7 +16,7 @@
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_tree"/>
             <field name="arch" type="xml">
-	            <field name="origin" position="after">
+	            <field name="name" position="after">
 	           	 	<field name="prepaid"/>
 	           </field>
 			</field>
