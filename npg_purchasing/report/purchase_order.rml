@@ -527,13 +527,16 @@
               <para style="terp_default_9">
       <font color="white"> </font>
     </para>
-     <blockTable colWidths="30.0,155.0,65.0,70.0,32.0,70.0,47.0,70.0" style="Table10">
+     <blockTable colWidths="30.0,155.0,60.0,35.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P4">Line</para>
         </td>
         <td>
-          <para style="P4">PN/ Description </para>
+          <para style="P4">Our Part #/ Description </para>
+        </td>
+        <td>
+          <para style="P4">Your Part #/ Description </para>
         </td>
         <td>
           <para style="P4">Needed Date </para>
@@ -792,13 +795,16 @@
     <para style="P6">
       <font color="white"> </font>
     </para>
-   <blockTable colWidths="30.0,155.0,65.0,70.0,32.0,70.0,47.0,70.0" style="Table10">
+   <blockTable colWidths="30.0,155.0,60.0,35.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P2">Line</para>
         </td>
         <td>
-          <para style="P2">PN/Description </para>
+          <para style="P2">Our Part #/Desc</para>
+        </td>
+        <td>
+          <para style="P2">Your Part #</para>
         </td>
         <td>
           <para style="P2">Needed Date </para>
@@ -825,10 +831,15 @@
     <blockTable colWidths="539" style="Table11">
       <tr>
         <td>
-            <blockTable colWidths="30.0,155.0,65.0,70.0,32.0,70.0,47.0,70.0"  style="Table12">
+            <blockTable colWidths="30.0,155.0,60,35.0,40.0,32.0,70.0,47.0,70.0"  style="Table12">
               <tr>
                 <td>
                   <para style="P2"><seq id="S1"/></para>
+                </td>
+                <td>
+                  <para style="P2">
+	                    [[ line.product_id.name or '']]
+                  </para>
                 </td>
                 <td>
                   <para style="P2">
@@ -845,7 +856,7 @@
                   <para style="P2">[[line.product_uom.name or '']]</para>
                 </td>
                 <td>
-                  <para style="P4">[[line.price_unit or 0.0]]</para>
+                  <para style="P4">[[o.state!='draft' and line.price_unit or 0.0]]</para>
                 </td>
                 <td>
                   <para style="P4">
@@ -853,7 +864,7 @@
                   </para>
                 </td>
                 <td>
-                  <para style="P4">[[line.price_subtotal]]</para>
+                  <para style="P4">[[o.state!='draft' and line.price_subtotal or 0.0]]</para>
                 </td>
               </tr>
               <tr>
@@ -877,7 +888,7 @@
      <blockTable colWidths="539.0" style="Table13">
       <tr>
         <td>
-          <para style="P3">Total: [[o.amount_total or '']]</para>
+          <para style="P3">Total: [[o.state!='draft' and o.amount_total or '']]</para>
         </td>
       </tr>
     </blockTable>
