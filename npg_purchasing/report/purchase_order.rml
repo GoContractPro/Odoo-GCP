@@ -531,7 +531,7 @@
               <para style="terp_default_9">
       <font color="white"> </font>
     </para>
-     <blockTable colWidths="30.0,75.0,115.0,65.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
+     <blockTable colWidths="30.0,75.0,110.0,65.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P4">Line</para>
@@ -727,7 +727,7 @@
     <para style="terp_default_9">
       <font color="white"> </font>
     </para>
-    <blockTable colWidths="75.0,75.0,95.0,75.0,90.0,80.0" style="Table8">
+    <blockTable colWidths="125.0,75.0,95.0,75.0,90.0,80.0" style="Table8">
       <tr>
         <td>
           <para style="P2">Payment Terms</para>
@@ -799,7 +799,7 @@
     <para style="P6">
       <font color="white"> </font>
     </para>
-   <blockTable colWidths="30.0,75.0,115.0,65.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
+   <blockTable colWidths="30.0,75.0,110.0,65.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P2">Line</para>
@@ -835,7 +835,7 @@
     <blockTable colWidths="539" style="Table11">
       <tr>
         <td>
-            <blockTable colWidths="30.0,75.0,115.0,65.0,40.0,32.0,70.0,47.0,70.0"  style="Table12">
+            <blockTable colWidths="30.0,75.0,110.0,65.0,40.0,32.0,70.0,47.0,70.0"  style="Table12">
               <tr>
                 <td>
                   <para style="P2"><seq id="S1"/></para>
