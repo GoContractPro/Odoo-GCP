@@ -50,7 +50,7 @@ class npg_po(report_sxw.rml_parse):
 
     def get_type(self, state):
         if state == 'draft':
-            return 'RFQ'
+            return 'Request For Quotation'
         elif state == 'approved':
             return 'PURCHASE ORDER'
 
