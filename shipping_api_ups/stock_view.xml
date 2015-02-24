@@ -60,16 +60,16 @@
 		</record>
 		
 
-		<record id="stock_piking_tree_inherit_id" model="ir.ui.view">
-			<field name="name">stock.picking.tree.inherit</field>
-			<field name="model">stock.picking.out</field>
-			<field name="inherit_id" ref="sale_negotiated_shipping.view_picking_out_tree_inherit"/>
-			<field name="arch" type="xml">
-				<xpath expr="//field[@name='ship_method']" position="after">
-					<field name="ship_state"/>
-				</xpath>
-			</field>
-		</record>
+<!--		<record id="stock_piking_tree_inherit_id" model="ir.ui.view">-->
+<!--			<field name="name">stock.picking.tree.inherit</field>-->
+<!--			<field name="model">stock.picking.out</field>-->
+<!--			<field name="inherit_id" ref="sale_negotiated_shipping.view_picking_out_tree_inherit"/>-->
+<!--			<field name="arch" type="xml">-->
+<!--				<xpath expr="//field[@name='ship_method']" position="after">-->
+<!--					<field name="ship_state"/>-->
+<!--				</xpath>-->
+<!--			</field>-->
+<!--		</record>-->
 
 		<record id="view_picking_shipping_inherit1" model="ir.ui.view">
 			<field name="name">stock_form_inherit</field>

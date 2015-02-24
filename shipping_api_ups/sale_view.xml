@@ -7,7 +7,7 @@
 			<field name="inherit_id" ref="sale.view_order_form"/>
 			<field name="priority" eval="30" />
 			<field name="arch" type="xml">
-				<field name="ship_method" position="after"> <field name="ups_service_id" ></field></field>
+				<!--   <field name="ship_method" position="after"> <field name="ups_service_id" ></field></field> -->
 				<xpath expr="//page[@string='Other Information']" position="inside">
 					<newline/>
 					<group colspan="4" col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}" >
