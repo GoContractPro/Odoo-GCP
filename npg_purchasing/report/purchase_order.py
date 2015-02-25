@@ -31,7 +31,8 @@ class npg_po(report_sxw.rml_parse):
             'get_tax': self.get_tax,
             'get_bank_account' : self.get_bank_account,
             'get_inv_address': self.get_inv_address,
-            'get_type': self.get_type
+            'get_type': self.get_type,
+            'get_supplier_code': self.get_suppplier_code,
         })
 
     def get_inv_address(self, partner):
@@ -47,6 +48,12 @@ class npg_po(report_sxw.rml_parse):
             return ''
         for acc in line:
             return acc.acc_number or ''
+
+    def get_supplier_code(self,line):
+        if not line:
+            return ''
+        for supplier in line:
+            return supplier.product_code or ''
 
     def get_type(self, state):
         if state == 'draft':

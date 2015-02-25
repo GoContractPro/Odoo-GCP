@@ -8,8 +8,8 @@
 				<setFont name="Helvetica" size="8"/>
 				<!--drawString x="1.0cm" y="28.1cm">[[ company.name ]]</drawString-->
 				<lineMode width="0.7"/>
-				<!-- <drawRightString x="15.5cm" y="25.1cm"> <pageNumber/> of <pageCount/></drawRightString>-->
-				 <drawCentredString x="10.5cm" y="1.0cm">Proprietary and Confidential</drawCentredString>
+				<drawRightString x="15.5cm" y="25.1cm"> <pageNumber/> of <pageCount/></drawRightString>
+				<drawCentredString x="10.5cm" y="1.0cm">Proprietary and Confidential</drawCentredString>
 				 <!--<lines>0.5cm 3.70cm 19.6cm 3.70cm</lines> -->
 			</pageGraphics>
 		</header>
@@ -467,7 +467,7 @@
 		    </para>
             	</td>
               <td>
-                <para style="P3">Order</para>
+                <para style="P3">Order #</para>
               </td>
               <td>
                 <para style="P1">
@@ -537,13 +537,13 @@
           <para style="P4">Line</para>
         </td>
         <td>
-          <para style="P4">Our Part #</para>
+          <para style="P4">Our Part #/Desc</para>
         </td>
         <td>
           <para style="P4">Your Part #</para>
         </td>
         <td>
-          <para style="P4">Needed Date </para>
+          <para style="P4">Required Date </para>
         </td>
         <td>
           <para style="P4">Qty</para>
@@ -552,7 +552,7 @@
           <para style="P4">Unit</para>
         </td>
         <td>
-          <para style="P4">Price <font face="Helvetica">[[ o.pricelist_id.currency_id.name]]</font></para>
+          <para style="P4">Unit Cost <font face="Helvetica">[[ o.pricelist_id.currency_id.name]]</font></para>
         </td>
         <td>
           <para style="P4">Tax</para>
@@ -674,7 +674,7 @@
           <blockTable colWidths="79.0,155.0" style="Table1">
             <tr>
               <td>
-                <para style="P3">Order</para>
+                <para style="P3">Order #</para>
               </td>
               <td>
                 <para style="P1">
@@ -772,7 +772,7 @@
     <blockTable colWidths="270.0,270.0" style="Table9">
       <tr>
         <td>
-          <para style="P2">Confirm To/Telephone</para>
+          <para style="P2">Confirm To/Email</para>
         </td>
         <td>
           <para style="P2">Requester/Deliver To.</para>
@@ -781,7 +781,7 @@
       <tr>
         <td>
           <para style="P2">
-           [[ o.validator.name or '']] / [[ o.validator.address_id.phone or '']]
+           [[ o.user.name or '']] / [[ o.user.partner_id.email or '']]
           </para>
         </td>
         <td>
@@ -794,8 +794,6 @@
     <para style="P6">
       <font color="white"> </font>
     </para>
-    <para style="P6">Notes : All prices and amounts are expressed in  [[o.pricelist_id.currency_id.name]]</para>
-    <para style="P6">[[o.notes or '']]</para>
     <para style="P6">
       <font color="white"> </font>
     </para>
@@ -805,13 +803,13 @@
           <para style="P2">Line</para>
         </td>
         <td>
-          <para style="P2">Our Part #</para>
+          <para style="P2">Our Part #/Desc</para>
         </td>
         <td>
           <para style="P2">Your Part #</para>
         </td>
         <td>
-          <para style="P2">Needed Date </para>
+          <para style="P2">Required Date </para>
         </td>
         <td>
           <para style="P2">Qty</para>
@@ -820,7 +818,7 @@
           <para style="P2">Unit</para>
         </td>
         <td>
-          <para style="P2">Price <font face="Helvetica">[[ o.pricelist_id.currency_id.name or '']]</font></para>
+          <para style="P2">Unit Cost <font face="Helvetica">[[ o.pricelist_id.currency_id.name or '']]</font></para>
         </td>
         <td>
           <para style="P2">Tax</para>
@@ -842,12 +840,12 @@
                 </td>
                 <td>
                   <para style="P2">
-	                    [[ line.product_id.default_code or '']]
+	                    [[ line.product_id.default_code and line.product_id.default_code + ' ' + line.product_id.name or '']]
                   </para>
                 </td>
                 <td>
                   <para style="P2">
-	                    [[ line.name or '']]
+	                     [[ get_supplier_code(line.product_id.seller_ids)]]
                   </para>
                 </td>
                 <td>
@@ -896,6 +894,7 @@
         </td>
       </tr>
     </blockTable>
+    <para style="P6">[[o.notes or '']]</para>
   </pto>
   <para>
   	<seqReset id="S1"/>
