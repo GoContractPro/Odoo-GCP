@@ -26,7 +26,7 @@ class sale_order(osv.osv):
     _inherit = 'sale.order'
     
     def _get_company_code(self, cr, user, context=None):
-        return []
+        return super(sale_order, self)._get_company_code(cr, user, context=context)
     
     def onchange_logis_company(self, cr, uid, ids, logistic_company_id, context=None):
         res = {}
