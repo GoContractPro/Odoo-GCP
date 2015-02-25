@@ -96,6 +96,7 @@ class purchase_order(osv.Model):
         part = self.pool.get('res.partner').browse(cr, uid, part)
         addr = self.pool.get('res.partner').address_get(cr, uid, [part.id], ['contact'])
         ret_val['value'].update({'partner_contact_id': addr['contact']})
+        print 'Contact', addr['contact']
         incoterm_id = part.incoterm.id or False
         if incoterm_id:
             ret_val['value'].update({'incoterm_id': incoterm_id})
