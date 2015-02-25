@@ -11,12 +11,13 @@
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='company_id']" position="after">
 					<field name="promise_date" />
+					<field name="requester"/>
 				</xpath>
 				<xpath expr="//field[@name='partner_id']" position="after">
-					<field name="incoterm_id" widget="selection" />
+					<field name="partner_contact_id" widget="selection" />
 				</xpath>
-				<xpath expr="//field[@name='origin']" position="after">
-					<field name="requester"/>
+				<xpath expr="//field[@name='pricelist_id']" position="after">
+					<field name="incoterm_id" widget="selection" />
 				</xpath>
 				<xpath expr="//field[@name='partner_id']" position="attributes">
 					<attribute name='on_change'>onchange_partner_id(partner_id)</attribute>

@@ -57,9 +57,11 @@ class npg_po(report_sxw.rml_parse):
 
     def get_type(self, state):
         if state == 'draft':
-            return 'Request For Quotation'
+            return 'Request For Quote'
         elif state == 'approved':
             return 'PURCHASE ORDER'
+        else:
+            return state
 
 report_sxw.report_sxw('report.npg.purchase.order', 'purchase.order', 'addons/npg_purchasing/report/purchase_order.rml', parser=npg_po, header="external")
 
