@@ -32,7 +32,7 @@ class npg_po(report_sxw.rml_parse):
             'get_bank_account' : self.get_bank_account,
             'get_inv_address': self.get_inv_address,
             'get_type': self.get_type,
-            'get_supplier_code': self.get_suppplier_code,
+            'get_supplier_code': self.get_supplier_code,
         })
 
     def get_inv_address(self, partner):
