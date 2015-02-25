@@ -81,6 +81,8 @@ class purchase_order(osv.Model):
                 'purchase.order.line': (_get_order, ['date_planned'], 10),
             }, method=True,
         ),
+        'partner_contact_id':fields.many2one('res.partner', 'Ordering Contact', readonly=True, required=True,
+            states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},domain="[('parent_id', '=', partner_id)]"),
     }
     _defaults = {
         'active':True
@@ -92,6 +94,8 @@ class purchase_order(osv.Model):
         if not part:
             return ret_val
         part = self.pool.get('res.partner').browse(cr, uid, part)
+        addr = self.pool.get('res.partner').address_get(cr, uid, [part.id], ['contact'])
+        ret_val['value'].update({'partner_contact_id': addr['contact']})
         incoterm_id = part.incoterm.id or False
         if incoterm_id:
             ret_val['value'].update({'incoterm_id': incoterm_id})
