@@ -40,7 +40,7 @@
         'stock_package_view.xml',
         'sale_view.xml',
         'shipping_label_type_view.xml',
-        'wizard/shipping_rate_view.xml',
+#        'wizard/shipping_rate_view.xml',
         'security/ir.model.access.csv',
         'security/security.xml',
         ],

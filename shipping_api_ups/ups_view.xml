@@ -1,6 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
 	<data>
+	
+	    <!--  UPS DELIVERY Method -->
+	    
+	    <record id="delivery_method_form_inherit_02" model="ir.ui.view">
+			<field name="name">delivery.method.inherit</field>
+			<field name="model">delivery.method</field>
+			<field name="inherit_id" ref="npg_delivery.view_delivery_method_form"/>
+			<field name="arch" type="xml">
+			    <xpath expr="//group" position="after">
+				      <group col="4">
+						<field name="ship_company_code" colspan='2' /> 
+						<field name="company_id" colspan='2'/>
+						<field name="url" widget="url"/>
+						<field name="test_mode" colspan='2'/>
+	                    <field name="ship_account_id"/>
+					  </group>
+					 <notebook>
+						<page string="UPS Account"  attrs="{'invisible':[('ship_company_code','!=','ups')]}">
+						    <group>
+							<field name="ups_shipping_account_ids" nolabel='1' colspan="4"/>
+							</group>
+						</page>
+						<page string="UPS URLs" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
+							<group>	
+							<field name='ship_req_web'/>
+							<field name='ship_req_port'/>
+							<field name='ship_req_test_web'/>
+							<field name='ship_req_test_port'/>
+							<field name='ship_accpt_web'/>
+							<field name='ship_accpt_port'/>
+							<field name='ship_accpt_test_web'/>
+							<field name='ship_accpt_test_port'/>
+							<field name='ship_void_web'/>
+							<field name='ship_void_port'/>
+							<field name='ship_void_test_web'/>
+							<field name='ship_void_test_port'/>
+							<field name='ship_rate_web'/>
+							<field name='ship_rate_port'/>
+							<field name='ship_rate_test_web'/>
+							<field name='ship_rate_test_port'/>
+							<field name='ship_tracking_url'/>
+							</group>
+						</page>
+					</notebook>
+				 </xpath>
+			</field>
+		</record>
 
 		<!-- ups shipping service type -->
 		<record id="form_view_for_ups_account_shipping_service" model="ir.ui.view">

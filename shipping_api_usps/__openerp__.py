@@ -33,7 +33,7 @@
                    'logistic_company_view.xml',
                    'stock_view.xml',
                    'sale_view.xml',
-                   'wizard/wizard_shipping_rate_view.xml'
+#                   'wizard/wizard_shipping_rate_view.xml'
         ],
     'demo': [
     ],

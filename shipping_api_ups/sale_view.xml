@@ -7,32 +7,27 @@
 			<field name="inherit_id" ref="sale.view_order_form"/>
 			<field name="priority" eval="30" />
 			<field name="arch" type="xml">
-				<field name="ship_method" position="after"> <field name="ups_service_id" ></field></field>
-				<xpath expr="//page[@string='Other Information']" position="inside">
+				<!--   <field name="ship_method" position="after"> <field name="ups_service_id" ></field></field> -->
+				<xpath expr="//form/sheet/notebook/page/group[@name='delivery_method']" position="after">
 					<newline/>
-					<group colspan="4" col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}" >
-						<separator colspan="2" string="UPS"/>
+					<group colspan="4" col="6" attrs="{'invisible':['|',('ship_company_code','!=','ups')]}">
+						<separator colspan="2" string="UPS" />
 						<newline/>
 						<field name="ups_shipper_id" on_change="onchage_service(ups_shipper_id)"/>
-
 						<field name="ups_pickup_type"/>
 						<field name="ups_packaging_type" widget="selection"/>
+						<button name="get_rate" string="Get Rate" type="object" icon="gtk-execute"  />
+						<field name="status_message" colspan="4" attrs="{'invisible': [('status_message','=', False)]}" />
 					</group>
-				</xpath>
-				
-				<xpath expr="//form/sheet/notebook/page/group[@name='sale_total']" position="after">
-					
 					<group colspan="6" col="6" string="Shipping Estimates"> 
 					<field name='shipping_rates' widget="one2many_list" nolabel='1'>
 					<tree string="Shipping Rates" editable='bottom'>
 						<button string="Select Ship Method" name="select_ship_method" type="object" icon="terp-camera_test"/>
-	                  
 						<field name="service"/>
 						<field name="ratedshipmentwarning"/>
 						<field name="daystodelivery"/>
 						<field name="totalcharges"/>
 					</tree>
-					
 					</field>
 					</group>
 					
