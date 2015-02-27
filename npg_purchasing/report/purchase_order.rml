@@ -531,7 +531,7 @@
               <para style="terp_default_9">
       <font color="white"> </font>
     </para>
-     <blockTable colWidths="30.0,110.0,75.0,55.0,50.0,32.0,70.0,47.0,70.0" style="Table10">
+     <blockTable colWidths="25.0,110.0,70.0,65.0,50.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P4">Line</para>
@@ -798,7 +798,7 @@
     <para style="P6">
       <font color="white"> </font>
     </para>
-   <blockTable colWidths="30.0,110.0,75.0,55.0,50.0,32.0,70.0,47.0,70.0" style="Table10">
+   <blockTable colWidths="25.0,110.0,70.0,65.0,50.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P2">Line</para>
@@ -834,16 +834,17 @@
     <blockTable colWidths="539" style="Table11">
       <tr>
         <td>
-            <blockTable colWidths="30.0,110.0,75.0,55.0,50.0,32.0,70.0,47.0,70.0"  style="Table12">
+            <blockTable colWidths="25.0,110.0,70.0,65.0,50.0,32.0,70.0,47.0,70.0"  style="Table12">
               <tr>
                 <td>
                   <para style="P2"><seq id="S1"/></para>
                 </td>
                 <td>
                   <para style="P2">
-	                    [[ line.product_id.default_code and line.product_id.default_code + ' ' + line.product_id.name or '']]
+	                    [[ (line.product_id and line.product_id.default_code or '' ]] [[ (line.product_id and line.product_id.name) or '' ]]
                   </para>
                 </td>
+                [[ (addr.partner_id and addr.partner_id.title and addr.partner_id.title.name) or '' ]] [[ (addr.partner_id and addr.partner_id.name) or '' ]]
                 <td>
                   <para style="P2">
 	                     [[ get_supplier_code(line.product_id.seller_ids)]]
@@ -888,7 +889,7 @@
      <blockTable colWidths="539.0" style="Table13">
       <tr>
         <td>
-          <para style="P3">Total: [[o.state!='draft' and o.amount_total or '']]</para>
+          <para style="P3">Total: [[o.state not in ('draft','sent') and o.amount_total or '0.00']]</para>
         </td>
       </tr>
     </blockTable>
