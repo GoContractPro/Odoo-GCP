@@ -27,7 +27,7 @@
     """,
     'author': 'NovaPoint Group LLC',
     'website': 'http://www.novapointgroup.com',
-    'depends': ['purchase'],
+    'depends': ['purchase','npg_comment_codes'],
     'data': [
              'purchase_view.xml',
              'report/report_xml.xml',

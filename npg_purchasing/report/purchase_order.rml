@@ -599,7 +599,8 @@
                 </para>
                 <para style="P6">Supplier:</para>
 	                <para style="terp_default_9">[[ (o.partner_id and o.partner_id.title and o.partner_id.title.name) or '' ]] [[ (o.partner_id and o.partner_id.name) or '' ]]</para>
-	                <para style="terp_default_9">[[ (o.partner_id and o.partner_id.street ) or '']]</para>
+                        <para style="terp_default_9">[[ (o.partner_contact_id and o.partner_contact_id.name ) or '']]</para>
+			<para style="terp_default_9">[[ (o.partner_id and o.partner_id.street ) or '']]</para>
 	                <para style="terp_default_9">[[ (o.partner_id and o.partner_id.street2) or removeParentNode('para') ]]</para>
 					<para style="terp_default_9">[[ (o.partner_id and o.partner_id.city) or '' ]], [[ (o.partner_id and o.partner_id.state_id and o.partner_id.state_id.name) or '']] [[ (o.partner_id and o.partner_id.zip) or '' ]] </para>
 	                <para style="terp_default_9">[[ (o.partner_id and o.partner_id.country_id and o.partner_id.country_id.name) or '' ]]</para>
@@ -875,9 +876,6 @@
                      <font color="white"> </font>
                   </para>
                 </td>
-              <td>
-                 <para style="terp_default_8_Italic">[[ format(line.notes or removeParentNode('tr')) ]]</para>
-              </td>
              </tr>
 	    </blockTable>
             <para style="P2">

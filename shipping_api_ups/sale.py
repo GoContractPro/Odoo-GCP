@@ -24,6 +24,20 @@ from openerp.osv import fields, osv
 from tools.translate import _
 import xml2dic
 
+
+class res_partner(osv.osv):
+    _inherit = 'res.partner'
+    
+    def _method_get(self, cr, uid, context=None):
+        res = super(res_partner, self)._method_get(cr, uid, context=context)
+        res.append(('ups.account', 'UPS'))
+        return res
+    _columns = {
+            'address_validation_method': fields.selection(_method_get, 'Address Validation Method', size=32),
+             }
+
+res_partner()
+
 class sale_order(osv.osv):
     _inherit = "sale.order"
 
@@ -66,6 +80,11 @@ class sale_order(osv.osv):
                  service_type_ids.append(shipper.id)
          domain = [('id', 'in', service_type_ids)]
          return {'domain': {'ups_service_id': domain}}
+     
+    def _method_get(self, cr, uid, context=None):
+        res = super(sale_order, self)._method_get(cr, uid, context=context)
+        res.append(('ups.account', 'UPS'))
+        return res
     
     _columns = {
         'payment_method':fields.selection([
@@ -90,6 +109,9 @@ class sale_order(osv.osv):
         'ups_packaging_type': fields.many2one('shipping.package.type', 'Packaging Type'),
         'shipping_rates': fields.one2many('shipping.rates.sales', 'sales_id', 'Rate Quotes'),
         'status_message': fields.char('Status', size=128, readonly=True),
+        # From partner address validation
+        'address_validation_method': fields.selection(_method_get, 'Address Validation Method', size=32),
+        
     }
 
     def _get_sale_account(self, cr, uid, context=None):
@@ -223,8 +245,9 @@ class sale_order(osv.osv):
          try:
              print rate_request
              from urllib2 import Request, urlopen, URLError, quote
-             request = Request(url, rate_request)
+             request = Request(url.encode('utf-8').strip(), rate_request.encode('utf-8').strip())
              response_text = urlopen(request).read()
+#             p.agent_info = u' '.join((agent_contact, agent_telno)).encode('utf-8').strip()
              print response_text
              
              response_dic = xml2dic.main(response_text)

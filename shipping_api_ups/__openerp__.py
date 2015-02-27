@@ -23,7 +23,7 @@
 {
     'name': 'Shipping API UPS',
     'version': '2.10',
-    'category': 'Generic Modules/Others',
+    'category': 'Generic Modules/Other',
     'description': """
     """,
     'author': 'NovaPoint Group LLC',

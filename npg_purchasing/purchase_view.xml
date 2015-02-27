@@ -14,7 +14,7 @@
 					<field name="requester"/>
 				</xpath>
 				<xpath expr="//field[@name='partner_id']" position="after">
-					<field name="partner_contact_id" widget="selection" />
+					<field name="partner_contact_id" context="{'default_type':'contact'}"/> />
 				</xpath>
 				<xpath expr="//field[@name='pricelist_id']" position="after">
 					<field name="incoterm_id" widget="selection" />
