@@ -32,21 +32,8 @@ from openerp.report import report_sxw
 class account_voucher(osv.Model):
     _inherit = 'account.voucher'
 
-    def _get_memo(self, cr, uid, ids, name, args, context=None):
-        res = {}
-        for rec in self.browse(cr, uid, ids, context=context):
-            txt = ''
-            if len([x.id for x in rec.line_dr_ids]) > 1:
-                txt = 'See attached'
-            else:
-                for line in rec.line_dr_ids:
-                    if line.move_line_id:
-                        txt = line.move_line_id.invoice.supplier_invoice_number or ''
-            res[rec.id] = txt
-        return res
-
     _columns = {
-        'memo' : fields.function(_get_memo, type='text', string='Memo'),
+        'name':fields.char('Memo', size=256),
         'log_ref': fields.char('Check-log Ref', size=128),
         'origin' : fields.char('Origin', size=128),
         'check_status' :fields.selection([('void','Voided'),('print','Printed'),('re_print','Re-Printed'),('clear','Cleared')]),
@@ -70,7 +57,7 @@ class account_voucher(osv.Model):
                'target':'new',
                'context': context,
                }
-    
+
     def recompute_voucher_lines(self, cr, uid, ids, partner_id, journal_id, price, currency_id, ttype, date, context=None):
         """
         Returns a dict that contains new values and context
@@ -160,7 +147,7 @@ class account_voucher(osv.Model):
                     if line.invoice.id not in  context['inv_ids']:
                         continue
             account_move_lines.append(line)
-        
+
         if context.get('batch_pay_credit', False):
             Amount = context['batch_pay_credit']
             if ttype == 'payment':
@@ -200,7 +187,7 @@ class account_voucher(osv.Model):
                     break
                 total_credit += line.credit and line.amount_currency or 0.0
                 total_debit += line.debit and line.amount_currency or 0.0
-        
+
         remaining_amount = price
         #voucher line creation
         for line in account_move_lines:
