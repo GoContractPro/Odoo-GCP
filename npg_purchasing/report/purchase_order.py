@@ -56,12 +56,12 @@ class npg_po(report_sxw.rml_parse):
             return supplier.product_code or ''
 
     def get_type(self, state):
-        if state == 'draft':
+        if state in ('draft', 'sent'):
             return 'Request For Quote'
-        elif state == 'approved':
+        elif state in ('approved','confirmed'):
             return 'PURCHASE ORDER'
-        else:
-            return state
+        elif state == 'cancel':
+            return 'Cancelled'
 
 report_sxw.report_sxw('report.npg.purchase.order', 'purchase.order', 'addons/npg_purchasing/report/purchase_order.rml', parser=npg_po, header="external")
 

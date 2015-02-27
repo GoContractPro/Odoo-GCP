@@ -531,7 +531,7 @@
               <para style="terp_default_9">
       <font color="white"> </font>
     </para>
-     <blockTable colWidths="30.0,110.0,75.0,65.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
+     <blockTable colWidths="30.0,110.0,75.0,55.0,50.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P4">Line</para>
@@ -734,10 +734,10 @@
           <para style="P2">Payment Terms</para>
         </td>
         <td>
-          <para style="P2">Incoterm</para>
+       		<para style="P2">FOB Terms</para>
         </td>
         <td>
-       		<para style="P2">FOB Terms</para>
+          <para style="P2">Incoterm</para>
         </td>
         <td>
           <para style="P2">Delivery Method </para>
@@ -754,10 +754,10 @@
           <para style="P2">[[o.payment_term_id and o.payment_term_id.name or o.partner_id.property_payment_term and o.partner_id.property_payment_term.name or '']] </para>
         </td>
         <td>
-            <para style="P2">[[o.incoterm_id and o.incoterm_id.name or '']] </para>
+            <para style="P2">[[o.comment_code and o.comment_code.comment or '']] </para>
         </td>
         <td>
-            <para style="P2">[[o.comment_code and o.comment_code.name or '']] </para>
+            <para style="P2">[[o.incoterm_id and o.incoterm_id.name or '']] </para>
         </td>
         <td>
             <para style="P2">[[o.delivery_method and o.delivery_method.name or '']] </para>
@@ -798,7 +798,7 @@
     <para style="P6">
       <font color="white"> </font>
     </para>
-   <blockTable colWidths="30.0,110.0,75.0,65.0,40.0,32.0,70.0,47.0,70.0" style="Table10">
+   <blockTable colWidths="30.0,110.0,75.0,55.0,50.0,32.0,70.0,47.0,70.0" style="Table10">
       <tr>
         <td>
           <para style="P2">Line</para>
@@ -834,7 +834,7 @@
     <blockTable colWidths="539" style="Table11">
       <tr>
         <td>
-            <blockTable colWidths="30.0,110.0,75.0,65.0,40.0,32.0,70.0,47.0,70.0"  style="Table12">
+            <blockTable colWidths="30.0,110.0,75.0,55.0,50.0,32.0,70.0,47.0,70.0"  style="Table12">
               <tr>
                 <td>
                   <para style="P2"><seq id="S1"/></para>
@@ -892,7 +892,7 @@
         </td>
       </tr>
     </blockTable>
-    <para style="P6">[[o.notes or '']]</para>
+    <para style="P6">Special Notes: [[o.notes or '']]</para>
   </pto>
   <para>
   	<seqReset id="S1"/>
