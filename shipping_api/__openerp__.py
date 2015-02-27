@@ -28,7 +28,7 @@
     """,
     'author': 'NovaPoint Group LLC',
     'website': ' http://www.novapointgroup.com',
-    'depends': ['email_template', 'partner_address_validation', 'sale_negotiated_shipping', 'account_analytic_default', 'purchase'],
+    'depends': ['email_template','npg_delivery','account_analytic_default', 'purchase'],
     'data': [
         'wizard/shipping_rate_view.xml',
         'stock_package_data.xml',
