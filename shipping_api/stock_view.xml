@@ -36,7 +36,7 @@
 					<field name="partner_id"  on_change="onchange_partner_in(partner_id)" context="{'contact_display':'partner'}" colspan="2"/>
 				</xpath>
 				<xpath expr="//page[@string='Additional Info']" position="after">
-					<page string="Shipping" attrs="{'invisible': [('state','in',['draft', 'cancel'])]}">
+					<page string="Shipping" attrs="{'invisible': ['|',('state','in',['draft', 'cancel']),('picking_type_code', '=', 'incoming')]}">
 <!-- 					    attrs="{'invisible': [('state','=','draft')]}" -->
 						<group colspan="1" col="8">
 							<field name="logis_company" on_change="onchange_logis_company(logis_company)"  />
