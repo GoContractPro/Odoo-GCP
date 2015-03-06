@@ -35,7 +35,7 @@
         'wizard/quick_ship_view.xml',
         'ups_view.xml',
         'logistic_company_view.xml',
-        'stock_view.xml',
+#         'stock_view.xml',
         'report/shipping_report.xml',
         'stock_package_view.xml',
         'sale_view.xml',

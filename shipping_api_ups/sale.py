@@ -47,7 +47,7 @@ class sale_order(osv.osv):
         if result:
             for sale in self.browse(cr, uid, ids):
                 if sale.ship_company_code == 'ups':
-                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('type', '=', 'out')], context=context)
+                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('picking_type_code', '=', 'outgoing')], context=context)
                     if pick_ids:
                         vals = {
                             'ship_company_code': 'ups',
