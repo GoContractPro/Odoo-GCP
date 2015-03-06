@@ -25,7 +25,7 @@
                                 </div>
                                 <field name="amount_total" nolabel="1" class="oe_subtotal_footer_separator" widget='monetary' options="{'currency_field': 'currency_id'}"/>
 							<button name="%(sale.action_view_sale_advance_payment_inv)d" string="Advance Invoice"
-								type="action" icon="gtk-execute" states="draft,manual" groups="base.group_extended"/>
+								type="action" icon="gtk-execute" states="draft,manual" />
 					 </group>
 					 <group col="6" colspan="2" name="delivery_method">
 	  			 		 <field name="delivery_method" domain="[('active','=',True)]" on_change="onchange_delivery_method(delivery_method)"/> 

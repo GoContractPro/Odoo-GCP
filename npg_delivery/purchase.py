@@ -31,10 +31,16 @@ class purchase_order(osv.osv):
     _columns = {
         'carrier_id':fields.many2one("delivery.carrier", "Delivery Service", help="The Delivery service Choices defined for Transport or Logistics Company"),
         'delivery_method': fields.many2one("delivery.method","Delivery Method", help=" The Delivery Method or Category"),
-        'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping")
+        'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping"),
+        'warehouse_id': fields.many2one('stock.warehouse', 'Destination Warehouse'), 
     }
 
-
+    def onchange_warehouse_id(self, cr, uid, ids, warehouse_id):
+        if not warehouse_id:
+            return {}
+        warehouse = self.pool.get('stock.warehouse').browse(cr, uid, warehouse_id)
+        return {'value':{'location_id': warehouse.lot_input_id.id, 'dest_address_id': False}}
+    
     def delivery_set(self, cr, uid, ids, context=None):
         order_obj = self.pool.get('purchase.order')
         line_obj = self.pool.get('purchase.order.line')
@@ -56,20 +62,20 @@ class purchase_order(osv.osv):
 
             grid = grid_obj.browse(cr, uid, grid_id, context=context)
 
-            taxes = grid.carrier_id.product_id.taxes_id
-            fpos = order.fiscal_position or False
-            taxes_ids = acc_fp_obj.map_tax(cr, uid, fpos, taxes)
+            #taxes = grid.carrier_id.product_id.taxes_id
+            #fpos = order.fiscal_position or False
+            #taxes_ids = acc_fp_obj.map_tax(cr, uid, fpos, taxes)
             #create the purchase order line
               
             vals = {
                 'order_id': order.id,
                 'name': grid.carrier_id.name,
                 'product_qty': 1,
-                'product_uom': grid.carrier_id.product_id.uom_id.id,
-                'product_id': grid.carrier_id.product_id.id,
+#                 'product_uom': grid.carrier_id.product_id.uom_id.id,
+#                 'product_id': grid.carrier_id.product_id.id,
                 'price_unit': grid_obj.get_price_purchase(cr, uid, grid.id, order, time.strftime('%Y-%m-%d'), context),
-                'tax_id': [(6,0,taxes_ids)],
-                'date_planned':order.minimum_planned_date,
+#                 'tax_id': [(6,0,taxes_ids)],
+                'date_planned':order.date_order,
                 }
             
             line_obj.create(cr, uid, vals)

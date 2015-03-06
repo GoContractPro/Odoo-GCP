@@ -251,8 +251,8 @@ class delivery_carrier(osv.osv):
             result = self.name_get(cr, uid, ids, context=context) 
             return result  
         else:
-            
-            return super(delivery_carrier, self).name_search(cr, uid, name, args, operator,context, limit=limit)
+            ids = self.search(cr, uid, args, limit=limit, context=context)
+            return self.name_get(cr, uid, ids, context=context)
 
 
 delivery_carrier()

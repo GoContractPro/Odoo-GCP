@@ -15,8 +15,8 @@
                     <field name="ship_service" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                </field>
                <xpath expr="/form/header//button[@name='do_enter_transfer_details']" position="after">
-                    <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'outgoing'), ('state', 'not in', ('assigned','confirmed'),)]}" string="Print Delivery Order" type="action"/>
-                    <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'outgoing'), ('state', '!=', 'done')]}" string="Print Delivery Order"  type="action" class="oe_highlight"/>
+                    <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'incoming'), ('state', 'not in', ('assigned','confirmed'),)]}" string="Print Delivery Order" type="action"/>
+                    <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done')]}" string="Print Delivery Order"  type="action" class="oe_highlight"/>
                 </xpath>
             </field>
         </record>
@@ -28,7 +28,7 @@
 			<field name="inherit_id" ref="stock.vpicktree"/>
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='backorder_id']" position="before">
-					<field name="ship_service"/>
+					<field name="ship_service" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" />
 				</xpath>
 			</field>
 		</record>
@@ -87,8 +87,8 @@
                     <field name="weight_net" groups="base.group_no_one" class="oe_inline"/>
                 </xpath>
                 <xpath expr="//field[@name='picking_id']" position="after">
-					<group colspan="2" col="2" groups="base.group_extended">
-						<separator string="Shipping" colspan="4" groups="base.group_extended"/>
+					<group colspan="2" col="2" >
+						<separator string="Shipping" colspan="4" />
 						<field name="ship_service" readonly="1"/>
 					</group>
 				</xpath>
