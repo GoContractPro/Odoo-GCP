@@ -26,7 +26,7 @@
                 </group>
                 </xpath>
                 <field name="location_id" position="after">
-            	         <field name="warehouse_id" on_change="onchange_warehouse_id(warehouse_id)" widget="selection" groups="stock.group_locations"/>
+            	         <field name="warehouse_id"  widget="selection" groups="stock.group_locations"/>
 				     </field>
             </field>
         </record>
