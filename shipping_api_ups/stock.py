@@ -73,10 +73,10 @@ class shipping_move(osv.osv):
 
 shipping_move()
 
+
 class stock_picking(osv.osv):
-    
     _inherit = "stock.picking"
-    
+
     def _get_company_code(self, cr, user, context=None):
         res = super(stock_picking, self)._get_company_code(cr, user, context=context)
         res.append(('ups', 'UPS'))
@@ -93,92 +93,10 @@ class stock_picking(osv.osv):
                 res[do.id] = True
         return res
     
-    
-    _columns = {
-        'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
-        'shipper': fields.many2one('ups.account.shipping', 'Shipper', help='The specific user ID and shipper. Setup in the company configuration.'),
-        'shipment_digest': fields.text('ShipmentDigest'),
-        'negotiated_rates': fields.float('NegotiatedRates'),
-        'shipment_identific_no': fields.char('ShipmentIdentificationNumber', size=64,),
-        'tracking_no': fields.char('TrackingNumber', size=64,),
-        'trade_mark': fields.related('shipper', 'trademark', type='char', size=1024, string='Trademark'),
-        'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
-        'ups_pickup_type': fields.selection([
-            ('01', 'Daily Pickup'),
-            ('03', 'Customer Counter'),
-            ('06', 'One Time Pickup'),
-            ('07', 'On Call Air'),
-            ('11', 'Suggested Retail Rates'),
-            ('19', 'Letter Center'),
-            ('20', 'Air Service Center'),
-            ], 'Pickup Type'),
-        'ups_packaging_type': fields.many2one('shipping.package.type', 'Packaging Type'),
-        'ups_use_cc': fields.boolean('Credit Card Payment'),
-        'ups_cc_type': fields.selection([
-            ('01', 'American Express'),
-            ('03', 'Discover'),
-            ('04', 'MasterCard'),
-            ('05', 'Optima'),
-            ('06', 'VISA'),
-            ('07', 'Bravo'),
-            ('08', 'Diners Club')
-            ], 'Card Type'),
-        'ups_cc_number': fields.char('Credit Card Number', size=32),
-        'ups_cc_expiaration_date': fields.char('Expiaration Date', size=6, help="Format is 'MMYYYY'"),
-        'ups_cc_security_code': fields.char('Security Code', size=4,),
-        'ups_cc_address_id': fields.many2one('res.partner', 'Address'),
-        'ups_third_party_account': fields.char('Third Party Account Number', size=32),
-        'ups_third_party_address_id': fields.many2one('res.partner', 'Third Party Address'),
-        'ups_third_party_type': fields.selection([('shipper', 'Shipper'), ('consignee', 'Consignee')], 'Third Party Type'),
-        'ups_bill_receiver_account': fields.char('Receiver Account', size=32, help="The UPS account number of Freight Collect"),
-        'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
-        'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
-        
-        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
-    }
-    
-    def on_change_sale_id(self, cr, uid, ids, sale_id=False, state=False, context=None):
-        vals = {}
-        if sale_id:
-            sale_obj = self.pool.get('sale.order').browse(cr, uid, sale_id)
-            service_type_obj = self.pool.get('ups.shipping.service.type')
-            ups_shipping_service_ids = service_type_obj.search(cr, uid, [('description', '=', sale_obj.ship_service)], context=context)
-            if ups_shipping_service_ids:
-                vals['ups_service'] = ups_shipping_service_ids[0]
-                shipping_obj = self.pool.get('ups.account.shipping')
-                ups_shipping_ids = shipping_obj.search(cr, uid, [('ups_shipping_service_ids', 'in', ups_shipping_service_ids[0])], context=context)
-                if ups_shipping_ids:
-                    vals['shipper'] = ups_shipping_ids[0]
-                    log_company_obj = self.pool.get('logistic.company')
-                    logistic_company_ids = log_company_obj.search(cr, uid, [('ups_shipping_account_ids', 'in', ups_shipping_ids[0])], context=context)
-                    if logistic_company_ids:
-                        vals['logis_company'] = logistic_company_ids[0]
-        return {'value': vals}
-    
-    def onchange_bill_shipping(self, cr, uid, ids, bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id,
-                               shipper, context=None):
-        vals = {}
-        if bill_shipping == 'shipper':
-            if not ups_cc_address_id and shipper:
-                ship_address = self.pool.get('ups.account.shipping').read(cr, uid, shipper, ['address'], context=context)['address']
-                if ship_address:
-                    vals['ups_cc_address_id'] = ship_address[0]
-        else:
-            vals['ups_use_cc'] = False
-        if not ups_bill_receiver_address_id:
-            vals['ups_bill_receiver_address_id'] = partner_id
-        return {'value' : vals}
+#     def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
+#         return self.pool.get('stock.picking')._get_ship_type(cr, uid, ids, fields, args, context)
 
-stock_picking()
 
-class stock_picking(osv.osv):
-    _inherit = "stock.picking"
-
-    def _get_company_code(self, cr, user, context=None):
-        return self.pool.get('stock.picking')._get_company_code(cr, user, context)
-    
-    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
-        return self.pool.get('stock.picking')._get_ship_type(cr, uid, ids, fields, args, context)
     
     _columns = {
         'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
