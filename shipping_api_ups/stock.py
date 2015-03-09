@@ -73,6 +73,15 @@ class shipping_move(osv.osv):
 
 shipping_move()
 
+class ups_commodity_code(osv.osv):
+    _name = 'ups.commodity.code'
+    
+    _columns = {
+                'name':fields.char("Code",size=32),
+                'desc':fields.text("Description")
+                }
+    
+ups_commodity_code()
 
 class stock_picking(osv.osv):
     _inherit = "stock.picking"
@@ -137,7 +146,7 @@ class stock_picking(osv.osv):
         'ups_bill_receiver_account': fields.char('Receiver Account', size=32, help="The UPS account number of Freight Collect"),
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
-        
+        'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
         'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
         }
 
