@@ -39,7 +39,7 @@
 					<page string="Shipping" attrs="{'invisible': ['|',('state','in',['draft', 'cancel']),('picking_type_code', '=', 'incoming')]}">
 						<group colspan="1" col="8">
 							<field name="logis_company" on_change="onchange_logis_company(logis_company)"  />
-							<field name="ship_company_code"/>
+<!--							<field name="ship_company_code"/>-->
 						</group>
 						<newline/>
 						<notebook>

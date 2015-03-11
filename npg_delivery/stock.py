@@ -43,7 +43,9 @@ class stock_picking(osv.osv):
                                 'weight_net': total_weight_net,
                               }
         return res
-
+    
+    def _get_company_code(self, cr, user, context=None):
+        return [('grid', 'Price Grid')]
 
     def _get_picking_line(self, cr, uid, ids, context=None):
         result = {}
@@ -55,7 +57,12 @@ class stock_picking(osv.osv):
         return self.pool.get('stock.picking').search(cr, uid, [('sale_id', 'in', ids)])
 
     _columns = {
-        'carrier_id':fields.many2one("delivery.carrier","Carrier"),
+        'carrier_id':fields.many2one("delivery.carrier","Delivery Service"),
+        'delivery_method': fields.many2one("delivery.method","Delivery Method", help=" The Delivery Method or Category"),
+        'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping"),
+        'sale_account_id': fields.many2one('account.account', 'Cost Account',
+                                           help='This account represents the g/l account for booking shipping income.'),
+        'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'volume': fields.float('Volume'),
         'weight': fields.function(_cal_weight, type='float', string='Weight', digits_compute= dp.get_precision('Stock Weight'), multi='_cal_weight',
                   store={
@@ -122,6 +129,14 @@ class stock_picking(osv.osv):
             'quantity': 1,
             'invoice_line_tax_id': [(6, 0, taxes_ids)],
         }
+        
+    def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
+        
+        res = {'value': {'carrier_id':False,
+                         'transport_id':False,
+                         'ship_service':False,},
+               }
+        return res
 
     def action_invoice_create(self, cr, uid, ids, journal_id=False,
             group=False, type='out_invoice', context=None):

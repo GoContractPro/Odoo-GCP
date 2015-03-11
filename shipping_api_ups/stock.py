@@ -163,6 +163,25 @@ class stock_picking(osv.osv):
         if not ups_bill_receiver_address_id:
             vals['ups_bill_receiver_address_id'] = partner_id
         return {'value' : vals}
+    
+    def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
+        
+        res = super(stock_picking, self).onchange_delivery_method(cr, uid, ids, delivery_method, context=context)
+        
+        ups_shipper_ids = []
+        ups_shipper_id=False
+        if delivery_method:
+            deliver_method_obj = self.pool.get('delivery.method').browse(cr, uid, delivery_method, context=context)
+            if deliver_method_obj.ship_company_code == 'ups':
+                for shipper in deliver_method_obj.ups_shipping_account_ids:
+                    ups_shipper_ids.append(shipper.id) 
+                if ups_shipper_ids :
+                    ups_shipper_id=ups_shipper_ids[0]
+            res['value']['ship_company_code'] = deliver_method_obj.ship_company_code
+#            res['value']['sale_account_id'] = deliver_method_obj.ship_account_id.id
+#            res['value']['ups_shipper_id'] = ups_shipper_id  
+
+        return res
 
 #     def action_process(self, cr, uid, ids, context=None):
 #         sale_order_line = []

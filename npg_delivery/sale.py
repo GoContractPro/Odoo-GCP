@@ -129,7 +129,24 @@ class sale_order(osv.osv):
     _defaults = {
         'address_validation_method':_get_address_validation_method,
     }
-
+    
+    def create(self, cr, uid, vals, context=None):
+        if vals.get('name','/')=='/':
+            vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'sale.order') or '/'
+        if vals.has_key('carrier_id') and vals['carrier_id']:
+            carrier_id =vals['carrier_id']
+            carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier_id, context=context)
+            vals['transport_id']=carrier_obj.partner_id.id
+            vals['ship_service']=carrier_obj.name
+        return super(sale_order, self).create(cr, uid, vals, context=context)
+    
+    def write(self, cr, uid,ids, vals, context=None):
+        if vals.has_key('carrier_id') and vals['carrier_id']:
+            carrier_id =vals['carrier_id']
+            carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier_id, context=context)
+            vals['transport_id']=carrier_obj.partner_id.id
+            vals['ship_service']=carrier_obj.name
+        return super(sale_order, self).write(cr, uid,ids, vals, context=context)
 
 
     def onchange_partner_id(self, cr, uid, ids, part, context=None):

@@ -169,13 +169,15 @@
 			<field name="model">ups.account</field>
 			<field name="arch" type="xml">
 				<form string="ups">
+				  <group col="4">
 					<field name="accesslicensenumber"/>
 					<field name="acc_no"/>
 					<field name="userid"/>
 					<field name="password" password="True"/>
-					<field name="ups_active"/>
 					<field name="url"/>
 					<field name="max_lim_size"/>
+					<field name="ups_active"/>
+				  </group>
 				</form>
 			</field>
 		</record>

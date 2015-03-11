@@ -93,7 +93,7 @@ class stock_picking(osv.osv):
         return result.keys()
 
     def _get_company_code(self, cr, user, context=None):
-        return []
+        return super(stock_picking, self)._get_company_code(cr, user, context=context)
     
     _columns = {
         'logis_company': fields.many2one('logistic.company', 'Logistics Company', help='Name of the Logistics company providing the shipper services.'),
