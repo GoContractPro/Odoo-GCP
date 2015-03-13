@@ -251,7 +251,7 @@ class stock_picking(osv.osv):
             ids = ids[0]
         do = picking_obj.browse(cr, uid, ids)
         if do.ship_company_code != 'ups':
-            return super(stock_picking_out, self).process_void(cr, uid, ids, context=context)
+            return super(stock_picking, self).process_void(cr, uid, ids, context=context)
         data_for_Access_Request = {
             'AccessLicenseNumber': do.shipper.id and do.shipper.accesslicensenumber or '',
             'UserId': do.shipper.id and do.shipper.userid or '',
@@ -1141,7 +1141,7 @@ class stock_picking(osv.osv):
         package_obj = self.pool.get('stock.packages')
         deliv_order = self.browse(cr, uid, type(ids) == type([]) and ids[0] or ids, context=context)
         if deliv_order.ship_company_code != 'ups':
-            return super(stock_picking_out, self).process_ship(cr, uid, ids, context=context)
+            return super(stock_picking, self).process_ship(cr, uid, ids, context=context)
         error_flag = False
         ship_move_ids = {}
         do_transaction = True
@@ -1282,7 +1282,7 @@ class stock_picking(osv.osv):
 
     def do_partial(self, cr, uid, ids, partial_datas, context=None):
         res = self._get_journal_id(cr, uid, ids, context=context)
-        result_partial = super(stock_picking_out, self).do_partial(cr, uid, ids, partial_datas, context=context)
+        result_partial = super(stock_picking, self).do_partial(cr, uid, ids, partial_datas, context=context)
         if res and res[0]:
             journal_id = res[0][0]
             result = result_partial
