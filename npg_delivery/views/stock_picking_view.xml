@@ -43,12 +43,12 @@
             <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml">
                 <field name="company_id" position="before">
-                    <label for="weight" string="Weight"/>
+                    <label for="weight" string="Weight" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
                     <div>
                         <field name="weight" class="oe_inline"/>
-                        <field name="weight_uom_id" nolabel="1" class="oe_inline"/>
+                        <field name="weight_uom_id" nolabel="1" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" class="oe_inline"/>
                     </div>
-                     <field name="weight_net"  groups="base.group_no_one" class="oe_inline"/>
+                     <field name="weight_net" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"  groups="base.group_no_one" class="oe_inline"/>
                 </field>
             </field>
         </record>

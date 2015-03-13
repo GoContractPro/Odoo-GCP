@@ -59,7 +59,7 @@
 							  <group colspan="4" col="6">
 							    <group colspan="1" col="4">
 									<field name='address_validate'/>
-									<field name='tot_ship_weight' />
+									<field name='tot_ship_weight'  />
 									<field name='tot_del_order_weight' readonly="1" />
 									<field name='shipcharge'/>
 									<field name='ship_from' />

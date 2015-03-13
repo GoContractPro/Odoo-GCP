@@ -1348,7 +1348,7 @@ class stock_picking(osv.osv):
 #        if not (data['rate_selection'] == 'rate_request' and data['ship_company_code'] == 'ups'):
 #            return super(shipping_rate_wizard, self).get_rate(cr, uid, ids, context)
 #        if context.get('active_model', False) == 'sale.order':
-        weight = data.tot_order_weight or 0.00
+        weight = data.weight_net or 0.00
         
 #         invoice = self.pool.get('account.invoice').browse(cr, uid, context['active_id'], context=context)
 #         weight = invoice.total_weight_net or 0.00
