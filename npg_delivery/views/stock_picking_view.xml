@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <field name="min_date" position="after">
                     <field name="delivery_method" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" on_change="onchange_delivery_method(delivery_method)"/>
-                    <field name="carrier_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
+                    <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />
                     <field name="transport_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                     <field name="sale_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                     <field name="ship_company_code" invisible="1"/>

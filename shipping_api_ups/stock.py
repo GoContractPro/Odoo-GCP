@@ -178,8 +178,8 @@ class stock_picking(osv.osv):
                 if ups_shipper_ids :
                     ups_shipper_id=ups_shipper_ids[0]
             res['value']['ship_company_code'] = deliver_method_obj.ship_company_code
-#            res['value']['sale_account_id'] = deliver_method_obj.ship_account_id.id
-#            res['value']['ups_shipper_id'] = ups_shipper_id  
+            res['value']['sale_account_id'] = deliver_method_obj.ship_account_id.id
+            res['value']['shipper'] = ups_shipper_id  
 
         return res
 

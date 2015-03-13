@@ -137,6 +137,14 @@ class stock_picking(osv.osv):
                          'ship_service':False,},
                }
         return res
+    
+    def onchange_carrier_id(self, cr, uid, ids, carrier, context=None):
+        res = {}
+        if carrier:
+            carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier, context=context)
+            res = {'value': {'transport_id' : carrier_obj.partner_id.id,
+                            'ship_service' : carrier_obj.name }}
+        return res
 
     def action_invoice_create(self, cr, uid, ids, journal_id=False,
             group=False, type='out_invoice', context=None):
