@@ -190,7 +190,7 @@
 						</page>
 						</notebook>
 						<newline/>
-						<group colspan="2" col="8">
+						<group colspan="2" col="8" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}" >
 							<field name='ship_state' />
 							<button string="Distribute Weight" type="object" name="distribute_weight"  icon="gtk-edit"
 								attrs="{'invisible':['|',('ship_state','in',['ready_pick','in_process','cancelled','shipped','delivered']),('state','!=','done')]}"  colspan="1"/>
@@ -212,7 +212,7 @@
 						<group colspan="2" col="8">
 							<field name='ship_message' nolabel="1" readonly="1" height="50"/>
 							<newline />
-							<separator string="Trade Mark" colspan="8" />
+							<separator string="Trade Mark" colspan="8"  attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}"/>
 							<newline />
 							<field name='trade_mark' colspan="8" nolabel="1" readonly="1"/>
 						</group>
