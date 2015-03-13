@@ -147,7 +147,8 @@ class stock_picking(osv.osv):
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
         'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
-        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
+        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping"),
+        'status_message': fields.char('Status', size=128, readonly=True),
         }
 
     def onchange_bill_shipping(self, cr, uid, ids, bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id,

@@ -51,7 +51,7 @@ class ups_account_shipping(osv.osv):
            view_load=True),
         'trademark': fields.char('Trademark', size=1024, select=1),
         'company_id': fields.many2one('res.company', 'Company'),
-        'partner_id': fields.many2one('res.partner', 'UPS Contact', required=True, help="The UPS account contact information and and address"),
+        'partner_id': fields.many2one('res.partner', 'Transport Company', required=True, help="The UPS account contact information and and address"),
 
     }
     _defaults = {

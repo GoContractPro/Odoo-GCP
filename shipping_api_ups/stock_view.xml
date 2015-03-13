@@ -19,17 +19,15 @@
 			<field name="model">stock.picking</field>
 			<field name="inherit_id" ref="shipping_api.view_picking_shipping_inherit"/>
 			<field name="arch" type="xml">
-				<xpath expr="//field[@name='logis_company']" position="after">
-					<field name='shipper' domain="[('logistic_company_id','=',logis_company)]"/>
-					<field name="is_intnl" invisible="1"/>
-				</xpath>
 
-				<xpath expr="//field[@name='freight']" position="after">
+				<xpath expr="//field[@name='shipcharge']" position="after">
+				    <field name="is_intnl" invisible="1"/>
+				    <field name='shipper'/>
+				    <field name="ups_pickup_type"/>
+				    <field name="ups_packaging_type" widget="selection"/>
+					<field name="status_message" colspan="4" attrs="{'invisible': [('status_message','=', False)]}" />
 					<field name='ups_service' string="Shipping Service" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]"/>
 					<field name='label_format_id' string="Label Format Code"/>
-				</xpath>
-
-				<xpath expr="//group[@name='service']" position="after">
 					<group colspan="4" col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
 						<field name="bill_shipping" on_change="onchange_bill_shipping(bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id, shipper)"/>
 						<field name="ups_use_cc" attrs="{'readonly' : [('bill_shipping','!=', 'shipper')]}" on_change="onchange_bill_shipping(bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id, shipper)"/>
