@@ -22,7 +22,7 @@
 
 				<xpath expr="//field[@name='shipcharge']" position="after">
 				    <field name="is_intnl" invisible="1"/>
-				    <field name='shipper' on_change="onchage_service(shipper)"/>
+				    <field name='shipper' on_change="onchange_ups_shipper_id(shipper)"/>
 				    <field name="ups_pickup_type"/>
 				    <field name="ups_packaging_type" widget="selection"/>
 					<field name='ups_service' string="Shipping Service" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]"/>
