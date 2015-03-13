@@ -33,17 +33,29 @@
 			  </field>
 				
 				<xpath expr="//field[@name='partner_id']" position="replace">
-					<field name="partner_id"  on_change="onchange_partner_in(partner_id)" context="{'contact_display':'partner'}" colspan="2"/>
+					<field name="partner_id"   context="{'contact_display':'partner'}" colspan="2"/>
 				</xpath>
+				<xpath expr="//field[@name='delivery_method']" position="replace"/>
+				<xpath expr="//field[@name='sale_account_id']" position="replace"/>
+				<xpath expr="//field[@name='carrier_id']" position="replace"/>
+				<xpath expr="//field[@name='transport_id']" position="replace"/>
+				<xpath expr="//field[@name='carrier_tracking_ref']" position="replace"/>
+				<xpath expr="//field[@name='number_of_packages']" position="replace"/>
+				
 				<xpath expr="//page[@string='Additional Info']" position="after">
 					<page string="Shipping" attrs="{'invisible': ['|',('state','in',['draft', 'cancel']),('picking_type_code', '=', 'incoming')]}">
-						<group colspan="1" col="8">
+						<group col="4">
+						    <field name="delivery_method" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" on_change="onchange_delivery_method(delivery_method)"/>
+						    <field name="sale_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
+		                    <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />
+		                    <field name="transport_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
+		                    <field name="carrier_tracking_ref" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
+		                    <field name="number_of_packages" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
 							<field name="logis_company" invisible="1" on_change="onchange_logis_company(logis_company)"  />
-<!--							<field name="ship_company_code"/>-->
 						</group>
 						<newline/>
 						<notebook>
-							<page string="Shipment">
+							<page string="Shipment" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}">
 							  <group colspan="4" col="6">
 							    <group colspan="1" col="4">
 									<field name='address_validate'/>
@@ -69,7 +81,7 @@
 								
 							  </group>
 							</page>
-							<page string="Documents">
+							<page string="Documents" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}">
 								<group colspan="4" col="8" invisible="0">
 									<field name='comm_inv' />
 									<field name='cer_orig' />
@@ -107,7 +119,7 @@
 							<field name='blanket_end_date'  attrs="{'required':[('nafta_cer_orig','=',True)]}"/>
 						</group>
 						</page>
-						<page string="Packages">
+						<page string="Packages" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','ups')]}">
 						<group colspan="8" col="8">
 							<field name='packages_ids' nolabel="1" colspan="2" height="50" context="{'default_weight':False,'default_packge_no':False,'ssss':active_id}">
 								<tree string='Shipping Packages'>
