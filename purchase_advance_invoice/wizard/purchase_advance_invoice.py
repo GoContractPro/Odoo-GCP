@@ -115,6 +115,7 @@ class purchase_advance_invoice(osv.osv_memory):
                 'product_uos': val['value']['uos_id'],
                 'product_uom': val['value']['uos_id'],
                 'product_id': purchase_adv_obj.product_id.id,
+                'adavance_product':True,
                 'discount': False,
                 'taxes_id': [(6, 0, val['value']['invoice_line_tax_id'])],
             }, context=context)
