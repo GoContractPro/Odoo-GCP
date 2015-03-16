@@ -138,6 +138,10 @@ class sale_order(osv.osv):
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier_id, context=context)
             vals['transport_id']=carrier_obj.partner_id.id
             vals['ship_service']=carrier_obj.name
+        if vals.has_key('ups_shipper_id') and vals['ups_shipper_id']:
+            ups_shipper_id =vals['ups_shipper_id']
+            ups_shipper_id_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context)
+            vals['transport_id']=ups_shipper_id_obj.partner_id.id
         return super(sale_order, self).create(cr, uid, vals, context=context)
     
     def write(self, cr, uid,ids, vals, context=None):
@@ -146,6 +150,10 @@ class sale_order(osv.osv):
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier_id, context=context)
             vals['transport_id']=carrier_obj.partner_id.id
             vals['ship_service']=carrier_obj.name
+        if vals.has_key('ups_shipper_id') and vals['ups_shipper_id']:
+            ups_shipper_id =vals['ups_shipper_id']
+            ups_shipper_id_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context)
+            vals['transport_id']=ups_shipper_id_obj.partner_id.id
         return super(sale_order, self).write(cr, uid,ids, vals, context=context)
 
 
