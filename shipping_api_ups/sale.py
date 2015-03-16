@@ -66,7 +66,7 @@ class sale_order(osv.osv):
                             }
                         pick_obj.write(cr, uid, pick_ids, vals)
                 else:
-                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('type', '=', 'out')])
+                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('picking_type_code', '=', 'outgoing')])
                     if pick_ids:
                         pick_obj.write(cr, uid, pick_ids, {'shipper': False, 'ups_service': False}, context=context)
         return result
