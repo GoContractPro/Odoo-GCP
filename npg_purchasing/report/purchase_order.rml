@@ -754,7 +754,7 @@
           <para style="P2">[[o.payment_term_id and o.payment_term_id.name or o.partner_id.property_payment_term and o.partner_id.property_payment_term.name or '']] </para>
         </td>
         <td>
-            <para style="P2">[[o.comment_code and o.comment_code.comment or '']] </para>
+            <para style="P2">[[o.comment_code and o.comment_code.name or '']] </para>
         </td>
         <td>
             <para style="P2">[[o.incoterm_id and o.incoterm_id.name or '']] </para>
@@ -841,7 +841,7 @@
                 </td>
                 <td>
                   <para style="P2">
-	                    [[ (line.product_id and line.product_id.default_code or '' ]] [[ (line.product_id and line.product_id.name) or '' ]]
+	                    [[ (line.product_id and line.product_id.default_code) or '' ]] [[ (line.product_id and line.product_id.name) or '' ]]
                   </para>
                 </td>
                 [[ (addr.partner_id and addr.partner_id.title and addr.partner_id.title.name) or '' ]] [[ (addr.partner_id and addr.partner_id.name) or '' ]]
