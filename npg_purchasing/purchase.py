@@ -81,7 +81,7 @@ class purchase_order(osv.Model):
                 'purchase.order.line': (_get_order, ['date_planned'], 10),
             }, method=True,
         ),
-        'partner_contact_id':fields.many2one('res.partner', 'Ordering Contact', readonly=True, required=True,
+        'partner_contact_id':fields.many2one('res.partner', 'Ordering Contact', readonly=True,
             states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},domain="[('parent_id', '=', partner_id)]"),
     }
     _defaults = {
