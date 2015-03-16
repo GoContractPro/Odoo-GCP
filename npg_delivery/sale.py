@@ -183,7 +183,12 @@ class sale_order(osv.osv):
         pick_obj = self.pool.get("stock.picking")
         ret = super(sale_order, self).action_ship_create(cr, uid, ids, context=context)
         for sale_obj in self.browse(cr, uid, ids, context=context):
-            pick_obj.write(cr, uid, [x.id for x in sale_obj.picking_ids], {'carrier_id': sale_obj.carrier_id.id}, context=context)
+            pick_obj.write(cr, uid, [x.id for x in sale_obj.picking_ids], {'carrier_id': sale_obj.carrier_id and sale_obj.carrier_id.id or False,
+                                                                            'delivery_method': sale_obj.delivery_method and sale_obj.delivery_method.id or False,
+                                                                            'sale_account_id':sale_obj.sale_account_id and sale_obj.sale_account_id.id or False,
+                                                                            'transport_id':sale_obj.transport_id and sale_obj.transport_id.id or False,
+                                                                            },
+                                                                             context=context)
                     
         return ret
     
