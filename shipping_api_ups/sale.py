@@ -60,6 +60,7 @@ class sale_order(osv.osv):
                             'shipcharge':sale.shipcharge or False,
                             'packages_ids': [(0,0, {
                                                     'package_type':sale.ups_packaging_type and sale.ups_packaging_type.id or False,
+                                                    'weight':sale.total_weight_net or False,
                                                     
                                                     
                                                     })]
