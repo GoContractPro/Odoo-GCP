@@ -32,7 +32,7 @@ class npg_po(report_sxw.rml_parse):
             'get_bank_account' : self.get_bank_account,
             'get_inv_address': self.get_inv_address,
             'get_type': self.get_type,
-            'get_supplier_code': self.get_suppplier_code,
+            'get_supplier_code': self.get_supplier_code,
         })
 
     def get_inv_address(self, partner):
@@ -56,10 +56,12 @@ class npg_po(report_sxw.rml_parse):
             return supplier.product_code or ''
 
     def get_type(self, state):
-        if state == 'draft':
-            return 'Request For Quotation'
-        elif state == 'approved':
+        if state in ('draft', 'sent'):
+            return 'Request For Quote'
+        elif state in ('approved','confirmed'):
             return 'PURCHASE ORDER'
+        elif state == 'cancel':
+            return 'Cancelled'
 
 report_sxw.report_sxw('report.npg.purchase.order', 'purchase.order', 'addons/npg_purchasing/report/purchase_order.rml', parser=npg_po, header="external")
 

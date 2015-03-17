@@ -30,3 +30,43 @@ class invoice(osv.osv):
     _columns = {
         'prepaid': fields.boolean('Prepaid Invoice', readonly=True)
     }
+    
+class purchase_order(osv.osv):
+    _inherit = 'purchase.order'
+    
+    def _invoiced_rate(self, cursor, user, ids, name, arg, context=None):
+        res = {}
+        for purchase in self.browse(cursor, user, ids, context=context):
+            tot = 0.0
+            amount_untaxed=0.0
+            for invoice in purchase.invoice_ids:
+                if invoice.state not in ('draft','cancel'):
+                    tot += invoice.amount_untaxed
+            for line in purchase.order_line: 
+                if not line.adavance_product:
+                    amount_untaxed+=line.price_subtotal       
+            if amount_untaxed:
+                res[purchase.id] = tot * 100.0 / amount_untaxed
+            else:
+                res[purchase.id] = 0.0
+        return res
+    
+    def _invoiced(self, cursor, user, ids, name, arg, context=None):
+        res = {}
+        for purchase in self.browse(cursor, user, ids, context=context):
+            invoiced = False
+            if purchase.invoiced_rate >= 100.00:
+                invoiced = True
+            res[purchase.id] = invoiced
+        return res
+    
+    _columns = {
+        'invoiced': fields.function(_invoiced, string='Invoice Received', type='boolean', help="It indicates that an invoice has been paid"),
+        'invoiced_rate': fields.function(_invoiced_rate, string='Invoiced', type='float'),
+    }
+    
+class purchase_order_line(osv.osv):
+    _inherit = 'purchase.order.line'
+    _columns = {
+        'adavance_product': fields.boolean('Advance Product', readonly=True)
+    }    
