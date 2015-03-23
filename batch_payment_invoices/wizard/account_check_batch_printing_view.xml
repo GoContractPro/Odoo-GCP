@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_account_check_write_inherit" model="ir.ui.view">
+            <field name="name">account.check.form.inherit</field>
+            <field name="model">account.check.write</field>
+            <field name="inherit_id" ref="account_check_writing.view_account_check_write"/>
+            <field name="arch" type="xml">
+                 <xpath expr="//group" postion="inside">
+                       <field name="check_state" invisible="1"/>
+                       <field name="printed" invisible="1"/>
+                       <field name='new_no' attrs="{'invisible':['|',('check_state','=',False),('check_print_choice','in',['void','clear'])]}"/>
+					   <field name='msg' nolabel="1" attrs="{'invisible':['|',('check_state','=',False),('check_print_choice','in',['void','clear'])]}"/>
+					   <newline/>
+					   <field name='check_print_choice' attrs="{'invisible':[('check_state','=',False)]}"/>
+                 </xpath>
+                 <xpath expr="//field[@name='check_number']" position='attributes'>
+                        <attribute name='attrs'>{'readonly':[('check_state','!=',False)]}</attribute>
+                 </xpath>
+                 <xpath expr="//button[@name='print_check_write']" position='attributes'>
+                   		<attribute name='attrs'>{'invisible':[('check_state','!=',False)]}</attribute>
+                 </xpath>
+                 <xpath expr="//button[@name='print_check_write']" position='before'>
+                   		<button name='reprint_check_write' type='object' string="Print" class="oe_highlight" attrs="{'invisible':[('check_state','=',False)]}"/>
+                 </xpath>
+                 
+            </field>
+        </record>
+    </data>
+</openerp>

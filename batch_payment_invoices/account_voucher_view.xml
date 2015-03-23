@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+        		<!-- Supplier write check view -->
+        <record model="ir.ui.view" id="view_vendor_payment_check_form11">
+            <field name="name">account.voucher.payment.check.form1</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_check_writing.view_vendor_payment_check_form"/>
+            <field name="arch" type="xml">
+                <field name="allow_check" position="after">
+                    <newline/>
+                    <field name='origin'/>
+                    <field name='chk_seq'/>
+                    <field name='log_ref' invisible="1"/>
+                    <newline/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_vendor_payment_check_form12">
+            <field name="name">account.voucher.payment.check.form2</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_payment_form"/>
+            <field name="arch" type="xml">
+                 <field name="name" position="attributes">
+                    <attribute name="string">Name</attribute>
+                </field>
+                <xpath expr="//notebook" postion='inside'>
+                       <page string='Invoices'>
+                            <field name='invoice_ids'/>
+                       </page>
+				</xpath>
+				<xpath expr="//header/button[@string='Unreconcile']" postion='after'>
+					<button string='Print Check' name='print_checks' type='object' attrs="{'invisible': [('state','not in','posted')]}"/>
+				</xpath>
+           </field>
+        </record>
+        <record model="ir.ui.view" id="view_voucher_tree_inherit_for_log">
+            <field name="name">account.voucher.tree.log</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_voucher_tree"/>
+            <field name="arch" type="xml">
+                <field name="state" position="after">
+                    <field name='check_status' string="Check Status"/>
+                </field>
+                <field name="number" position="after">
+                    <field name='chk_seq' string="Check Number"/>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>

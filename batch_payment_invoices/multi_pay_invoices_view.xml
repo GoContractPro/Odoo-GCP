@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+	<record id="invoice_supplier_form_inherit_for_log" model="ir.ui.view">
+            <field name="name">account.invoice.supplier.form.inheritfor log</field>
+            <field name="model">account.invoice</field>
+            <field name = "inherit_id" ref = "account.invoice_supplier_form"/>
+            <field name="arch" type="xml">
+				<field name="date_due" position="after">
+					<field name = "check_log_ref"/>
+					<field name = "voucher_id" invisible="1"/>
+					<field name = "state_for_readonly" invisible="1"/>
+					<field name = "dummy_id" invisible="1"/>
+				</field>
+			</field>
+	</record>
+	   <record id="action_multi_invoice_payment_tree_wizard_view" model="ir.ui.view">
+            <field name="name">account.invoice.tree.inherit</field>
+            <field name="model">account.invoice</field>
+            <field eval="20" name="priority"/>
+            <field name="arch" type="xml">
+                <tree colors="blue:state == 'draft';black:state in ('proforma','proforma2','open');gray:state == 'cancel'" string="Multi Pay Invoices" editable="bottom" create="false">
+                    <field name="partner_id" groups="base.group_user"/>
+                    <field name="date_invoice"/>
+                    <field name="number"/>
+                    <field name="reference" invisible="1"/>
+                    <field name="name" invisible="1"/>
+                    <field name="journal_id" invisible="1"/>
+                    <field name="period_id" invisible="1" groups="account.group_account_user"/>
+                    <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                    <field name="user_id"/>
+                    <field name="date_due"/>
+                    <field name="origin"/>
+                    <field name="currency_id" groups="base.group_multi_currency"/>
+                    <field name="residual" sum="Residual Amount"/>
+                    <field name="amount_untaxed" sum="Untaxed Amount"/>
+                    <field name="amount_total" sum="Total Amount"/>
+                    <field name="amount_paid" on_change="onchange_amount_paid(amount_paid, context)" />
+                    <field name="state"/>
+                    <field name="state_for_readonly" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="account_invoices_batch" model="ir.ui.view">
+            <field name="name">Supplier Invoice</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_tree"/>
+            <field name="arch" type="xml">
+	            <field name="state" position="after">
+	           	 	<field name="state_for_readonly" invisible="1"/>
+	           </field>
+			</field>
+		</record>
+
+        <record id="action_multi_invoice_payment_tree_wizard" model="ir.actions.act_window">
+            <field name="name">Multi Pay Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar,graph</field>
+            <field name="view_id" ref="action_multi_invoice_payment_tree_wizard_view"/>
+            <field name="domain">[('type','=','in_invoice'),('state','=','open')]</field>
+            <field name="context">{'type':'in_invoice'}</field>
+            <field name="search_view_id" ref="account.view_account_invoice_filter"/>
+        </record>
+
+        <!--  Multi payment invoice view Supplier -->
+        <record id="multi_payment_form_view" model="ir.ui.view">
+            <field name="name">multi.payment.form.view</field>
+            <field name="model">account.multi.pay.invoice</field>
+			<field name="arch" type="xml">
+                <form string="Invoice" version="7.0">
+                <header>
+                	<button name ='get_invoice' string="Get Invoices" type='object'  style="width: 10%%" class="oe_highlight"
+                	help = "select Invoices to be paid based on due due dates" attrs="{'invisible': [('state','in',['posted','printed','cancel'])]}"/>
+                	<button name ='pay_bills' string="Create Payments" type='object'  style="width: 10%%" class="oe_highlight"
+					help = "Create payment Journal draft entries" attrs="{'invisible': [('state','in',['new','posted','printed','cancel'])]}"/>
+                	<button name="print_checks" type='object' string="Print Checks" style="width: 10%%" class="oe_highlight" help='Will open check print wizard and alow entry of next check number to print' attrs="{'invisible': [('state','in',['new','draft','paid','cancel','printed'])]}"/>
+                	<button name="cancel" type='object' string="Cancel" class="oe_highlight" style="width: 10%%" attrs="{'invisible': [('state','in',['new','cancel'])]}"/>
+                	<button name="set_to_open" type='object' string="Set to Open" class="oe_highlight" style="width: 10%%" attrs="{'invisible': [('state','not in',['cancel'])]}"/>
+                	<field name="state" widget="statusbar" statusbar_visible="new,draft,posted,printed,canceled"/>
+                </header>
+                <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
+                    <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
+	                    <field name="amount_due_by" string="Payment Due By" help="Find the invoices on due on or before this date" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+	                    <field name="payment_date" help="Date to be displayed on payments" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+	                    <field name="payment_journal" domain="['|',('allow_check_writing','=','True'),('use_preprint_check','=','True')]" help="Select the Bank journal to post payments too" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+	                </group>
+	                <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
+	                	<field name="payment_method" string="Find On or Before" help='Choose to find all invoices due before "Payment Due By" or to find invoices due only exactly on "Payment Due By".' attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+						<field name="apply_credit" attrs="{'readonly':[('state','in',('printed','cancel'))]}"
+						help="SelectIf you want to apply any current credits or debits for this partner to Payment, these amounts will update when you click Get Invoies. the Amount paid can be edited before creating payments "/>
+		 				<field name="end_balance" colspan="1" />
+	                    <newline/>
+	                    <button name ='cal_end_balance' string="Update Balance" type='object' attrs="{'readonly':[('state','in',('printed','cancel'))]}"
+					 	help = "Calculate the Journal Account balance after the payments are made" colspan="2" />
+	                    <field name="term_discount" colspan="1" invisible="1"/>
+                    </group>
+                </group>
+                    <field name="invoice_ids" widget="one2many_list">
+						<tree string="Invoice" editable='bottom'>
+						<button string="Click to Pay" name="pay_print_button" type="object" icon="terp-camera_test"/>
+	                    <field name='pay' attrs="{'readonly':True}"  />
+	                    <field name='print_check' attrs="{'readonly':True}" color='black' />
+						<field name="date_due" />
+						<field name="partner_id" groups="base.group_user" />
+<!--		                <field name="number"/>-->
+		                <field name="reference" invisible="1"/>
+		                <field name="name" invisible="1"/>
+		                <field name="journal_id" invisible="1"/>
+		                <field name="period_id" invisible="1" groups="account.group_account_user"/>
+		                <field name="company_id" invisible="1" groups="base.group_multi_company" widget="selection"/>
+		                <field name="user_id" invisible="1"/>
+		                <field name="origin" />
+		                <field name="currency_id" groups="base.group_multi_currency" />
+		                <field name="residual" sum="Residual Amount" />
+		                <field name= "use_credit_available" string="Available Credit" readonly="1"/>
+		                <field name= "use_credit_available_dummy" string="Available" invisible="1"/>
+		                <field name="credit_available" string="Use Credits" on_change="onchange_credit(residual, credit_available)" attrs="{'readonly':[('state_for_readonly','in',('printed','posted'))]}" sum="total"/>
+<!--		                <field name="amount_untaxed" sum="Untaxed Amount"/>-->
+<!--		                <field name="amount_total" sum="Total Amount"/>-->
+		                <field name="amount_paid" sum="Total Amount" attrs="{'readonly':[('state_for_readonly','in',('printed','posted'))]}"/>
+		                <field name="state" />
+		                <field name="state_for_readonly" invisible="1"/>
+<!--		                <field name="payment_method"/>-->
+                	</tree>
+                </field>
+                </form>
+            </field>
+        </record>
+
+        <!--  Multi payment invoice view Customer -->
+        <record id="multi_payment_form_view_customer" model="ir.ui.view">
+            <field name="name">multi.payment.form.view</field>
+            <field name="model">account.multi.pay.invoice</field>
+			<field name="arch" type="xml">
+                <form string="Invoice" version="7.0">
+                <header>
+                	<button name ='get_invoice' string="Get Invoices" type='object'  style="width: 10%%" class="oe_highlight"
+                	help = "select Invoices to be paid based on due due dates" attrs="{'invisible': [('state','in',['posted','printed','cancel'])]}"/>
+                	<button name ='pay_bills' string="Create Payments" type='object'  style="width: 10%%" class="oe_highlight"
+					help = "Create payment Journal draft entries" attrs="{'invisible': [('state','in',['new','posted','printed','cancel'])]}"/>
+                	<button name="print_checks" type='object' string="Print Checks" style="width: 10%%" class="oe_highlight" help='Will open check print wizard and alow entry of next check number to print' invisible="1"/>
+                	<button name="cancel" type='object' string="Cancel" class="oe_highlight" style="width: 10%%" attrs="{'invisible': [('state','in',['new','cancel'])]}"/>
+                	<button name="set_to_open" type='object' string="Set to Open" class="oe_highlight" style="width: 10%%" attrs="{'invisible': [('state','not in',['cancel'])]}"/>
+                	<field name="state" widget="statusbar" statusbar_visible="new,draft,posted,canceled"/>
+                </header>
+                <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
+                    <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
+	                    <field name="amount_due_by" string="Invoice Date" help="Find the invoices on due on or before this date" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+	                    <field name="payment_date" help="Date to be displayed on payments" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+	                    <field name="payment_journal" domain="['|',('allow_check_writing','=','True'),('use_preprint_check','=','True')]" help="Select the Bank journal to post payments too" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+	                </group>
+	                <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
+	                	<field name="payment_method" string="Find On or Before" help='Choose to find all invoices due before "Payment Due By" or to find invoices due only exactly on "Payment Due By".' attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+						<field name="apply_credit" attrs="{'readonly':[('state','in',('printed','cancel'))]}"
+						help="SelectIf you want to apply any current credits or debits for this partner to Payment, these amounts will update when you click Get Invoies. the Amount paid can be edited before creating payments "/>
+		 				<field name="end_balance" colspan="1" readonly='1'/>
+	                    <newline/>
+	                    <button name ='cal_end_balance' string="Update Balance" type='object' attrs="{'readonly':[('state','in',('printed','cancel'))]}"
+					 	help = "Calculate the Journal Account balance after the payments are made" colspan="2"/>
+	                    <field name="term_discount" colspan="1" invisible="1"/>
+                    </group>
+                </group>
+                    <field name="invoice_ids" widget="one2many_list">
+						<tree string="Invoice" editable='bottom'>
+						<button string="Click to Pay" name="pay_print_button" type="object" icon="terp-camera_test"/>
+	                    <field name='pay' attrs="{'readonly':True}"  />
+						<field name="date_due" />
+						<field name="partner_id" groups="base.group_user" />
+		                <field name="supplier_invoice_number" string="Description"/>
+		                <field name="reference" invisible="1"/>
+		                <field name="name" invisible="1"/>
+		                <field name="journal_id" invisible="1"/>
+		                <field name="period_id" invisible="1" groups="account.group_account_user"/>
+		                <field name="company_id" invisible="1" groups="base.group_multi_company" widget="selection"/>
+		                <field name="user_id" invisible="1"/>
+		                <field name="origin" />
+		                <field name="currency_id" groups="base.group_multi_currency" />
+		                <field name="residual" sum="Residual Amount" />
+		                <field name= "use_credit_available" string="Available Credit" readonly="1"/>
+		                <field name= "use_credit_available_dummy" string="Available" invisible="1"/>
+		                <field name="credit_available" string="Use Credits" on_change="onchange_credit(residual, credit_available)" attrs="{'readonly':[('state_for_readonly','=','posted')]}" sum="total"/>
+<!--		                <field name="amount_untaxed" sum="Untaxed Amount"/>-->
+<!--		                <field name="amount_total" sum="Total Amount"/>-->
+		                <field name="amount_paid" sum="Total Amount"  attrs="{'readonly':[('state_for_readonly','=','posted')]}"/>
+		                <field name="state" />
+		                <field name="state_for_readonly" invisible="1"/>
+<!--		                <field name="payment_method"/>-->
+                	</tree>
+                </field>
+                </form>
+            </field>
+        </record>
+
+        <record id="multi_payment_search_view" model="ir.ui.view">
+            <field name="name">multi.payment.search.view</field>
+            <field name="model">account.multi.pay.invoice</field>
+            <field name="arch" type="xml">
+                <search string="Evaluation">
+                    <field name="payment_date"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="multi_payment_tree_view" model="ir.ui.view">
+            <field name="name">multi.payment.tree.view</field>
+            <field name="model">account.multi.pay.invoice</field>
+            <field name="arch" type="xml">
+                <tree string="Evaluation">
+                    <field name="payment_date" />
+                    <field name="payment_journal" />
+                    <field name="end_balance" />
+                    <field name="state" />
+                </tree>
+            </field>
+        </record>
+		<record id="check_log_tree_view" model="ir.ui.view">
+            <field name="name">check.log.tree.view</field>
+            <field name="model">check.log</field>
+            <field name="arch" type="xml">
+                <tree string="Check Logs">
+                    <field name="name"/>
+                    <field name="voucher_id"/>
+                    <field name = "state"/>
+                </tree>
+            </field>
+        </record>
+        <record id="check_log_form_view" model="ir.ui.view">
+            <field name="name">check.log.form.view</field>
+            <field name="model">check.log</field>
+            <field name="arch" type="xml">
+                <form string="Check Logs">
+                    <field name="name"/>
+                    <field name="voucher_id"/>
+                    <field name = "state"/>
+                </form>
+            </field>
+        </record>
+        <record id="action_check_log" model="ir.actions.act_window">
+            <field name="name">Check Log</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">check.log</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+		<record id="action_multi_payment" model="ir.actions.act_window">
+            <field name="name">Multi-pay Checks</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.multi.pay.invoice</field>
+            <field name="context">{'default_inv_type':'in','default_apply_credit':True}</field>
+            <field name="domain">[('inv_type','=','in')]</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_multi_payment_tree_view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="multi_payment_tree_view"/>
+            <field name="act_window_id" ref="action_multi_payment"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_multi_payment_form_view">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="multi_payment_form_view"/>
+            <field name="act_window_id" ref="action_multi_payment"/>
+        </record>
+
+
+		<record id="action_multi_payment_cust" model="ir.actions.act_window">
+            <field name="name">Customer Batch Payment</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.multi.pay.invoice</field>
+            <field name="context">{'default_inv_type':'out', 'default_apply_credit':False}</field>
+            <field name="domain">[('inv_type','=','out')]</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_multi_payment_tree_view1">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="multi_payment_tree_view"/>
+            <field name="act_window_id" ref="action_multi_payment_cust"/>
+        </record>
+        <record model="ir.actions.act_window.view" id="action_multi_payment_form_view1">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="multi_payment_form_view_customer"/>
+            <field name="act_window_id" ref="action_multi_payment_cust"/>
+        </record>
+        <menuitem action="action_multi_payment" id="menu_action_multi_payment" parent="account.menu_finance_payables" />
+        <menuitem action="action_multi_payment_cust" id="menu_action_multi_payment1" parent="account.menu_finance_receivables" />
+<!--        <menuitem action="action_multi_invoice_payment_tree_wizard" id="menu_action_invoice_tree5" parent="account.menu_finance_payables" sequence="9" /-->
+		<menuitem action="account.action_invoice_tree4" id="account.menu_action_invoice_tree4" parent="account.menu_finance_payables" sequence="10"/>
+		<menuitem action="account.action_invoice_tree2" id="account.menu_action_invoice_tree2" parent="account.menu_finance_payables" sequence="8"/>
+		<menuitem action="account_check_writing.action_write_check" icon="STOCK_JUSTIFY_FILL" sequence="12"
+            id="account_check_writing.menu_action_write_check"  parent="account.menu_finance_payables" string="adasdasdas" groups="group_hide_menu"/>
+	</data>
+</openerp>

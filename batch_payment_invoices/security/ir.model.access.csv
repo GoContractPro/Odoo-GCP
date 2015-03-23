@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_multi_pay_invoice_accountant,account.multi.pay.invoice,model_account_multi_pay_invoice,account.group_account_user,1,1,1,1
+access_account_multi_pay_invoice_user,account.multi.pay.invoice,model_account_multi_pay_invoice,base.group_user,1,1,1,1
+access_ir_sequence_accountant,ir.sequence accountant,base.model_ir_sequence,account.group_account_user,1,1,1,1
+access_account_multi_pay_check_log,account.multi.pay.ceck.log,model_check_log,account.group_account_user,1,1,1,1
