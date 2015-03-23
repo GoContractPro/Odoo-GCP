@@ -31,5 +31,5 @@
 
 import amount_to_words
 import check_print
-import parser
+# import parser
 
