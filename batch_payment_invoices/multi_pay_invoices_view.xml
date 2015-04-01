@@ -104,8 +104,8 @@
 	                    <field name='print_check' attrs="{'readonly':True}" color='black' />
 						<field name="date_due" />
 						<field name="partner_id" groups="base.group_user" />
-<!--		                <field name="number"/>-->
-		                <field name="reference" invisible="1"/>
+		                <field name="number"/>
+		                <field name="supplier_invoice_number"/>
 		                <field name="name" invisible="1"/>
 		                <field name="journal_id" invisible="1"/>
 		                <field name="period_id" invisible="1" groups="account.group_account_user"/>
@@ -168,8 +168,7 @@
 	                    <field name='pay' attrs="{'readonly':True}"  />
 						<field name="date_due" />
 						<field name="partner_id" groups="base.group_user" />
-		                <field name="supplier_invoice_number" string="Description"/>
-		                <field name="reference" invisible="1"/>
+		                <field name="number" string="Invoice Number"/>
 		                <field name="name" invisible="1"/>
 		                <field name="journal_id" invisible="1"/>
 		                <field name="period_id" invisible="1" groups="account.group_account_user"/>
