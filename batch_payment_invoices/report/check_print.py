@@ -69,6 +69,8 @@ class report_print_check1(report_sxw.rml_parse):
         return credit
 
     def amt_word(self, amt,crny):
+        if crny and crny.upper() == 'USD':
+            crny = 'Dollars'
         return amount_to_text(amt,currency=crny)
 
     def get_lines(self, voucher_lines):
