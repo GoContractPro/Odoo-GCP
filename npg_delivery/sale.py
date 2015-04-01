@@ -95,7 +95,7 @@ class sale_order(osv.osv):
         'delivery_method': fields.many2one("delivery.method","Delivery Method", help=" The Delivery Method or Category"),
         'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping"),
         'shipcharge': fields.float('Shipping Cost'),
-        'ship_service': fields.char('Delivery Service', size=128, readonly=True),
+        'ship_service': fields.char('Ship Service', size=128, readonly=True),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
 #        'ship_method_id': fields.many2one('shipping.rate.config', 'Shipping Method', readonly=True),
         'sale_account_id': fields.many2one('account.account', 'Cost Account',
