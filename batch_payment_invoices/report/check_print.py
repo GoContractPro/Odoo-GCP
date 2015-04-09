@@ -119,4 +119,18 @@ report_sxw.report_sxw(
     parser=report_print_check1,header=False
 )
 
+report_sxw.report_sxw(
+    'report.account.print.check.middle.multi',
+    'account.voucher',
+    'addons/batch_payment_invoices/report/check_print_middle.rml',
+    parser=report_print_check1,header=False
+)
+
+report_sxw.report_sxw(
+    'report.account.print.check.bottom.multi',
+    'account.voucher',
+    'addons/batch_payment_invoices/report/check_print_bottom.rml',
+    parser=report_print_check1,header=False
+)
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
