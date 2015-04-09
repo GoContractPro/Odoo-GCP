@@ -40,13 +40,13 @@ class create_payment_profile(osv.TransientModel):
         elif context.get('active_model','') == 'account.voucher':
             part = self.pool.get('account.voucher').browse(cr, uid,context.get('active_id')).partner_id.id
         return part
-            
+
 
     _columns = {
         'cc_number':fields.char('Credit Card Number', size=32, required=True),
         'cc_ed_month':fields.char('Expiration Date MM', size=2, required=True),
         'cc_ed_year':fields.char('Expiration Date YYYY', size=4 , required=True),
-        'cc_verify_code':fields.char('Card Code Verification', size=3),
+        'cc_verify_code':fields.char('Card Code Verification', size=4),
         'partner_id':fields.many2one('res.partner', 'Customer'),
         'address_id':fields.many2one('res.partner', 'Address'),
         'description':fields.char('Description', size=128),
@@ -169,7 +169,7 @@ class create_payment_profile(osv.TransientModel):
                 billTo.appendChild(address)
                 ptext = doc1.createTextNode(self._clean_string(dic['address']))
                 address.appendChild(ptext)
-                
+
             if 'city' in KEYS:
                 city = doc1.createElement("city")
                 billTo.appendChild(city)
@@ -238,7 +238,7 @@ class create_payment_profile(osv.TransientModel):
             if 'validationMode' in KEYS:
                 validationMode = doc1.createElement("validationMode")
                 createCustomerPaymentProfileRequest.appendChild(validationMode)
-            
+
             ret = {}
             Request_string = xml = doc1.toxml(encoding="utf-8")
             create_CustomerPaymentProfile_response_xml = self.request_to_server(Request_string, url, url_path)
@@ -297,7 +297,7 @@ class create_payment_profile(osv.TransientModel):
 
             billTo = doc1.createElement("address")
             createCustomerShippingAddressRequest.appendChild(billTo)
-            
+
             if 'firstName' in KEYS:
                 firstName = doc1.createElement("firstName")
                 billTo.appendChild(firstName)
@@ -321,7 +321,7 @@ class create_payment_profile(osv.TransientModel):
                 billTo.appendChild(address)
                 ptext = doc1.createTextNode(self._clean_string(dic['address']))
                 address.appendChild(ptext)
-                
+
             if 'city' in KEYS:
                 city = doc1.createElement("city")
                 billTo.appendChild(city)
@@ -462,7 +462,7 @@ class create_payment_profile(osv.TransientModel):
         cust_prof_ids = self.pool.get('cust.profile').search(cr, uid, [('name', '=', prof_id)])
         cust_prof_id = cust_prof_ids and cust_prof_ids[0] or False
         if len(cust_prof_ids) > 0 and Customer_Payment_Profile_ID and type(Customer_Payment_Profile_ID) != type({}):
-            
+
             cust_prof_id = self.pool.get('cust.payment.profile').create(cr, uid, {'name':Customer_Payment_Profile_ID,
                                                                                'cust_profile_id':cust_prof_id,
                                                                                'address_id':addr_id.id,
