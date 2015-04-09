@@ -52,8 +52,8 @@ class report_print_check1(report_sxw.rml_parse):
         for voucher in voucher_obj.browse(self.cr, self.uid, [voucher.id]):
             if voucher.line_dr_ids:
                 for cr in voucher.line_dr_ids:
-                    if cr.move_line_id.invoice.print_check:
-                        total += cr.amount
+#                     if cr.move_line_id.invoice.print_check:
+                    total += cr.amount
                     if cr.move_line_id.invoice.credit_available:
                         total = total - cr.move_line_id.invoice.credit_available
         return total
@@ -72,50 +72,44 @@ class report_print_check1(report_sxw.rml_parse):
 #        if crny and crny.upper() == 'USD':
 #            crny = 'Dollars'
         amount = amount_to_text(amt,currency=crny)
-        print"amount",amount
         amount = amount.replace('USD','Dollars')
-        print"amount",amount
         return amount
 
     def get_lines(self, voucher_lines):
         result = []
         res = {}
         self.number_lines = len(voucher_lines)
-        for i in range(0, min(10,self.number_lines)):
-            if i < self.number_lines:
-                if voucher_lines[i].move_line_id.invoice and voucher_lines[i].move_line_id.invoice.print_check:
-                    res = {
-                        'date_due' : voucher_lines[i].date_due,
-                        'name' : voucher_lines[i].name or voucher_lines[i].move_line_id and voucher_lines[i].move_line_id.invoice and voucher_lines[i].move_line_id.invoice.supplier_invoice_number,
-                        'amount_original' : voucher_lines[i].amount_original and voucher_lines[i].amount_original or False,
-                        'amount_unreconciled' : voucher_lines[i].amount_unreconciled and voucher_lines[i].amount_unreconciled or False,
-                        'amount' : voucher_lines[i].amount and voucher_lines[i].amount or False,
-                        'supplier_invoice_number': voucher_lines[i].move_line_id and voucher_lines[i].move_line_id.invoice and voucher_lines[i].move_line_id.invoice.supplier_invoice_number,
-                        'date_invoice': voucher_lines[i].move_line_id.invoice and  voucher_lines[i].move_line_id.invoice.date_invoice or False,
-                        'residual':voucher_lines[i] and voucher_lines[i].move_line_id and voucher_lines[i].move_line_id.invoice and voucher_lines[i].move_line_id.invoice.residual or 0.0 
-                    }
-                    
-                else :
-                    res = {
-                        'date_due' : False,
-                        'name' : False,
-                        'amount_original' : False,
-                        'amount_due' : False,
-                        'amount' : False,
-                        'date_invoice' : False,
-                        'residual':0.0
-                    }
-            else :
+        cnt = 10
+        for voucher in voucher_lines:
+            cnt -= 1
+            if voucher.move_line_id.invoice and voucher.reconcile:  #voucher.move_line_id.invoice.print_check
                 res = {
-                    'date_due' : False,
-                    'name' : False,
-                    'amount_original' : False,
-                    'amount_due' : False,
-                    'amount' : False,
-                    'date_invoice' : False,
-                    'residual':0.0
+                    'date_due' : voucher.date_due,
+                    'name' : voucher.name or voucher.move_line_id and voucher.move_line_id.invoice and voucher.move_line_id.invoice.supplier_invoice_number,
+                    'amount_original' : voucher.amount_original and voucher.amount_original or False,
+                    'amount_unreconciled' : voucher.amount_unreconciled and voucher.amount_unreconciled or False,
+                    'amount' : voucher.amount and voucher.amount or False,
+                    'supplier_invoice_number': voucher.move_line_id and voucher.move_line_id.invoice and voucher.move_line_id.invoice.supplier_invoice_number,
+                    'date_invoice': voucher.move_line_id.invoice and  voucher.move_line_id.invoice.date_invoice or False,
+                    'residual':voucher and voucher.move_line_id and voucher.move_line_id.invoice and voucher.move_line_id.invoice.residual or 0.0 
                 }
-            result.append(res)
+#                 
+#             else :
+#                 res = {
+#                     'date_due' : False,
+#                     'name' : False,
+#                     'amount_original' : False,
+#                     'amount_due' : False,
+#                     'amount' : False,
+#                     'date_invoice' : False,
+#                     'residual':0.0
+#                 }
+                result.append(res)
+            if cnt == 0:
+                break
+#         for i in range(0, min(10,self.number_lines)):
+#             if i < self.number_lines:
+                
         return result
 
 report_sxw.report_sxw(
@@ -126,14 +120,14 @@ report_sxw.report_sxw(
 )
 
 report_sxw.report_sxw(
-    'report.account.print.check.middle',
+    'report.account.print.check.middle.multi',
     'account.voucher',
     'addons/batch_payment_invoices/report/check_print_middle.rml',
     parser=report_print_check1,header=False
 )
 
 report_sxw.report_sxw(
-    'report.account.print.check.bottom',
+    'report.account.print.check.bottom.multi',
     'account.voucher',
     'addons/batch_payment_invoices/report/check_print_bottom.rml',
     parser=report_print_check1,header=False

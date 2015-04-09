@@ -169,7 +169,7 @@
                 <para style="P24">Check Amount</para>
               </td>
               <td>
-                <para style="P23">[[ formatLang (voucher.amount) ]]</para>
+                <para style="P23">[[ formatLang(voucher.amount) ]]</para>
               </td>
             </tr>
           </blockTable>
@@ -194,14 +194,13 @@
         </td>
       </tr>
     </blockTable>
-    <blockTable colWidths="545.0" rowHeights="18" style="Table5">
+    <blockTable colWidths="550.0" rowHeights="20" style="Table5">
             <tr>
               <td>
-                <para style="P9">[[voucher.check_status =='void' and removeParentNode('para') ]][[ fill_stars(amt_word(total_amt(voucher),voucher.company_id.currency_id.name)) ]]</para>
-                <para style="P9">[[voucher.check_status =='void' and "VOIDED" ]]</para>
+                <para style="P26">[[ str(fill_stars(voucher.amount_in_word)) ]]</para>
               </td>
             </tr>
-    </blockTable>
+     </blockTable>
     <blockTable colWidths="568.0"  style="Table1">
       <tr>
         <td>
@@ -340,7 +339,7 @@
                 <para style="P24">Check Amount</para>
               </td>
               <td>
-                <para style="P23">[[ formatLang (voucher.amount) ]]</para>
+                <para style="P23">[[ formatLang(voucher.amount) ]]</para>
               </td>
             </tr>
           </blockTable>

@@ -50,24 +50,24 @@
             model="account.voucher"
             name="account.print.check.top.multi"
             rml="batch_payment_invoices/report/check_print_top.rml"
-            multi="False"
+            multi="True"
             auto="False"
 			menu="True"/>
 
     <report id="account_check_writing.account_print_check_middle"
             string="Print Check (Middle)"
             model="account.voucher"
-            name="account.print.check.middle"
+            name="account.print.check.middle.multi"
             rml="batch_payment_invoices/report/check_print_middle.rml"
             multi="True"
             auto="False"
     		menu="True"
     		/>
-
+            
     <report id="account_check_writing.account_print_check_bottom"
             string="Print Check (Bottom)"
             model="account.voucher"
-            name="account.print.check.bottom"
+            name="account.print.check.bottom.multi"
             rml="batch_payment_invoices/report/check_print_bottom.rml"
             multi="True"
             auto="False"
