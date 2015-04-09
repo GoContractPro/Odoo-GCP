@@ -22,15 +22,6 @@
         <field eval="True" name="isobject"/>
         <field eval="True" name="replace"/>
     </ir_set> 
-    <report id="account_check_writing.account_print_check_top1"
-            string="Print Check (Topdfdf)"
-            model="account.voucher"
-            name="account.print.check.top.multi"
-            rml="batch_payment_invoices/report/check_print_top.rml"
-            multi="True"
-            auto="False"
-    		menu="False"
-    		/> 
 	
 	<report id="report_account_voucher"
             string="Voucher"
@@ -45,7 +36,7 @@
             model="account.voucher"
             name="account.print.check.top.multi"
             rml="batch_payment_invoices/report/check_print_top.rml"
-            multi="False"
+            multi="True"
             auto="False"
 			menu="True"/>
 
@@ -68,7 +59,10 @@
             auto="False"
     		menu="True"
     		/>
-</data>
+
+    			
+    			
+    			</data>
 </openerp>
 
 

@@ -256,7 +256,7 @@
                 <para style="P24">Check Amount</para>
               </td>
               <td>
-                <para style="P23">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(total_amt(voucher)) ]]</para>
+                <para style="P23">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(voucher.amount) ]]</para>
                 <para style="P23">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
             </tr>
@@ -340,7 +340,7 @@
                 <para style="P24">Check Amount</para>
               </td>
               <td>
-                <para style="P16">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(total_amt(voucher)) ]]</para>
+                <para style="P16">[[voucher.check_status =='void' and removeParentNode('para') ]] [[ formatLang(voucher.amount) ]]</para> <!-- [[ formatLang(total_amt(voucher)) ]] -->
                 <para style="P16">[[voucher.check_status =='void' and "VOIDED" ]]</para>
               </td>
             </tr>
