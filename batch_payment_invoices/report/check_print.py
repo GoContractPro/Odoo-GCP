@@ -39,7 +39,7 @@ class report_print_check1(report_sxw.rml_parse):
         })
     
     def fill_stars(self, amount):
-        amount = amount.replace('Dollars',' ')
+#        amount = amount.replace('Dollars',' ')
         if len(amount) < 90:
             stars = 90 - len(amount)
             return ' '.join([amount,'*'*stars])
@@ -69,7 +69,11 @@ class report_print_check1(report_sxw.rml_parse):
         return credit
 
     def amt_word(self, amt,crny):
-        return amount_to_text(amt,crny)
+#        if crny and crny.upper() == 'USD':
+#            crny = 'Dollars'
+        amount = amount_to_text(amt,currency=crny)
+        amount = amount.replace('USD','Dollars')
+        return amount
 
     def get_lines(self, voucher_lines):
         result = []

@@ -34,6 +34,7 @@
 				<field name="reference" position="after">
 					<field name="jtype" invisible="1"/>
 				</field>
+				<button name="print_check" position="replace"/>
 				<xpath expr="//header/button[@string='Unreconcile']" postion='after'>
 					<button string='Print Check' name='print_checks' type='object' attrs="{'invisible': [('state','not in','posted'),('jtype','!=','bank')]}"/>
 				</xpath>
