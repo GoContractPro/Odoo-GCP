@@ -4,6 +4,7 @@
 # OpenERP, Open Source Management Solution 
 # Copyright (C) 2011 OpenERP s.a. (<http://openerp.com>). 
 # Copyright © 2013 INIT Tech Co., Ltd (http://init.vn). 
+# Copyright 2015 NovaPoint Group Inc. (http://www.novapointgroup.com).
 # This program is free software: you can redistribute it and/or modify 
 # it under the terms of the GNU Affero General Public License as 
 # published by the Free Software Foundation, either version 3 of the 
@@ -37,7 +38,7 @@
         "Module for the Check Writing and Check Printing"
         ===============================================
      """,
-    'author': 'Novapoint Group LLC',
+    'author': 'Novapoint Group INC',
     'website': 'www.novapointgroup.com',
     'depends': ['account_check_writing','account_cancel'],
     'data': [
