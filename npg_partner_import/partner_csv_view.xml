@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_import_partner_csv_form" model="ir.ui.view">
+            <field name="name">partner.csv.form</field>
+            <field name="model">import.partner.csv</field>
+            <field name="arch" type="xml">
+                <form string="Read CSV" version="7.0">
+                    <group col="4">
+                    	<field name="name"/>
+                    	<field name="end_time"/>
+                        <field name="browse_path" />
+                    </group>
+                    
+                    <newline/>
+                    
+                    <group col="8">
+                    	<button name="check_expected_headers" string="Check Headers" type="object" />
+                         <newline/>
+                         <button name="import_csv" string="Test Import" type="object"  context="{'test':True}"/>
+                         <field name="test_sample_size" />
+                         <newline/>
+                         <button name="import_csv" string="Import" type="object" class="oe_highlight"/>
+                         <field name="do_update" string="Update Existing Records" />
+                   </group>
+
+                    <group>
+                    	 <field name="error_log"/>
+                    	 <field name="field_map"/>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_import_partner_csv_tree" model="ir.ui.view">
+            <field name="name">partner.csv.tree</field>
+            <field name="model">import.partner.csv</field>
+            <field name="arch" type="xml">
+                <tree string="Read CSV" version="7.0">
+                    	<field name="name"/>
+                        <field name="browse_path" />
+                 </tree>
+            </field>
+        </record>
+
+        <record id="action_import_partners" model="ir.actions.act_window">
+            <field name="name">Import Partners</field>
+            <field name="res_model">import.partner.csv</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_import_partner_csv_tree" />
+        </record> 
+
+        <menuitem action="action_import_partners" id="menu_import_partners" parent="base.menu_config"/>
+
+    </data>
+</openerp>
