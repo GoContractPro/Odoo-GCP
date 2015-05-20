@@ -173,36 +173,6 @@ class partner_csv(osv.osv):
             for field, column in HEADER_MAP.iteritems():  
                 
                 headers_dict[field] = index_get(headers_list,column)
-
-            '''
-            headers_dict = {
-                'sequence' : index_get(headers_list,'Reference'),         
-                'name'      : index_get(headers_list,'Name'),
-                'street'    : index_get(headers_list,'Street'),
-                'street2'   : index_get(headers_list,'Street2'),
-                'city'      : index_get(headers_list,'City'),
-                'country_code': index_get(headers_list,'Country/Country Code'),
-                'state_code': index_get(headers_list,'State/State Code'),
-                'zip'       : index_get(headers_list,'Zip'),
-                'type'      : index_get(headers_list,'Address Type'),
-                'phone'     : index_get(headers_list,'Phone'),
-                'fax'       : index_get(headers_list,'Fax'),
-                'mobile'    : index_get(headers_list,'Mobile'),
-                'email'     : index_get(headers_list,'Email'),
-                'website'   : index_get(headers_list,'Website'),
-                'is_company': index_get(headers_list,'Is a Company'),
-                'supplier'  : index_get(headers_list,'Supplier'),
-                'customer'  : index_get(headers_list,'Customer'),
-                'employee'  : index_get(headers_list,'Employee'),
-                'related_company'   : index_get(headers_list,'Related Company/Name'),
-                'property_payment_term' :index_get(headers_list,'Customer Payment Term/Payment Term'),
-                'credit_limit': index_get(headers_list,'Credit Limit'),
-                'debit_limit'   : index_get(headers_list,'Payable Limit'),
-                'ref'       : index_get(headers_list,'Contact Reference'),
-                'comment'   : index_get(headers_list,'Notes'),
-   
-            }
-            '''
                 
             error_log = ''
             n = 1 # Start Counter at One for to Account for Column Headers
@@ -226,11 +196,12 @@ class partner_csv(osv.osv):
                     if headers_dict['related_company'] and data[headers_dict['related_company']]:
                         
                         try:
-                            related_search = [('name','=',data[headers_dict['related_company']])]
+                            related_search = [('name','=',)]
                             parent_id = state_obj.search(cr, uid , related_search)[0] or None
                         except:
-                            _logger.info(_('Error Related Company Not Found -- %s, %s \n ' % (name or '',email or'' )))
-                            error_log += _('Error Related Company Found at Record %s -- %s, %s \n' % (n,name or '',email or'' ))
+                            msg = _('Error Related Company - %s - Not Found at Record %s -- %s, %s \n' % (data[headers_dict['related_company']],n,name or '',email or'' ))
+                            _logger.info(msg)
+                            error_log += msg
                             parent_id = None
                     else:
                         parent_id = None 
@@ -241,8 +212,9 @@ class partner_csv(osv.osv):
                             country_search_val = [('code','=',data[headers_dict['country_code']])]
                             country_id = country_obj.search(cr, uid , country_search_val)[0] or None
                         except:
-                            _logger.info(_('Error Country Not Found -- %s \n' % ( data[headers_dict['country_code']]  or '##' )))
-                            error_log += _('Error Country Not Found at Record %s -- %s, %s \n' % (n,name or '',email or'' ))
+                            msg = _('Error Country %s Not Found at Record %s -- %s, %s \n' % (data[headers_dict['country_code']],n,name or '',email or'' ))
+                            _logger.info(msg)
+                            error_log += msg
                             country_id = None
                     else:
                         country_id = None
@@ -254,8 +226,9 @@ class partner_csv(osv.osv):
 #                            state_search_val = [('code','=',data[headers_dict['state_code']]),('country_id','=',country_id)]
                             state_id = state_obj.search(cr, uid , state_search_val)[0] or None
                         except:
-                            _logger.info(_('Error State Not Found -- %s' % (data[headers_dict['state_code']] or '##' )))
-                            error_log += _('Error State Not Found at Record %s -- %s, %s \n' % (n,name or '',email or'' ))
+                            msg = _('Error State - %s - Not Found at Record %s -- %s, %s \n' % (data[headers_dict['state_code']],n,name or '',email or'' ))
+                            _logger.info(msg)
+                            error_log += msg
                             state_id = None
                     else:
                         state_id =  None
@@ -268,8 +241,9 @@ class partner_csv(osv.osv):
                             property_payment_term = term_obj.search(cr, uid , term_search)
                             property_payment_term = property_payment_term[0] or None
                         except:
-                            _logger.info(_('Error Payemtn Term Not Found -- %s, %s' % (name or '',email or'' )))
-                            error_log += _('Error Payment Term Not Found at Record %s -- %s, %s \n' % (n,name or '',email or'' ))
+                            msg = _('Error Payment Term - %s - Not Found at Record %s -- %s, %s \n' % (data[headers_dict['property_payment_term']],n,name or '',email or'' ))
+                            _logger.info(msg)
+                            error_log += msg
                             property_payment_term = None
                     else:
                         property_payment_term = None
@@ -311,8 +285,9 @@ class partner_csv(osv.osv):
                             partner_obj.create(cr, uid,part_vals , context=context)
                             _logger.info('Loaded record %s for %s, %s ',n,name,email)
                         
+                        #exit loop and Roll back updates if is a test
                         try:
-                            if n == wiz_rec.test_sample_size  and context.get('test',False):
+                            if n == wiz_rec.test_sample_size  and context.get('test',True):
                                 t2 = datetime.now()
                                 time_delta = (t2 - time_start)
                                 time_each = time_delta // wiz_rec.test_sample_size
@@ -321,7 +296,7 @@ class partner_csv(osv.osv):
                                 estimate_time = (time_each * list_size)
                                 
                                 
-                                msg = _('Time for %s records  is %s (hrs:min:sec) \n %s' % (list_size, estimate_time ,error_log))
+                                msg = _('%s Total Records in Import, Estimated Import Time is %s (hrs:min:sec) \n\n %s' % (list_size, estimate_time ,error_log))
                                 
                                 cr.rollback()
                                 vals = {'name':start,
