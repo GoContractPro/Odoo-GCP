@@ -58,7 +58,7 @@ HEADER_MAP = {
                 'property_payment_term' : 'Customer Payment Term/Payment Term',
                 'credit_limit': 'Credit Limit',
                 'debit_limit'   : 'Payable Limit',
-                'ref'       : 'Reference',
+                'ref'       : 'Contact Reference',
                 'comment'   : 'Notes',
             }
 
@@ -77,14 +77,19 @@ class partner_csv(osv.osv):
         'test_sample_size': fields.integer('Test Sample Size'),
         'do_update': fields.boolean('Allow Update', 
                 help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
-        'field_map' : fields.text ('Field Map', readonly = True),
+        'field_map' : fields.text ('Available Import Fields ', readonly = True, help='Display the CSV to Odoo Field map relations'),
         }
     
     
-     
+    def _get_header_map(self, cr, uid, context=None):
+        field_map = 'CSV Column -->> Odoo Field \n\n'
+        for field, column in HEADER_MAP.iteritems():
+            field_map += column + ' -->> ' + field + '\n'
+        return field_map
+    
     _defaults = {
         'test_sample_size':20,
-        'field_map' : HEADER_MAP
+        'field_map' : _get_header_map
         
         }
     
@@ -111,11 +116,31 @@ class partner_csv(osv.osv):
             for header in partner_data[0]:
                 headers_list.append(header.strip())
              
-            msg = 'Csv Column position in not listed then column not found on CSV file \n\n Odoo field \t CSV Column  \t Position \n'   
+            msg = 'IF Position not listed then column is not found on CSV file \n\n'
+            msg += 'Position  -- CSV Column -- Odoo field  \n\n'
+            fields_matched = {}
+            fields_missing = []  
+            
+             
             for field, column in HEADER_MAP.iteritems():
+             
+                if index_get(headers_list,column):
+                    fields_matched[(index_get(headers_list,column))] = (column + ' -- ' + field)
+                else:
+                    fields_missing.append(field)
+
+            fields_match_sort = sorted(fields_matched.keys()) 
+             
+            for position in fields_match_sort:  
+                msg += str(position)  + ' -- ' + fields_matched[position]
+                msg += '\n'
                 
-                headers_dict[field] = index_get(headers_list,column)
-                msg += field + '\t' + column + '\t' + headers_dict[field] or ''
+            msg += '\n'
+            msg += 'Fields not found in Sheet --  \n\n'
+            for fields in fields_missing:
+                msg +=  fields + ', '
+            
+        
                 
         popup_obj = self.pool.get( 'warning.warning')
         return popup_obj.info(cr, uid, title='CSV Map ', message = msg)
@@ -143,6 +168,13 @@ class partner_csv(osv.osv):
             headers_list = []
             for header in partner_data[0]:
                 headers_list.append(header.strip())
+             
+            headers_dict = {}
+            for field, column in HEADER_MAP.iteritems():  
+                
+                headers_dict[field] = index_get(headers_list,column)
+
+            '''
             headers_dict = {
                 'sequence' : index_get(headers_list,'Reference'),         
                 'name'      : index_get(headers_list,'Name'),
@@ -170,7 +202,8 @@ class partner_csv(osv.osv):
                 'comment'   : index_get(headers_list,'Notes'),
    
             }
-            
+            '''
+                
             error_log = ''
             n = 1 # Start Counter at One for to Account for Column Headers
             
@@ -246,7 +279,6 @@ class partner_csv(osv.osv):
                         part_vals = {
                                 'name'          :name,
                                 'email'         :email,
-                                'sequence'     :headers_dict['sequence'] and data[headers_dict['sequence']] or None,
                                 'street'        :headers_dict['street'] and data[headers_dict['street']] or None,
                                 'street2'       :headers_dict['street2'] and data[headers_dict['street2']] or None,
                                 'city'          :headers_dict['city'] and data[headers_dict['city']] or None,
@@ -291,12 +323,6 @@ class partner_csv(osv.osv):
                                 
                                 msg = _('Time for %s records  is %s (hrs:min:sec) \n %s' % (list_size, estimate_time ,error_log))
                                 
-                                msg += _('/n -- Field Map --') 
-                                
-                                for field , i in headers_dict:
-                                    msg +=  'Odoo Field' + field + ' >> Maps to >> ' + headers_list(i) + '/n'
-                                    
-
                                 cr.rollback()
                                 vals = {'name':start,
                                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
