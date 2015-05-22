@@ -64,7 +64,7 @@ HEADER_MAP = {
 
 
 def index_get(L, i, v=None):
-    try: return L.index(i)
+    try: return L.index(i) 
     except: return v
 
 class partner_csv(osv.osv):
@@ -92,7 +92,7 @@ class partner_csv(osv.osv):
         'field_map' : _get_header_map
         
         }
-    
+
     
     def check_expected_headers(self, cr, uid, ids, context=None):
          
@@ -111,7 +111,6 @@ class partner_csv(osv.osv):
                 raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
             
             headers_list = []
-            headers_dict ={}
             
             for header in partner_data[0]:
                 headers_list.append(header.strip())
@@ -123,11 +122,12 @@ class partner_csv(osv.osv):
             
              
             for field, column in HEADER_MAP.iteritems():
-             
-                if index_get(headers_list,column):
-                    fields_matched[(index_get(headers_list,column))] = (column + ' -- ' + field)
-                else:
+                
+                col_num = index_get(headers_list,column)
+                if col_num is None:
                     fields_missing.append(field)
+                else:
+                    fields_matched[col_num + 1] = (column + ' -- ' + field)
 
             fields_match_sort = sorted(fields_matched.keys()) 
              
@@ -182,8 +182,8 @@ class partner_csv(osv.osv):
                 
                     n += 1
                 
-                    name = data[headers_dict['name']]                    
-                    email = headers_dict['email'] and data[headers_dict['email']] or None    
+                    name = ((headers_dict.get('name') > -1) and data[headers_dict['name']]) or None                   
+                    email = ((headers_dict.get('email') > -1) and data[headers_dict['email']]) or None    
                     search = [ ('name','=', name )]
                     partner_ids = partner_obj.search(cr,uid,search) or None
                     
@@ -193,7 +193,7 @@ class partner_csv(osv.osv):
                         
                         continue 
                     
-                    if headers_dict['related_company'] and data[headers_dict['related_company']]:
+                    if (headers_dict.get('related_company') > -1) and data[headers_dict['related_company']]:
                         
                         try:
                             related_search = [('name','=',)]
@@ -207,9 +207,15 @@ class partner_csv(osv.osv):
                         parent_id = None 
                           
                     
-                    if headers_dict['country_code'] and data[headers_dict['country_code']]:
+                    if (headers_dict.get('country_code') > -1) and data[headers_dict['country_code']]:
+                        
+                        # TODO: Setting Default Country to  no country Specified in CSV-
                         try: 
-                            country_search_val = [('code','=',data[headers_dict['country_code']])]
+                            if data[headers_dict['country_code']]== '':
+                                code = 'US'
+                            else:
+                                code = data[headers_dict['country_code']]
+                            country_search_val = [('code','=',code)]
                             country_id = country_obj.search(cr, uid , country_search_val)[0] or None
                         except:
                             msg = _('Error Country %s Not Found at Record %s -- %s, %s \n' % (data[headers_dict['country_code']],n,name or '',email or'' ))
@@ -217,13 +223,13 @@ class partner_csv(osv.osv):
                             error_log += msg
                             country_id = None
                     else:
-                        country_id = None
+                        country_id = country_obj.search(cr, uid , [('code','=','US')])[0] or None
                         
                     
-                    if headers_dict['state_code'] and data[headers_dict['state_code']]:
+                    if (headers_dict.get('state_code') > -1) and data[headers_dict['state_code']]:
                         try: 
-                            state_search_val = [('code','=',data[headers_dict['state_code']]),('country_id.code','=',data[headers_dict['country_code']])]
-#                            state_search_val = [('code','=',data[headers_dict['state_code']]),('country_id','=',country_id)]
+#                            state_search_val = [('code','=',data[headers_dict['state_code']]),('country_id.code','=',data[headers_dict['country_code']])]
+                            state_search_val = [('code','=',data[headers_dict['state_code']]),('country_id','=',country_id)]
                             state_id = state_obj.search(cr, uid , state_search_val)[0] or None
                         except:
                             msg = _('Error State - %s - Not Found at Record %s -- %s, %s \n' % (data[headers_dict['state_code']],n,name or '',email or'' ))
@@ -234,7 +240,7 @@ class partner_csv(osv.osv):
                         state_id =  None
                             
                         
-                    if headers_dict['property_payment_term'] and data[headers_dict['property_payment_term']]:
+                    if (headers_dict.get('property_payment_term') > -1) and data[headers_dict['property_payment_term']]:
                         try:    
                             term_obj = self.pool.get('account.payment.term')
                             term_search = [('name','=',data[headers_dict['property_payment_term']])]
@@ -253,27 +259,27 @@ class partner_csv(osv.osv):
                         part_vals = {
                                 'name'          :name,
                                 'email'         :email,
-                                'street'        :headers_dict['street'] and data[headers_dict['street']] or None,
-                                'street2'       :headers_dict['street2'] and data[headers_dict['street2']] or None,
-                                'city'          :headers_dict['city'] and data[headers_dict['city']] or None,
+                                'street'        :((headers_dict.get('street')> -1) and data[headers_dict['street']]) or None,
+                                'street2'       :((headers_dict.get('street2') > -1) and data[headers_dict['street2']]) or None,
+                                'city'          :((headers_dict.get('city') > -1) and data[headers_dict['city']]) or None,
                                 'country_id'    :country_id,
                                 'state_id'      :state_id,
                                 
-                                'zip'           :headers_dict['zip'] and data[headers_dict['zip']] or None,
+                                'zip'           :((headers_dict.get('zip') > -1) and data[headers_dict['zip']]) or None,
                                 'property_payment_term': property_payment_term,
-                                'is_company'    :headers_dict['is_company'] and data[headers_dict['is_company']] or False,
-                                'employee'      :headers_dict['employee'] and data[headers_dict['employee']] or False,
-                                'customer'      :headers_dict['customer'] and data[headers_dict['customer']] or False ,
-                                'supplier'      :headers_dict['supplier'] and data[headers_dict['supplier']] or False, 
-                                'credit_limit'  :headers_dict['credit_limit'] and data[headers_dict['credit_limit']] or None,
-                                'debit_limit'   :headers_dict['debit_limit'] and data[headers_dict['debit_limit']] or None,
+                                'is_company'    :((headers_dict.get('is_company') >-1 ) and data[headers_dict['is_company']]) or False,
+                                'employee'      :((headers_dict.get('employee') >-1 ) and data[headers_dict['employee']])or False,
+                                'customer'      :((headers_dict.get('customer') > -1 ) and data[headers_dict['customer']]) or False ,
+                                'supplier'      :((headers_dict.get('supplier') > -1) and data[headers_dict['supplier']]) or False, 
+                                'credit_limit'  :((headers_dict.get('credit_limit') > -1) and data[headers_dict['credit_limit']]) or None,
+                                'debit_limit'   :((headers_dict.get('debit_limit') > -1) and data[headers_dict['debit_limit']]) or None,
                                 'parent_id'     :parent_id,
-                                'phone'         :headers_dict['phone'] and data[headers_dict['phone']] or None,
-                                'fax'           :headers_dict['fax'] and data[headers_dict['fax']] or None,
-                                'mobile'        :headers_dict['mobile'] and data[headers_dict['mobile']] or None,
-                                'website'       :headers_dict['website'] and data[headers_dict['website']] or None, 
-                                'ref'           :headers_dict['ref'] and data[headers_dict['ref']] or None,
-                                'comment'       :headers_dict['comment'] and data[headers_dict['comment']] or None,                    
+                                'phone'         :((headers_dict.get('phone') > -1) and data[headers_dict['phone']]) or None,
+                                'fax'           :((headers_dict.get('fax') > -1) and data[headers_dict['fax']]) or None,
+                                'mobile'        :((headers_dict.get('mobile') > -1) and data[headers_dict['mobile']]) or None,
+                                'website'       :(( headers_dict.get('website') > -1) and data[headers_dict['website']]) or None, 
+                                'ref'           :((headers_dict.get('ref') > -1) and data[headers_dict['ref']]) or None,
+                                'comment'       :((headers_dict.get('comment') > -1) and data[headers_dict['comment']] ) or None,                    
                                 }
                         
                                                 
@@ -287,7 +293,7 @@ class partner_csv(osv.osv):
                         
                         #exit loop and Roll back updates if is a test
                         try:
-                            if n == wiz_rec.test_sample_size  and context.get('test',True):
+                            if n >= wiz_rec.test_sample_size  and context.get('test',True):
                                 t2 = datetime.now()
                                 time_delta = (t2 - time_start)
                                 time_each = time_delta // wiz_rec.test_sample_size
@@ -313,8 +319,14 @@ class partner_csv(osv.osv):
                         
                     except:
                         e = sys.exc_info()
-                        _logger.info(_('Error  # partner not created for %s, %s' % (name or '',email or'' )))
-                        error_log += _('Error  %s at Record %s -- %s, %s \n' % (e,n,name or '',email or'' ))
+                        msg = _('Error  %s at Record %s -- %s, %s \n' % (e,n,name or '',email or'' ))
+                        _logger.info(msg)
+                        error_log += _(msg)
+                        if n == wiz_rec.test_sample_size  and context.get('test',True):
+                            vals = {'error_log': error_log}
+                            cr.rollback()
+                            self.write(cr,uid,ids[0],vals)
+                            return vals
                     
         vals = {'name':start,
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),

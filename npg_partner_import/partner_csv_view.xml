@@ -21,7 +21,7 @@
                          <button name="import_csv" string="Test Import" type="object"  context="{'test':True}"/>
                          <field name="test_sample_size" />
                          <newline/>
-                         <button name="import_csv" string="Import" type="object" class="oe_highlight"/>
+                         <button name="import_csv" string="Import" type="object" class="oe_highlight" context="{'test':False}"/>
                          <field name="do_update" string="Update Existing Records" />
                    </group>
 

@@ -232,7 +232,7 @@ class import_csv(osv.osv):
                             t2 = datetime.now()
                             time_delta = (t2 - time_start)
                             time_each = time_delta // wiz_rec.test_sample_size
-                            list_size = len(partner_data)
+                            list_size = len(csv_data)
                              
                             estimate_time = (time_each * list_size)
                             
