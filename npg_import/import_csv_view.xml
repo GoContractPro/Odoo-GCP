@@ -12,6 +12,7 @@
                         <field name="browse_path" />
                         <field name="start_time"/>
                     	<field name="end_time"/>
+                    	<field name="model_id"/>
                     </group>
                     
                     <newline/>
@@ -31,9 +32,7 @@
 	                    		<field name="create"/>
 	                    	 	<field name="model"/>
 	                    		<field name="model_field"/>
-	                      	 	<field name='relation_field'/> 
 	                    		<field name="search"/> 
-	                    		<
 	                    	</tree> 
 	                    	
 						</field>
@@ -64,10 +63,10 @@
             <field name="type">ir.actions.act_window</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
-            <field name="view_id" ref="view_import_partner_csv_tree" />
+            <field name="view_id" ref="view_import_csv_tree" />
         </record> 
 
-        <menuitem action="action_import_CSV" id="menu_import_csv" parent="base.menu_config"/>
+        <menuitem action="action_import_csv" id="menu_import_csv" parent="base.menu_config"/>
 
     </data>
 </openerp>

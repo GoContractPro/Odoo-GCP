@@ -104,6 +104,7 @@ class import_csv(osv.osv):
                 
                 header_csv_obj = self.pool.get('import.header.csv')
                 header_csv_ids=header_csv_obj.search(cr, uid,[('csv_id','=',ids[0])])
+                
                 if header_csv_ids:
                     header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
                 
@@ -116,12 +117,35 @@ class import_csv(osv.osv):
                     rid = self.pool.get('import.header.csv').create(cr,uid,{'name':header,'index': n , 'csv_id':import_csv.id, 'model_id':import_csv.model_id.id})
         return True
     
-    def search_record_exists(self, cr, uid, data, header_dict, context = None): 
+    def search_header_exists(self, cr, uid, ids, model_id,header_dict,context = None): 
+        ir_model_obj = self.pool.get('ir.model')
+        ir_model_fields_obj = self.pool.get('ir.model.fields')
+        model=ir_model_obj.browse(cr,uid,model_id)
+        model_name=model.model
+        model_ids = ir_model_obj.search(cr, uid, [('model', '=',model_name)], context=context)
+        if model_ids:
+            field_ids = ir_model_fields_obj.search(cr, uid, [('field_description','=',header_dict['name']), ('model_id', '=', model_ids)], context=context)
+            if field_ids:
+                field_id = field_ids[0]
+    
+    def search_record_exists(self, cr, uid, data,header_dict, context = None): 
+        if header_dict.is_unique:
+            ir_model_obj = self.pool.get('ir.model')
+            ir_model_fields_obj = self.pool.get('ir.model.fields')
+            model=ir_model_obj.browse(cr,uid,model_id)
+            model_name=model.model
+            model_ids = ir_model_obj.search(cr, uid, [('model', '=',model_name)], context=context)
+            if model_ids:
+                field_ids = ir_model_fields_obj.search(cr, uid, [('name', '=', header_dict['name']), ('model_id', '=', model_ids[0])], context=context)
+                if field_ids:
+                    field_id = field_ids[0]
+                    print"Header Exist....."
         
         #Todo Add Code here to  search on fields in header_dict which are flaged as Unique Record
         # for example a Name or Ref Field
         # if Found Return record ID (most also Consider is possible could be multiple records if search field not Truely unique Will update all these)
         # if not Found Return false
+        
         
         return False  
     
@@ -162,16 +186,17 @@ class import_csv(osv.osv):
             
             # get Header Dict
             
-            header_dict_ids = self.pool.get('import.header.csv').search(cr,uid,[('id','=',ids[0])])
-            header_dict = self.pool.get('import.header.csv').browse(cr,uid,header_dict_ids)
-            
-            for data in csv_data[1:]:
+            header_dict_ids = self.pool.get('import.header.csv').search(cr,uid,[('csv_id','=',ids[0])])
+            for head in header_dict_ids:
+                header_dict = self.pool.get('import.header.csv').browse(cr,uid,head)
+                self.search_header_exists(cr,uid,ids,wiz_rec.model_id.id,header_dict)
                 
+            for data in csv_data[1:]:
 #               Check if Uniques already exist in Data if so then if Do update is True then write Records else Skip
                 # TODO add Code here to Search on Uniques
                 n += 1
                 
-                record_ids = self.search_record_exists(cr,uid,data, header_dict)
+                record_ids = self.search_record_exists(cr,uid,data,header_dict)
                     
                 if record_ids and not wiz_rec.do_update: 
                     
