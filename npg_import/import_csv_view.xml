@@ -18,21 +18,21 @@
                     <newline/>
                     
                     <group col="8">
-                    	<button name='action_get_headers_csv' string="Get CSV Headers" type="object" class="oe_highlight"/>
+                    	<button name='action_get_headers_csv' string="Get CSV Headers" context="{'model':model_id}" type="object" class="oe_highlight"/>
                     	 <field name='do_update' />
                          <field name="test_sample_size" />
                          <button name="action_import_csv" string="Test" type="object" clase="oe_highlight" context="{'test':True}"/>
                          <newline/>
                          <button name="action_import_csv" string="Import" type="object" class="oe_highlight"/>
                    </group>
-                      	<field name="header_csv_ids"> 
-	                    	<tree>
+                      	<field name="header_csv_ids" context="{'model':model_id}"> 
+	                    	<tree create="false" editable="bottom">
 	                    		<field name="name"/>
 	                    		<field name="is_unique"/>
 	                    		<field name="create"/>
-	                    	 	<field name="model"/>
-	                    		<field name="model_field"/>
-	                    		<field name="search"/> 
+	                    	 	<field name="model" required="1" readonly="1"/>
+	                    		<field name="model_field" required="1" domain="[('model_id','=',model),('ttype','not in',['one2many','many2many'])]"/>
+	                    		<field name="search"/>
 	                    	</tree> 
 	                    	
 						</field>
