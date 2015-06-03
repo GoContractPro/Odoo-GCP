@@ -72,12 +72,15 @@ class partner_csv(osv.osv):
     _columns = {
         'name':fields.char('Started',size=10, readonly=True),
         'end_time': fields.datetime('End',  readonly=True),
-        'browse_path': fields.binary('Csv File Path', required=True),
+#        'browse_path': fields.binary('Csv File Path', required=True),
         'error_log': fields.text('Error Log'),
         'test_sample_size': fields.integer('Test Sample Size'),
         'do_update': fields.boolean('Allow Update', 
                 help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
         'field_map' : fields.text ('Available Import Fields ', readonly = True, help='Display the CSV to Odoo Field map relations'),
+        'csv_attachment': fields.many2many('ir.attachment',
+            'import_markeeting_csv_ir_attachments_rel',
+            'import_csv_id', 'attachment_id', 'CSV Import File'),
         }
     
     
@@ -102,7 +105,11 @@ class partner_csv(osv.osv):
             context = {}
         for wiz_rec in self.browse(cr, uid, ids, context=context):
             
-            str_data = base64.decodestring(wiz_rec.browse_path)
+            str_data = ''
+            for csv_attach in wiz_rec.csv_attachment:
+                str_data = base64.decodestring(csv_attach.datas)
+                continue
+            
             if not str_data:
                 raise osv.except_osv('Warning', 'The file contains no data')
             try:
@@ -156,7 +163,11 @@ class partner_csv(osv.osv):
             context = {}
         for wiz_rec in self.browse(cr, uid, ids, context=context):
             
-            str_data = base64.decodestring(wiz_rec.browse_path)
+            str_data = ''
+            for csv_attach in wiz_rec.csv_attachment:
+                str_data = base64.decodestring(csv_attach.datas)
+                continue
+                   
             if not str_data:
                 raise osv.except_osv('Warning', 'The file contains no data')
             try:
@@ -184,7 +195,9 @@ class partner_csv(osv.osv):
                 
                     name = ((headers_dict.get('name') > -1) and data[headers_dict['name']]) or None                   
                     email = ((headers_dict.get('email') > -1) and data[headers_dict['email']]) or None    
-                    search = [ ('name','=', name )]
+                    search = [ ('name','=', name ),
+                              ('street','=',((headers_dict.get('street')> -1) and data[headers_dict['street']]) or None),
+                              ('zip','=',((headers_dict.get('zip') > -1) and data[headers_dict['zip']]) or None)]
                     partner_ids = partner_obj.search(cr,uid,search) or None
                     
                     if partner_ids and not wiz_rec.do_update:
