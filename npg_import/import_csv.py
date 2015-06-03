@@ -22,7 +22,7 @@
 ##############################################################################
 
 
-from openerp.osv import fields, osv
+from openerp.osv import fields, osv, orm
 from openerp import tools
 from openerp.tools.translate import _
 import csv
@@ -44,6 +44,7 @@ class import_header_csv(osv.osv):
     # The Model Is a map from Odoo Data to CSV Sheet Data
     _name = 'import.header.csv'
     _description = "Map Odoo Data to CSV  Import Sheet Columns"
+    
     _columns = { 'name':fields.char('CSV Header Field', size=64, required = True),
                 'csv_id':fields.many2one('import.csv','Import CSV'),
                 'is_unique':fields.boolean('Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated '),
@@ -56,6 +57,13 @@ class import_header_csv(osv.osv):
                 
                 'create':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
                 }
+    
+    def _get_model(self,cr,uid,context={}):
+        return context.get('model',False)
+    
+    _defaults = {
+                 'model':_get_model,
+                 }
     
     def onchange_name(self, cr, uid, ids, name, context=None):
         # TODO set model_field value to Search  if Name matches the models Field Name,
@@ -76,52 +84,115 @@ class import_csv(osv.osv):
         'do_update': fields.boolean('Allow Update', 
                 help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
         'header_csv_ids': fields.one2many('import.header.csv','csv_id','CSV Columns Map'),
+        'index':fields.integer("Index")
         }
     
     _defaults = {
         'test_sample_size':10
         }
-    
+    def _match_header(self, header, fields):
+        """ Attempts to match a given header to a field of the
+        imported model.
+
+        :param str header: header name from the CSV file
+        :param fields:
+        :param dict options:
+        :returns: an empty list if the header couldn't be matched, or
+                  all the fields to traverse
+        :rtype: list(Field)
+        """
+        for field in fields:
+            # FIXME: should match all translations & original
+            # TODO: use string distance (levenshtein? hamming?)
+            if header == field['name'] \
+              or header.lower() == field['string'].lower():
+                return [field]
+
+        if '/' not in header:
+            return []
+
+        # relational field path
+        traversal = []
+        subfields = fields
+        # Iteratively dive into fields tree
+        for section in header.split('/'):
+            # Strip section in case spaces are added around '/' for
+            # readability of paths
+            match = self._match_header(section.strip(), subfields, options)
+            # Any match failure, exit
+            if not match: return []
+            # prep subfields for next iteration within match[0]
+            field = match[0]
+            subfields = field['fields']
+            traversal.append(field)
+        return traversal
     
     
     def action_get_headers_csv(self, cr, uid, ids, context=None):
-        
-        for import_csv in self.browse(cr,uid,ids,context):
-        
-            if context is None:
-                context = {}
+        if context is None:
+            context = {}
+        for wiz_rec in self.browse(cr, uid, ids, context=context):
             
+            str_data = base64.decodestring(wiz_rec.browse_path)
+            if not str_data:
+                raise osv.except_osv('Warning', 'The file contains no data')
+            try:
+                partner_data = list(csv.reader(cStringIO.StringIO(str_data)))
+            except:
+                raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
             
-            for wiz_rec in self.browse(cr, uid, ids, context=context):
+            header_csv_obj = self.pool.get('import.header.csv')
+            header_csv_ids=header_csv_obj.search(cr, uid,[('csv_id','=',ids[0])])
+            
+            if header_csv_ids:
+                header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
+            
+            headers_list = []
+            for header in partner_data[0]:
+                headers_list.append(header.strip())
+            n=0
+            for header in headers_list:
+                n += 1
+                fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', wiz_rec.model_id.id)])
+                rid = self.pool.get('import.header.csv').create(cr,uid,{'name':header,'index': n , 'csv_id':wiz_rec.id, 'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id},context=context)
                 
-                str_data = base64.decodestring(wiz_rec.browse_path)
-                if not str_data:
-                    raise osv.except_osv('Warning', 'The file contains no data')
-                try:
-                    partner_data = list(csv.reader(cStringIO.StringIO(str_data)))
-                except:
-                    raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
-                
-                header_csv_obj = self.pool.get('import.header.csv')
-                header_csv_ids=header_csv_obj.search(cr, uid,[('csv_id','=',ids[0])])
-                if header_csv_ids:
-                    header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
-                
-                headers_list = []
-                for header in partner_data[0]:
-                    headers_list.append(header.strip())
-                n=0
-                for header in headers_list:
-                    n += 1
-                    rid = self.pool.get('import.header.csv').create(cr,uid,{'name':header,'index': n , 'csv_id':import_csv.id, 'model_id':import_csv.model_id.id})
+#             model_obj = self.pool[wiz_rec.model_id.model]
+#             fields_got = model_obj.fields_get(cr, uid, context=context)
+#             blacklist = orm.MAGIC_COLUMNS + [model_obj.CONCURRENCY_CHECK_FIELD]
+#             for name, field in fields_got.iteritems():
+#                 if name in blacklist:
+#                     continue
         return True
     
-    def search_record_exists(self, cr, uid, data, header_dict, context = None): 
+    def search_header_exists(self, cr, uid, ids, model_id,header_dict,context = None): 
+        ir_model_obj = self.pool.get('ir.model')
+        ir_model_fields_obj = self.pool.get('ir.model.fields')
+#         model=ir_model_obj.browse(cr,uid,model_id)
+#         model_name=model.model
+#         model_ids = ir_model_obj.search(cr, uid, [('model', '=',model_name)], context=context)
+        if model_id:
+            field_ids = ir_model_fields_obj.search(cr, uid, [('field_description','=',header_dict['name']), ('model_id', '=', model_id)], context=context)
+            if field_ids:
+                field_id = field_ids[0]
+    
+    def search_record_exists(self, cr, uid, data,header_dict, context = None): 
+        if header_dict.is_unique:
+            ir_model_obj = self.pool.get('ir.model')
+            ir_model_fields_obj = self.pool.get('ir.model.fields')
+            model=ir_model_obj.browse(cr,uid,model_id)
+            model_name=model.model
+            model_ids = ir_model_obj.search(cr, uid, [('model', '=',model_name)], context=context)
+            if model_ids:
+                field_ids = ir_model_fields_obj.search(cr, uid, [('name', '=', header_dict['name']), ('model_id', '=', model_ids[0])], context=context)
+                if field_ids:
+                    field_id = field_ids[0]
+                    print"Header Exist....."
         
         #Todo Add Code here to  search on fields in header_dict which are flaged as Unique Record
         # for example a Name or Ref Field
         # if Found Return record ID (most also Consider is possible could be multiple records if search field not Truely unique Will update all these)
         # if not Found Return false
+        
         
         return False  
     
@@ -162,16 +233,17 @@ class import_csv(osv.osv):
             
             # get Header Dict
             
-            header_dict_ids = self.pool.get('import.header.csv').search(cr,uid,[('id','=',ids[0])])
-            header_dict = self.pool.get('import.header.csv').browse(cr,uid,header_dict_ids)
-            
-            for data in csv_data[1:]:
+            header_dict_ids = self.pool.get('import.header.csv').search(cr,uid,[('csv_id','=',ids[0])])
+#             for head in header_dict_ids:
+#                 header_dict = self.pool.get('import.header.csv').browse(cr,uid,head)
+#                 self.search_header_exists(cr,uid,ids,wiz_rec.model_id.id,header_dict)
                 
+            for data in csv_data[1:]:
 #               Check if Uniques already exist in Data if so then if Do update is True then write Records else Skip
                 # TODO add Code here to Search on Uniques
                 n += 1
                 
-                record_ids = self.search_record_exists(cr,uid,data, header_dict)
+                record_ids = self.search_record_exists(cr,uid,data,header_dict)
                     
                 if record_ids and not wiz_rec.do_update: 
                     
