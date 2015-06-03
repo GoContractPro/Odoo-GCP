@@ -175,18 +175,17 @@ class import_csv(osv.osv):
             if field_ids:
                 field_id = field_ids[0]
     
-    def search_record_exists(self, cr, uid, data,header_dict, context = None): 
-        if header_dict.is_unique:
-            ir_model_obj = self.pool.get('ir.model')
-            ir_model_fields_obj = self.pool.get('ir.model.fields')
-            model=ir_model_obj.browse(cr,uid,model_id)
-            model_name=model.model
-            model_ids = ir_model_obj.search(cr, uid, [('model', '=',model_name)], context=context)
-            if model_ids:
-                field_ids = ir_model_fields_obj.search(cr, uid, [('name', '=', header_dict['name']), ('model_id', '=', model_ids[0])], context=context)
-                if field_ids:
-                    field_id = field_ids[0]
-                    print"Header Exist....."
+    def search_record_exists(self, cr, uid, wiz_rec, data,header_dict, unique_fields=[]):
+        if not unique_fields: return False
+        ir_model_obj = self.pool.get('ir.model')
+        ir_model_fields_obj = self.pool.get('ir.model.fields')
+        
+        dom = []
+        for col in unique_fields:
+            dom.append((col, '=', data[header_dict[col]]))
+            
+        obj = self.pool[wiz_rec.model_id.model]
+        return obj.search(cr,uid,dom)
         
         #Todo Add Code here to  search on fields in header_dict which are flaged as Unique Record
         # for example a Name or Ref Field
@@ -211,6 +210,10 @@ class import_csv(osv.osv):
     
         return search_string
     
+    def index_get(L, i, v=None):
+        try: return L.index(i) 
+        except: return v
+    
     def action_import_csv(self, cr, uid, ids, context=None):
 
         start = time.strftime('%Y-%m-%d %H:%M:%S')       
@@ -218,6 +221,8 @@ class import_csv(osv.osv):
             context = {}
         for wiz_rec in self.browse(cr, uid, ids, context=context):
             
+            if not wiz_rec.header_csv_ids:
+                raise osv.except_osv('Warning', 'No Header selected in Header list')
             str_data = base64.decodestring(wiz_rec.browse_path)
             if not str_data:
                 raise osv.except_osv('Warning', 'The file contains no data')
@@ -230,20 +235,33 @@ class import_csv(osv.osv):
             n = 1
             
             time_start = datetime.now()
+
+            headers_list = []
+            for header in csv_data[0]:
+                headers_list.append(header.strip())
             
-            # get Header Dict
-            
-            header_dict_ids = self.pool.get('import.header.csv').search(cr,uid,[('csv_id','=',ids[0])])
-#             for head in header_dict_ids:
-#                 header_dict = self.pool.get('import.header.csv').browse(cr,uid,head)
-#                 self.search_header_exists(cr,uid,ids,wiz_rec.model_id.id,header_dict)
+            header_map = {}
+            unique_fields = []
+            for hd in wiz_rec.header_csv_ids:
+                if hd.model_field:
+                    label = hd.model_field.field_description or ''
+                    header_map.update({hd.model_field.name : hd.name})
+                    if hd.is_unique:
+                        unique_fields.append(hd.model_field.name)
+                        
+            if not header_map:
+                raise osv.except_osv('Warning', 'No Header mapped with Model Field in Header line!')
+                        
+            headers_dict = {}
+            for field, label in header_map.iteritems():  
+                headers_dict[field] = index_get(headers_list,label)
                 
             for data in csv_data[1:]:
 #               Check if Uniques already exist in Data if so then if Do update is True then write Records else Skip
                 # TODO add Code here to Search on Uniques
                 n += 1
                 
-                record_ids = self.search_record_exists(cr,uid,data,header_dict)
+                record_ids = self.search_record_exists(cr,uid,wiz_rec,data,headers_dict,unique_fields)
                     
                 if record_ids and not wiz_rec.do_update: 
                     
@@ -256,18 +274,35 @@ class import_csv(osv.osv):
                     
                 # Create Vals Dict    
                 vals ={}
-                for field in header_dict:
-                    
-                    if field.related:
+                for hd in wiz_rec.header_csv_ids:
+                    model_field = hd.model_field
+                    if not model_field or not headers_dict.has_key(model_field.name): continue
+                    field_text = data[headers_dict[model_field.name]]
+                    if model_field.ttype == 'many2one':
+#                         Verts TODO: Generally many2one fields represented by "Name" Field. It can be any field from relation table. 
+#                         Needs to change logic here according to appropriate fields
+                        rel_id = self.pool[model_field.relation].search(cr,uid,[('name','=',field_text)])
+                        if rel_id : vals.update({model_field.name : rel_id[0]})
+                    elif model_field.ttype == 'boolean':
+#                         Verts: Check if the field type is boolean the eval corresponding cell string for this field
+                        field_text = field_text.upper()
+                        if field_text in ['TRUE','1','T']:
+                            vals.update({model_field.name : True})
+                        elif field_text in ['0','FALSE','F']:
+                            vals.update({model_field.name : False})
+                        else:
+                            vals.update({model_field.name : False})
+                    else:
+                        vals.update({model_field.name : field_text})
                         
                         # Search on Related Model using Search Domain and Get ID
                         # TODO: update code Search must be created from search defined on import.header.csv and substitute
                         # values from data based on column name in csv and Data in CSV
                         #
                     
-                        search = self.make_domain_search(field.search, data ,header_dict)
-                        id = self.pool.get(field.relation_model).search(cr,uid,search)
-                        vals[field.name] = id
+#                         search = self.make_domain_search(field.search, data ,header_dict)
+#                         id = self.pool.get(field.relation_model).search(cr,uid,search)
+#                         vals[field.name] = id
                         
                         # if related record not Found then to posible routes
                         #
@@ -277,52 +312,54 @@ class import_csv(osv.osv):
                         #  
                         # 
                             
-                    else:
-                        vals[field.name] = data(field.index) 
+#                     else:
+#                         vals[field.name] = data(field.index) 
                 
                 # Update or Create Import Records  
                 try:
                     if record_ids:
-                        self.pool.get(import_csv.model_id.name).write(cr, uid, record_ids, vals )
-                        _logger.info('Update  Line Number %s  ',n)
+                        self.pool.get(wiz_rec.model_id.model).write(cr, uid, record_ids, vals )
+                        _logger.info('Update  Line Number %s  ' % n)
 
                     else:
-                        self.pool.get(import_csv.model_id.name).create(cr, uid, vals, context=context)
-                        _logger.info('Imported Line Number%s  ',n)
+                        self.pool.get(wiz_rec.model_id.model).create(cr, uid, vals, context=context)
+                        _logger.info('Imported Line Number%s  ' % n)
                  
                 except:
                     e = sys.exc_info()
-                    _logger.info(_('Error  %s record not created for line Number %s' % (e,n,)))
-                    error_log += _('Error  %s at Record %s -- %s, %s \n' % (e,n, )) 
+                    _logger.info(_('Error  %s record not created for line Number %s') % (e,n,))
+                    error_log += _('Error  %s at Record %s --\n') % (e,n, ) 
                   
                   
                 # This is only a Test Roll Back Records exit loop and create POP UP With Info statistic about Import 
                                        
                 
-                    if n == wiz_rec.test_sample_size  and context.get('test',False):
-                        try:
-                            t2 = datetime.now()
-                            time_delta = (t2 - time_start)
-                            time_each = time_delta // wiz_rec.test_sample_size
-                            list_size = len(csv_data)
-                             
-                            estimate_time = (time_each * list_size)
-                            
-                            
-                            msg = _('Time for %s records  is %s (hrs:min:sec) \n %s' % (list_size, estimate_time ,error_log))
-                            cr.rollback()
-                            vals = {'name':start,
-                            'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
-                            'error_log':error_log}
-                       
-                            self.write(cr,uid,ids[0],vals)
-                            return self.show_warning(cr, uid, msg , context = context)
-                        except:
-                            e = sys.exc_info()
-                            _logger.error(_('Error %s' % (e,)))
-                            vals = {'error_log': e}
-                            self.write(cr,uid,ids[0],vals)
-                            return False
+                    #===========================================================
+                    # if n == wiz_rec.test_sample_size  and context.get('test',False):
+                    #     try:
+                    #         t2 = datetime.now()
+                    #         time_delta = (t2 - time_start)
+                    #         time_each = time_delta // wiz_rec.test_sample_size
+                    #         list_size = len(csv_data)
+                    #          
+                    #         estimate_time = (time_each * list_size)
+                    #         
+                    #         
+                    #         msg = _('Time for %s records  is %s (hrs:min:sec) \n %s' % (list_size, estimate_time ,error_log))
+                    #         cr.rollback()
+                    #         vals = {'name':start,
+                    #         'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+                    #         'error_log':error_log}
+                    #    
+                    #         self.write(cr,uid,ids[0],vals)
+                    #         return self.show_warning(cr, uid, msg , context = context)
+                    #     except:
+                    #         e = sys.exc_info()
+                    #         _logger.error(_('Error %s' % (e,)))
+                    #         vals = {'error_log': e}
+                    #         self.write(cr,uid,ids[0],vals)
+                    #         return False
+                    #===========================================================
 
                         
 
