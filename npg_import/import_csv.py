@@ -235,7 +235,7 @@ class import_csv(osv.osv):
             n = 1
             
             time_start = datetime.now()
-
+            print "time_start",time_start
             headers_list = []
             for header in csv_data[0]:
                 headers_list.append(header.strip())
@@ -262,13 +262,13 @@ class import_csv(osv.osv):
                 n += 1
                 
                 record_ids = self.search_record_exists(cr,uid,wiz_rec,data,headers_dict,unique_fields)
-                    
+                print record_ids 
                 if record_ids and not wiz_rec.do_update: 
                     
                     #TODO  need to add the Unique Record Field and Value Found to this Log
                     
-                    _logger.info(_('Error Duplicate Name Found at line %s record skipped' % (n)) )
-                    error_log += _('Error Duplicate Name Found at line %s record skipped\n' %(n) )
+                    _logger.info(_('Error Duplicate Name Found at line %s record skipped') % (n))
+                    error_log += _('Error Duplicate Name Found at line %s record skipped\n') %(n)
                     
                     continue
                     
@@ -282,7 +282,12 @@ class import_csv(osv.osv):
 #                         Verts TODO: Generally many2one fields represented by "Name" Field. It can be any field from relation table. 
 #                         Needs to change logic here according to appropriate fields
                         rel_id = self.pool[model_field.relation].search(cr,uid,[('name','=',field_text)])
-                        if rel_id : vals.update({model_field.name : rel_id[0]})
+                        if rel_id : 
+                            vals.update({model_field.name : rel_id[0]})
+                        else:
+                            vals.update({model_field.name : False})
+                            _logger.info(_('Value \'%s\' not found for the relation field \'%s\'') % (field_text, model_field.field_description))
+                            error_log += _('Value \'%s\' not found for the relation field \'%s\'') % (field_text, model_field.field_description)
                     elif model_field.ttype == 'boolean':
 #                         Verts: Check if the field type is boolean the eval corresponding cell string for this field
                         field_text = field_text.upper()
@@ -334,32 +339,30 @@ class import_csv(osv.osv):
                 # This is only a Test Roll Back Records exit loop and create POP UP With Info statistic about Import 
                                        
                 
-                    #===========================================================
-                    # if n == wiz_rec.test_sample_size  and context.get('test',False):
-                    #     try:
-                    #         t2 = datetime.now()
-                    #         time_delta = (t2 - time_start)
-                    #         time_each = time_delta // wiz_rec.test_sample_size
-                    #         list_size = len(csv_data)
-                    #          
-                    #         estimate_time = (time_each * list_size)
-                    #         
-                    #         
-                    #         msg = _('Time for %s records  is %s (hrs:min:sec) \n %s' % (list_size, estimate_time ,error_log))
-                    #         cr.rollback()
-                    #         vals = {'name':start,
-                    #         'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
-                    #         'error_log':error_log}
-                    #    
-                    #         self.write(cr,uid,ids[0],vals)
-                    #         return self.show_warning(cr, uid, msg , context = context)
-                    #     except:
-                    #         e = sys.exc_info()
-                    #         _logger.error(_('Error %s' % (e,)))
-                    #         vals = {'error_log': e}
-                    #         self.write(cr,uid,ids[0],vals)
-                    #         return False
-                    #===========================================================
+                if n == wiz_rec.test_sample_size  and context.get('test',False):
+                    try:
+                        t2 = datetime.now()
+                        time_delta = (t2 - time_start)
+                        time_each = time_delta / wiz_rec.test_sample_size
+                        list_size = len(csv_data)
+                          
+                        estimate_time = (time_each * list_size)
+                         
+                        print "time_end,time_delta,estimate_time",t2,time_delta,estimate_time
+                        msg = _('Time for %s records  is %s (hrs:min:sec) \n %s') % (list_size, estimate_time ,error_log)
+                        cr.rollback()
+                        vals = {'name':start,
+                        'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+                        'error_log':error_log}
+                    
+                        self.write(cr,uid,ids[0],vals)
+                        return self.show_warning(cr, uid, msg , context = context)
+                    except:
+                        e = sys.exc_info()
+                        _logger.error(_('Error %s' % (e,)))
+                        vals = {'error_log': e}
+                        self.write(cr,uid,ids[0],vals)
+                        return False
 
                         
 
