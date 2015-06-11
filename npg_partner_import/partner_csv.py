@@ -82,6 +82,7 @@ class partner_csv(osv.osv):
         'csv_attachment': fields.many2many('ir.attachment',
             'import_markeeting_csv_ir_attachments_rel',
             'import_csv_id', 'attachment_id', 'CSV Import File'),
+        'col_missing_in_csv' : fields.text ('Missing Import Fields ', readonly = True, help='Fields for Import not found in CSV sheet'),
         }
     
     
@@ -96,6 +97,7 @@ class partner_csv(osv.osv):
         'field_map' : _get_header_map
         
         }
+
 
     
     def check_expected_headers(self, cr, uid, ids, context=None):
@@ -143,16 +145,16 @@ class partner_csv(osv.osv):
                 msg += str(position)  + ' -- ' + fields_matched[position]
                 msg += '\n'
                 
-            msg += '\n'
-            msg += 'Fields not found in Sheet --  \n\n'
-            msg += 'CSV Column -> Odoo field  \n\n'
+            
+            missing = ' Fields not found in Sheet --  \n\n'
+            missing += 'CSV Column -> Odoo field  \n\n'
             for fields in fields_missing:
-                msg +=  fields
-                msg += '\n'
-        
+                missing +=  fields
+                missing += '\n'
+                
                 
         popup_obj = self.pool.get( 'warning.warning')
-        return popup_obj.info(cr, uid, title='CSV Map ', message = msg)
+        return popup_obj.info(cr, uid, title='CSV Map ', message = msg + '\n' + missing)
         
     
     
@@ -185,10 +187,19 @@ class partner_csv(osv.osv):
             headers_list = [x.lower() for x in headers_list ]
              
             headers_dict = {}
+            fields_missing = []
             for field, column in HEADER_MAP.iteritems():  
                 
                 headers_dict[field] = index_get(headers_list,column.lower())
                 
+                if headers_dict[field] is None:
+                    fields_missing.append(column + ' -> ' + field)
+                    
+            missing = 'CSV Column -> Odoo field  \n\n'
+            for fields in fields_missing:
+                missing +=  fields
+                missing += '\n'        
+                    
             error_log = ''
             n = 1 # Start Counter at One for to Account for Column Headers
             
@@ -284,8 +295,7 @@ class partner_csv(osv.osv):
                             
                         
                     try:
-                        part_vals = {
-                                'external_id'   :external_id,  
+                        part_vals = { 
                                 'name'          :name,
                                 'email'         :email,
                                 'street'        :((headers_dict.get('street')> -1) and data[headers_dict['street']]) or None,
@@ -344,13 +354,16 @@ class partner_csv(osv.osv):
                                 cr.rollback()
                                 vals = {'name':start,
                                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
-                                'error_log':error_log}
+                                'error_log':error_log,
+                                'col_missing_in_csv':missing,
+                                }
                                 self.write(cr,uid,ids[0],vals)
                                 return self.show_warning(cr, uid, msg , context = context)
                         except:
                             e = sys.exc_info()
                             _logger.error(_('Error %s' % (e,)))
-                            vals = {'error_log': e}
+                            vals = {'error_log': e,
+                                    'col_missing_in_csv': missing}
                             self.write(cr,uid,ids[0],vals)
                             return vals
                         
@@ -365,9 +378,13 @@ class partner_csv(osv.osv):
                             self.write(cr,uid,ids[0],vals)
                             return vals
                     
+
+        if not error_log:
+            error_log = "All Records Imported Successfully"
         vals = {'name':start,
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'error_log':error_log}
+                'error_log':error_log,
+                'col_missing_in_csv': missing}
         if context.get('test',False):
             cr.rollback()
         self.write(cr,uid,ids[0],vals)

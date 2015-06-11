@@ -28,6 +28,7 @@
                     <group>
                     	 <field name="error_log"/>
                     	 <field name="field_map"/>
+                    	 <field name="col_missing_in_csv"/>
                     </group>
 
                 </form>
