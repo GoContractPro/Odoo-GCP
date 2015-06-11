@@ -61,6 +61,7 @@ HEADER_MAP = {
                 'ref'       : 'Contact Reference',
                 'comment'   : 'Notes',
                 'external_id' : 'External ID',
+                'sequence': 'Sequence',
             }
 
 
@@ -318,7 +319,8 @@ class partner_csv(osv.osv):
                                 'mobile'        :((headers_dict.get('mobile') > -1) and data[headers_dict['mobile']]) or None,
                                 'website'       :(( headers_dict.get('website') > -1) and data[headers_dict['website']]) or None, 
                                 'ref'           :((headers_dict.get('ref') > -1) and data[headers_dict['ref']]) or None,
-                                'comment'       :((headers_dict.get('comment') > -1) and data[headers_dict['comment']] ) or None,                    
+                                'comment'       :((headers_dict.get('comment') > -1) and data[headers_dict['comment']] ) or None,
+                                'sequence'      :((headers_dict.get('sequence') > -1) and data[headers_dict['sequence']] ) or None,              
                                 }
                         
                                                 
