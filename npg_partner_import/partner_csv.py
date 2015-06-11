@@ -41,8 +41,8 @@ HEADER_MAP = {
                 'street'    : 'Street',
                 'street2'   : 'Street2',
                 'city'      : 'City',
-                'country_code': 'Country/Country Code',
-                'state_code': 'State/State Code',
+                'country'    : 'Country',
+                'state'     : 'State',
                 'zip'       : 'Zip',
                 'type'      : 'Address Type',
                 'phone'     : 'Phone',
@@ -54,12 +54,13 @@ HEADER_MAP = {
                 'supplier'  : 'Supplier',
                 'customer'  : 'Customer',
                 'employee'  : 'Employee',
-                'related_company'   : 'Related Company/Name',
+                'related_company'       : 'Related Company/Name',
                 'property_payment_term' : 'Customer Payment Term/Payment Term',
-                'credit_limit': 'Credit Limit',
+                'credit_limit'  : 'Credit Limit',
                 'debit_limit'   : 'Payable Limit',
                 'ref'       : 'Contact Reference',
                 'comment'   : 'Notes',
+                'external_id' : 'External ID',
             }
 
 
@@ -122,19 +123,19 @@ class partner_csv(osv.osv):
             for header in partner_data[0]:
                 headers_list.append(header.strip())
              
-            msg = 'IF Position not listed then column is not found on CSV file \n\n'
-            msg += 'Position  -- CSV Column -- Odoo field  \n\n'
+            msg = 'Fields found on CSV file \n\n'
+            msg += 'Position  -- CSV Column -> Odoo field  \n\n'
             fields_matched = {}
             fields_missing = []  
-            
+            headers_list = [x.lower() for x in headers_list ]
              
             for field, column in HEADER_MAP.iteritems():
                 
-                col_num = index_get(headers_list,column)
+                col_num = index_get(headers_list,column.lower())
                 if col_num is None:
-                    fields_missing.append(field)
+                    fields_missing.append(column + ' -> ' + field)
                 else:
-                    fields_matched[col_num + 1] = (column + ' -- ' + field)
+                    fields_matched[col_num + 1] = (column + ' -> ' + field)
 
             fields_match_sort = sorted(fields_matched.keys()) 
              
@@ -144,9 +145,10 @@ class partner_csv(osv.osv):
                 
             msg += '\n'
             msg += 'Fields not found in Sheet --  \n\n'
+            msg += 'CSV Column -> Odoo field  \n\n'
             for fields in fields_missing:
-                msg +=  fields + ', '
-            
+                msg +=  fields
+                msg += '\n'
         
                 
         popup_obj = self.pool.get( 'warning.warning')
@@ -158,6 +160,7 @@ class partner_csv(osv.osv):
         partner_obj = self.pool.get('res.partner')
         state_obj = self.pool.get('res.country.state')
         country_obj = self.pool.get('res.country')
+        model_data_obj = self.pool.get('ir.model.data')
         start = time.strftime('%Y-%m-%d %H:%M:%S')       
         if context is None:
             context = {}
@@ -179,31 +182,42 @@ class partner_csv(osv.osv):
             headers_list = []
             for header in partner_data[0]:
                 headers_list.append(header.strip())
+            headers_list = [x.lower() for x in headers_list ]
              
             headers_dict = {}
             for field, column in HEADER_MAP.iteritems():  
                 
-                headers_dict[field] = index_get(headers_list,column)
+                headers_dict[field] = index_get(headers_list,column.lower())
                 
             error_log = ''
             n = 1 # Start Counter at One for to Account for Column Headers
             
             time_start = datetime.now()
+            list_size = len(partner_data)- 1
             for data in partner_data[1:]:
                 
                     n += 1
-                
-                    name = ((headers_dict.get('name') > -1) and data[headers_dict['name']]) or None                   
-                    email = ((headers_dict.get('email') > -1) and data[headers_dict['email']]) or None    
-                    search = [ ('name','=', name ),
-                              ('street','=',((headers_dict.get('street')> -1) and data[headers_dict['street']]) or None),
-                              ('zip','=',((headers_dict.get('zip') > -1) and data[headers_dict['zip']]) or None)]
-                    partner_ids = partner_obj.search(cr,uid,search) or None
                     
-                    if partner_ids and not wiz_rec.do_update:
-                        _logger.info(_('Duplicate Found at Record %s -- %s, %s \n' % (n,name or '',email or'' )))
-                        error_log += _('Duplicate Found at Record %s -- %s, %s \n' % (n,name or '',email or'' ))
-                        
+                    external_id = ((headers_dict.get('external_id') > -1) and data[headers_dict['external_id']]) or None   
+                    name = ((headers_dict.get('name') > -1) and data[headers_dict['name']]) or None                   
+                    email = ((headers_dict.get('email') > -1) and data[headers_dict['email']]) or None 
+                    
+                    if external_id:
+                        search = [('name','=', data[headers_dict['external_id']]),('model','=','res.partner')]                     
+                        model_data_ids =  model_data_obj.search(cr,uid,search) or None
+                        if model_data_ids:
+                            partner_ids = model_data_obj.browse(cr,uid,model_data_ids).res_id
+                        else:
+                            partner_ids = None
+                    else:  
+                        search = [ ('name','=', name ),
+                                  ('street','=',((headers_dict.get('street')> -1) and data[headers_dict['street']]) or None),
+                                  ('zip','=',((headers_dict.get('zip') > -1) and data[headers_dict['zip']]) or None)]
+                        partner_ids = partner_obj.search(cr,uid,search) or None
+                    
+                    if partner_ids and not wiz_rec.do_update and not external_id:
+                        _logger.info(_('Duplicate Found at row %s -- %s, %s \n' % (n,name or '',email or'' )))
+                        error_log += _('Duplicate Found at row %s -- %s, %s \n' % (n,name or '',email or'' ))
                         continue 
                     
                     if (headers_dict.get('related_company') > -1) and data[headers_dict['related_company']]:
@@ -212,7 +226,7 @@ class partner_csv(osv.osv):
                             related_search = [('name','=',)]
                             parent_id = state_obj.search(cr, uid , related_search)[0] or None
                         except:
-                            msg = _('Error Related Company - %s - Not Found at Record %s -- %s, %s \n' % (data[headers_dict['related_company']],n,name or '',email or'' ))
+                            msg = _('Error Related Company - %s - Not Found at row %s -- %s, %s \n' % (data[headers_dict['related_company']],n,name or '',email or'' ))
                             _logger.info(msg)
                             error_log += msg
                             parent_id = None
@@ -220,18 +234,18 @@ class partner_csv(osv.osv):
                         parent_id = None 
                           
                     
-                    if (headers_dict.get('country_code') > -1) and data[headers_dict['country_code']]:
+                    if (headers_dict.get('country') > -1) and data[headers_dict['country']]:
                         
                         # TODO: Setting Default Country to  no country Specified in CSV-
                         try: 
-                            if data[headers_dict['country_code']]== '':
-                                code = 'US'
+                            if data[headers_dict['country']]== '':
+                                country = 'US'
                             else:
-                                code = data[headers_dict['country_code']]
-                            country_search_val = [('code','=',code)]
-                            country_id = country_obj.search(cr, uid , country_search_val)[0] or None
+                                country = data[headers_dict['country']]
+                            
+                            country_id = country_obj.name_search(cr, uid , name=country,context=context)[0][0] or None
                         except:
-                            msg = _('Error Country %s Not Found at Record %s -- %s, %s \n' % (data[headers_dict['country_code']],n,name or '',email or'' ))
+                            msg = _('Error Country %s Not Found at row %s -- %s, %s \n' % (data[headers_dict['country']],n,name or '',email or'' ))
                             _logger.info(msg)
                             error_log += msg
                             country_id = None
@@ -239,13 +253,14 @@ class partner_csv(osv.osv):
                         country_id = country_obj.search(cr, uid , [('code','=','US')])[0] or None
                         
                     
-                    if (headers_dict.get('state_code') > -1) and data[headers_dict['state_code']]:
+                    if (headers_dict.get('state') > -1) and data[headers_dict['state']]:
                         try: 
 #                            state_search_val = [('code','=',data[headers_dict['state_code']]),('country_id.code','=',data[headers_dict['country_code']])]
-                            state_search_val = [('code','=',data[headers_dict['state_code']]),('country_id','=',country_id)]
-                            state_id = state_obj.search(cr, uid , state_search_val)[0] or None
+                            country_search = [('country_id','=',country_id)]
+                            state = data[headers_dict['state']]
+                            state_id = state_obj.name_search(cr, uid , name=state, args = country_search, context=context)[0][0] or None
                         except:
-                            msg = _('Error State - %s - Not Found at Record %s -- %s, %s \n' % (data[headers_dict['state_code']],n,name or '',email or'' ))
+                            msg = _('Error State - %s - Not Found at row %s -- %s, %s \n' % (data[headers_dict['state']],n,name or '',email or'' ))
                             _logger.info(msg)
                             error_log += msg
                             state_id = None
@@ -260,7 +275,7 @@ class partner_csv(osv.osv):
                             property_payment_term = term_obj.search(cr, uid , term_search)
                             property_payment_term = property_payment_term[0] or None
                         except:
-                            msg = _('Error Payment Term - %s - Not Found at Record %s -- %s, %s \n' % (data[headers_dict['property_payment_term']],n,name or '',email or'' ))
+                            msg = _('Error Payment Term - %s - Not Found at row %s -- %s, %s \n' % (data[headers_dict['property_payment_term']],n,name or '',email or'' ))
                             _logger.info(msg)
                             error_log += msg
                             property_payment_term = None
@@ -270,6 +285,7 @@ class partner_csv(osv.osv):
                         
                     try:
                         part_vals = {
+                                'external_id'   :external_id,  
                                 'name'          :name,
                                 'email'         :email,
                                 'street'        :((headers_dict.get('street')> -1) and data[headers_dict['street']]) or None,
@@ -296,21 +312,29 @@ class partner_csv(osv.osv):
                                 }
                         
                                                 
-                        if partner_ids and wiz_rec.do_update:
+                        if partner_ids and (wiz_rec.do_update or model_data_ids) :
                             partner_obj.write(cr, uid,partner_ids, part_vals)
-                            _logger.info('update record %s for %s, %s ',n,name,email)
+                            _logger.info('update row %s for %s, %s ',n,name,email)
                         
                         else:
-                            partner_obj.create(cr, uid,part_vals , context=context)
-                            _logger.info('Loaded record %s for %s, %s ',n,name,email)
+                            id = partner_obj.create(cr, uid,part_vals , context=context)
+                            if external_id and id:
+                                data = {'res_id':id,
+                                        'name':external_id,
+                                        'model':'res.partner',
+                                        'noupdate': False}
+                                model_data_obj.create(cr,uid,data,context=context)
+                            
+                            _logger.info('Loaded row %s for %s, %s ',n,name,email)
                         
                         #exit loop and Roll back updates if is a test
                         try:
-                            if n >= wiz_rec.test_sample_size  and context.get('test',True):
+                            
+                            if  context.get('test',True) and (((n - 1) >= list_size) or (n > wiz_rec.test_sample_size)) :
                                 t2 = datetime.now()
                                 time_delta = (t2 - time_start)
                                 time_each = time_delta // wiz_rec.test_sample_size
-                                list_size = len(partner_data)
+                                
                                  
                                 estimate_time = (time_each * list_size)
                                 
@@ -332,7 +356,7 @@ class partner_csv(osv.osv):
                         
                     except:
                         e = sys.exc_info()
-                        msg = _('Error  %s at Record %s -- %s, %s \n' % (e,n,name or '',email or'' ))
+                        msg = _('Error  %s at row %s -- %s, %s \n' % (e,n,name or '',email or'' ))
                         _logger.info(msg)
                         error_log += _(msg)
                         if n == wiz_rec.test_sample_size  and context.get('test',True):
@@ -359,5 +383,22 @@ class partner_csv(osv.osv):
         
         warn_obj = self.pool.get( 'warning.warning')
         return warn_obj.info(cr, uid, title='Import Information',message = msg)
+    
+    def onchange_csv_attachment(self, cr, uid ,ids, attachments=None, context=None):
+
+        if context is None:
+            context = {}
+        n = 0    
+        attach = attachments[0]
+        if attach[2]:
+            n= len(attach[2] or 0)
+            
+        if n > 1:
+# TODO: make so additional files attached are automatically deleted
+#                extra_attachments = attach[2][1:]
+#                self.pool.get('ir.attachment').unlink(cr,uid,extra_attachments, context=context)
+                raise osv.except_osv('Warning', 'Only attach one file!, other files will be ignored')
+                
+        return
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
