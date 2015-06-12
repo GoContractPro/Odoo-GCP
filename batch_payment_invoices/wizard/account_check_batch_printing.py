@@ -118,9 +118,9 @@ class account_check_write(osv.TransientModel):
             elif check_status == 'clear':
                 voucher_obj.write(cr, uid, check.id,{'check_status': 'clear'}, context=context)
         check_layout_report = {
-            'top' : 'account.print.check.top',
-            'middle' : 'account.print.check.middle',
-            'bottom' : 'account.print.check.bottom',
+            'top' : 'account.print.check.top.multi',
+            'middle' : 'account.print.check.middle.multi',
+            'bottom' : 'account.print.check.bottom.multi',
         }
         check_layout = voucher_obj.browse(cr, uid, voucher_ids[0], context=context).company_id.check_layout
         if not check_layout:
@@ -183,9 +183,9 @@ class account_check_write(osv.TransientModel):
         ir_sequence_obj.write(cr, uid, sequence_id, {'number_next': new_value})
         #print the checks
         check_layout_report = {
-            'top' : 'account.print.check.top',
-            'middle' : 'account.print.check.middle',
-            'bottom' : 'account.print.check.bottom',
+            'top' : 'account.print.check.top.multi',
+            'middle' : 'account.print.check.middle.multi',
+            'bottom' : 'account.print.check.bottom.multi',
         }
         check_layout = voucher_obj.browse(cr, uid, voucher_ids[0], context=context).company_id.check_layout
         if not check_layout:
