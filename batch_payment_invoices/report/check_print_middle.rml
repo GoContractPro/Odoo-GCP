@@ -151,7 +151,7 @@
                 <para style="P19">[[formatLang( l['amount_original']) ]]</para>
               </td>
               <td>
-                <para style="P19">[[ formatLang( l['amount_due']) ]]</para>
+                <para style="P19">[[ formatLang (l['amount']) ]]</para>
               </td>
               <td>
                 <para style="P19">
@@ -159,7 +159,7 @@
                 </para>
               </td>
               <td>
-                <para style="P19">[[ formatLang (l['amount']) ]]</para>
+                <para style="P19">[[ formatLang(voucher.amount) ]]</para>
               </td>
             </tr>
           </blockTable>
@@ -321,7 +321,7 @@
                 <para style="P19">[[ formatLang (l['amount_original']) ]]</para>
               </td>
               <td>
-                <para style="P19">[[ formatLang (l['amount_due']) ]]</para>
+                <para style="P19">[[ formatLang (l['amount']) ]]</para>
               </td>
               <td>
                 <para style="P19">
@@ -329,7 +329,7 @@
                 </para>
               </td>
               <td>
-                <para style="P19">[[ formatLang (l['amount']) ]]</para>
+                <para style="P19">[[ formatLang (voucher.amount) ]]</para>
               </td>
             </tr>
           </blockTable>
