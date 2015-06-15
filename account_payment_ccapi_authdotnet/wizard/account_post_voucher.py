@@ -29,7 +29,6 @@ class account_post_voucher(osv.TransientModel):
     _columns = {
         'total_paid': fields.float('Total Received'),
         'total_allocated': fields.float('Total Allocated'),
-        'ok_to_go': fields.float('OK to Go'),
     }
 
     def _get_total_paid(self, cr, uid, context=None):
@@ -44,8 +43,8 @@ class account_post_voucher(osv.TransientModel):
         obj_voucher = self.pool.get('account.voucher')
         amount = 0.00
         if context.get('active_id'):
-            amount = obj_voucher.browse(cr, uid, context['active_id'], context=context).amount 
-          
+            amount = obj_voucher.browse(cr, uid, context['active_id'], context=context).amount
+
         return amount
 
     def _get_total_allocated(self, cr, uid, context=None):
@@ -62,46 +61,14 @@ class account_post_voucher(osv.TransientModel):
         total_allocated = 0.0
         for line in voucher.line_cr_ids:
             total_allocated += line.amount
-        
-        return total_allocated
 
-    def _get_ok_to_go(self, cr, uid, context=None):
-        """
-        @param cr: current row of the database
-        @param uid: id of the user currently logged in
-        @param context: context
-        @return: 
-        """
-        if context is None:
-            context = {}
-        obj_voucher = self.pool.get('account.voucher')
-        voucher = obj_voucher.browse(cr, uid, context.get('active_id', []), context=context)
-        total_allocated = 0.0
-        if context.get('invoice_type', '') == 'out_refund':
-            return total_allocated
-        for line in voucher.line_cr_ids:
-            total_allocated += line.amount
-        return total_allocated - voucher.amount
+        return total_allocated
 
     _defaults = {
         'total_paid': _get_total_paid,
         'total_allocated': _get_total_allocated,
-        'ok_to_go': _get_ok_to_go,
     }
-    
-    def onchange_ok_to_go(self, cr, uid, ids, ok_to_go, context=None):
-        """
-        @param cr: current row of the database
-        @param uid: id of the user currently logged in
-        @param ids: ids of the selected records
-        @param ok_to_go: 
-        @param context: context
-        @return: 
-        """
-        if ok_to_go > 0.0:
-            return {'warning': {'title': _('Overallocated invoices'), 'message': _('Reduce allocations to match Total Receipt')}}
-        return {'value': {}}
-        
+
     def launch_wizard(self, cr, uid, ids, context=None):
         """
         Don't allow post if total_allocated > total_paid.

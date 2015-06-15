@@ -169,7 +169,7 @@
                 <para style="P24">Check Amount</para>
               </td>
               <td>
-                <para style="P23">[[ formatLang (voucher.amount) ]]</para>
+                <para style="P23">[[ formatLang(voucher.amount) ]]</para>
               </td>
             </tr>
           </blockTable>
@@ -339,7 +339,7 @@
                 <para style="P24">Check Amount</para>
               </td>
               <td>
-                <para style="P23">[[ formatLang (voucher.amount) ]]</para>
+                <para style="P23">[[ formatLang(voucher.amount) ]]</para>
               </td>
             </tr>
           </blockTable>

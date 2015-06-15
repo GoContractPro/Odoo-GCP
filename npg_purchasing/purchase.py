@@ -81,7 +81,7 @@ class purchase_order(osv.Model):
                 'purchase.order.line': (_get_order, ['date_planned'], 10),
             }, method=True,
         ),
-        'partner_contact_id':fields.many2one('res.partner', 'Ordering Contact', readonly=True, required=True,
+        'partner_contact_id':fields.many2one('res.partner', 'Ordering Contact', readonly=True,
             states={'draft': [('readonly', False)], 'sent': [('readonly', False)]},domain="[('parent_id', '=', partner_id)]"),
     }
     _defaults = {
@@ -96,7 +96,6 @@ class purchase_order(osv.Model):
         part = self.pool.get('res.partner').browse(cr, uid, part)
         addr = self.pool.get('res.partner').address_get(cr, uid, [part.id], ['contact'])
         ret_val['value'].update({'partner_contact_id': addr['contact']})
-        print 'Contact', addr['contact']
         incoterm_id = part.incoterm.id or False
         if incoterm_id:
             ret_val['value'].update({'incoterm_id': incoterm_id})
@@ -117,6 +116,51 @@ class product_product(osv.Model):
     _columns = {
             'cust_code': fields.char('Customer Ref #', size=128)
     }
+
+    def name_get(self, cr, user, ids, context=None):
+        if context is None:
+            context = {}
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+        if not len(ids):
+            return []
+        def _name_get(d):
+            name = d.get('name','')
+            code = d.get('default_code',False)
+            supp_code = d.get('supp_code', False)
+            if supp_code and supp_code != code:
+                name = '[%s] [%s] %s' % (code, supp_code, name)
+            elif code:
+                name = '[%s] %s' % (code,name)
+            if d.get('variants'):
+                name = name + ' - %s' % (d['variants'],)
+            return (d['id'], name)
+
+        partner_id = context.get('partner_id', False)
+
+        result = []
+        for product in self.browse(cr, user, ids, context=context):
+            sellers = filter(lambda x: x.name.id == partner_id, product.seller_ids)
+            if sellers:
+                for s in sellers:
+                    mydict = {
+                              'id': product.id,
+                              'name': s.product_name or product.name,
+                              'default_code': product.default_code,
+                              'variants': product.variants,
+                              'supp_code': s.product_code or product.default_code
+                              }
+                    result.append(_name_get(mydict))
+            else:
+                mydict = {
+                          'id': product.id,
+                          'name': product.name,
+                          'default_code': product.default_code,
+                          'variants': product.variants,
+                          'supp_code': product.default_code
+                          }
+                result.append(_name_get(mydict))
+        return result
 
     def search(self, cr, uid, args, offset=0, limit=None, order=None,
             context=None, count=False):
