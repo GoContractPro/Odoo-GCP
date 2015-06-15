@@ -416,6 +416,7 @@ class account_multi_pay_invoice(osv.Model):
 #        ctx.update({'date_from':multipay.amount_due_by,'date_to':multipay.amount_due_by})
         dist = {}
         use_credit = 0.0
+        
         for inv in invoice_obj.browse(cr, uid, invoice_ids, context=ctx):
             invoice_obj.write(cr, uid, inv.id,{'dummy_id' :ids[0]}, context=context)
             if inv.partner_id.is_company:
