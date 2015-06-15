@@ -235,8 +235,8 @@ class partner_csv(osv.osv):
                     if (headers_dict.get('related_company') > -1) and data[headers_dict['related_company']]:
                         
                         try:
-                            related_search = [('name','=',)]
-                            parent_id = state_obj.search(cr, uid , related_search)[0] or None
+                            related_search = [('name','=',data[headers_dict['related_company']])]
+                            parent_id = partner_obj.search(cr, uid , related_search)[0] or None
                         except:
                             msg = _('Error Related Company - %s - Not Found at row %s -- %s, %s \n' % (data[headers_dict['related_company']],n,name or '',email or'' ))
                             _logger.info(msg)
