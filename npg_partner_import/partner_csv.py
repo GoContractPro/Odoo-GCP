@@ -68,6 +68,15 @@ HEADER_MAP = {
 def index_get(L, i, v=None):
     try: return L.index(i) 
     except: return v
+    
+def str2bool(bool_str = False):
+    
+    if bool_str.lower() in ['t','true','x','1']: 
+        return True
+    else:
+        return False
+    
+    
 
 class partner_csv(osv.osv):
     _name = 'import.partner.csv'
@@ -293,6 +302,10 @@ class partner_csv(osv.osv):
                             property_payment_term = None
                     else:
                         property_payment_term = None
+                        
+                        
+                        
+                        
                             
                         
                     try:
@@ -307,10 +320,10 @@ class partner_csv(osv.osv):
                                 
                                 'zip'           :((headers_dict.get('zip') > -1) and data[headers_dict['zip']]) or None,
                                 'property_payment_term': property_payment_term,
-                                'is_company'    :((headers_dict.get('is_company') >-1 ) and data[headers_dict['is_company']]) or False,
-                                'employee'      :((headers_dict.get('employee') >-1 ) and data[headers_dict['employee']])or False,
-                                'customer'      :((headers_dict.get('customer') > -1 ) and data[headers_dict['customer']]) or False ,
-                                'supplier'      :((headers_dict.get('supplier') > -1) and data[headers_dict['supplier']]) or False, 
+                                'is_company'    :str2bool(bool_str =((headers_dict.get('is_company') >-1 ) and data[headers_dict['is_company']]) or False),
+                                'employee'      :str2bool(bool_str =((headers_dict.get('employee') >-1 ) and data[headers_dict['employee']])or False),
+                                'customer'      :str2bool(bool_str =((headers_dict.get('customer') > -1 ) and data[headers_dict['customer']]) or False) ,
+                                'supplier'      :str2bool(bool_str =((headers_dict.get('supplier') > -1) and data[headers_dict['supplier']]) or False), 
                                 'credit_limit'  :((headers_dict.get('credit_limit') > -1) and data[headers_dict['credit_limit']]) or None,
                                 'debit_limit'   :((headers_dict.get('debit_limit') > -1) and data[headers_dict['debit_limit']]) or None,
                                 'parent_id'     :parent_id,
