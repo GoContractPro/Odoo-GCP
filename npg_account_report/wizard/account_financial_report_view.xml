@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+     <data>
+
+        <record id="account.accounting_report_view" model="ir.ui.view">
+            <field name="name">Accounting Report</field>
+            <field name="model">accounting.report</field>
+            <field name="inherit_id" ref="account.account_common_report_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='target_move']" position="after">
+                    <field name="account_report_id" domain="[('parent_id','=',False)]"/>
+                    <field name="enable_filter" on_change="onchange_vals(enable_filter,comp_period,fiscalyear_id)"/>
+                    <field name="comp_period" attrs="{'invisible': [('enable_filter','=',False)]}" on_change="onchange_vals(enable_filter,comp_period,fiscalyear_id)"/>
+                    <field name="debit_credit" attrs="{'invisible': [('enable_filter','=',True)]}"/>
+                </xpath>
+                <xpath expr="//notebook/page[@string='Filters']" position="after">
+                    <page string="Comparison" attrs="{'invisible': [('enable_filter','=',False)],'default_focus': [('enable_filter','=',True)]}">
+                        <group>
+                            <field name="label_filter" attrs="{'required': [('enable_filter', '=', True)]}"/>
+                            <field name="fiscalyear_id_cmp"/><newline/>
+                            <field name="filter_cmp" attrs="{'readonly': [('comp_period','=',True)]}"/>
+                        </group>
+                        <group string="Dates" attrs="{'invisible':[('filter_cmp', '!=', 'filter_date')]}">
+                            <field name="date_from_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
+                            <field name="date_to_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
+                        </group>
+                        <group string="Periods" attrs="{'invisible':[('filter_cmp', '!=', 'filter_period')]}">
+                            <field name="period_from_cmp" on_change="onchange_startp(period_from_cmp,comp_period)" domain="[('fiscalyear_id', '=', fiscalyear_id_cmp)]" attrs="{'required':[('filter_cmp', '=', 'filter_period')]}"/>
+                            <field name="period_to_cmp" domain="[('fiscalyear_id', '=', fiscalyear_id_cmp)]" attrs="{'required':[('filter_cmp', '=', 'filter_period')]}"/>
+                        </group>
+                   </page>
+                </xpath>
+                <xpath expr="//notebook/page[@string='Journals']" position="replace">
+                </xpath>
+            </field>
+        </record>
+
+      
+    </data>
+</openerp>
