@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+     <data>
+
+  <!--   	<record id="view_npg_sale_order_form_inherit" model="ir.ui.view">
+			<field name="name">npg.sale.order.form.inherit</field>
+			<field name="model">sale.order</field>
+			<field name="inherit_id" ref="sale.view_order_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='project_id']" position="before">
+					<field name="ship_via" />
+					<field name="tracking_numb" />
+				</xpath>
+				
+			</field>
+		</record>
+    --> 	
+		
+		
+        <record model="ir.ui.view" id="view_npg_account_invoice_inherit">
+	        <field name="name">npg.account.invoice</field>
+	        <field name="model">account.invoice</field>
+	        <field name="inherit_id" ref="account.invoice_form" />
+	        <field name="arch" type="xml">
+	        	<xpath expr="//field[@name='partner_id']" position="after">
+	        		
+	        		<field name="partner_invoice_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice'}"/>
+                    <field name="partner_shipping_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'delivery'}"/>
+					<field name="partner_numb" readonly="1"/>
+					<field name="ship_via" />
+					<field name="tracking_numb" />
+				</xpath>
+	        	
+	        </field>
+		</record>
+     	
+		<record id="npg_verts_purchase_order_form_inherited" model="ir.ui.view">
+            <field name="name">npg.verts.purchase.view.form.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+				<xpath expr="//field[@name='partner_id']" position="after">
+	        		
+	        		<field name="partner_invoice_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice','search_default_supplier':1,'default_supplier':1,'default_customer':0}" domain="[('supplier','=',True)]"/>
+                    <field name="partner_shipping_id" groups="sale.group_delivery_invoice_address" context="{'default_type':'delivery','search_default_supplier':1,'default_supplier':1,'default_customer':0}" domain="[('supplier','=',True)]"/>
+					<field name="ship_via" />
+					<field name="tracking_numb" />
+				</xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
