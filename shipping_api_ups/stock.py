@@ -461,12 +461,11 @@ class stock_picking(osv.osv):
 # 
     def process_ship_accept(self, cr, uid, do, packages, context=None):
         shipment_accept_request_xml = self.create_ship_accept_request_new(cr, uid, do, context=context)
-        if do.logis_company.test_mode:
-            acce_web = do.logis_company.ship_accpt_test_web or ''
-            acce_port = do.logis_company.ship_accpt_test_port
+        if do.delivery_method.test_mode:
+            acce_web = do.delivery_method.ship_accpt_test_web or ''
+            acce_port = do.delivery_method.ship_accpt_test_port
         else:
-            acce_web = do.logis_company.ship_accpt_web or ''
-            acce_port = do.logis_company.ship_accpt_port
+            acce_port = do.delivery_method.ship_accpt_port
         if acce_web:
             parse_url = urlparse(acce_web)
             serv = parse_url.netloc
