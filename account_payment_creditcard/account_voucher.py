@@ -224,7 +224,7 @@ class account_voucher(osv.Model):
         'cc_zip':fields.char('Postal/Zip', size=32,),
         'cc_country':fields.char('Country', size=32,),
         'cc_order_date':fields.date('Order Date',),
-        'cc_order_amt':fields.float('Order Amt',required=True),
+        'cc_order_amt':fields.float('Order Amt'),
         'cc_number':fields.char('Credit Card Number', size=256),
         'cc_v':fields.char('Card Code Verification', size=3),
         'cc_e_d_month':fields.char('Expiration Date MM', size=32),
