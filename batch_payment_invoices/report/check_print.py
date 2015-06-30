@@ -82,7 +82,7 @@ class report_print_check1(report_sxw.rml_parse):
         cnt = 10
         for voucher in voucher_lines:
             cnt -= 1
-            if voucher.move_line_id.invoice and voucher.reconcile:  #voucher.move_line_id.invoice.print_check
+            if voucher.move_line_id.invoice:  #voucher.move_line_id.invoice.print_check
                 res = {
                     'date_due' : voucher.date_due,
                     'name' : voucher.name or voucher.move_line_id and voucher.move_line_id.invoice and voucher.move_line_id.invoice.supplier_invoice_number,
