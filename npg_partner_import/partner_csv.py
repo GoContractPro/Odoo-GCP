@@ -241,7 +241,7 @@ class partner_csv(osv.osv):
                         error_log += _('Duplicate Found at row %s -- %s, %s \n' % (n,name or '',email or'' ))
                         continue 
                     
-                    if (headers_dict.get('related_company') > -1) and data[headers_dict['related_company']]:
+                    if (headers_dict.get('related_company') > -1) and data[headers_dict['related_company']] and data[headers_dict['related_company']].lower() <> 'false':
                         
                         try:
                             related_search = [('name','=',data[headers_dict['related_company']])]
