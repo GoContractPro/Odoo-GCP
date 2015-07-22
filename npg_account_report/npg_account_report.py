@@ -25,7 +25,7 @@ from openerp import netsvc
 import time
 from datetime import datetime, timedelta
 from openerp.tools.translate import _
-
+from openerp.tools import frozendict
 
 class sale_order(osv.osv):
     _inherit = 'sale.order'
@@ -145,7 +145,7 @@ class purchase_order(osv.osv):
         :return: ID of created invoice.
         :rtype: int
         """
-        if context is None:
+        if context is None or isinstance(context,frozendict):
             context = {}
         journal_obj = self.pool.get('account.journal')
         inv_obj = self.pool.get('account.invoice')
@@ -174,7 +174,7 @@ class purchase_order(osv.osv):
                 inv_line_id = inv_line_obj.create(cr, uid, inv_line_data, context=context)
                 inv_lines.append(inv_line_id)
 
-                po_line.write({'invoice_lines': [(4, inv_line_id)]}, context=context)
+                po_line.write({'invoice_lines': [(4, inv_line_id)]})
 
             # get invoice data and create invoice
             inv_data = {
