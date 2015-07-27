@@ -9,8 +9,13 @@
 		    name="npg.custom.account.invoice"
 		    rml="addons/npg_account_report/report/invoice_npg_custom_report.rml"
 		    string="Invoices"
+<<<<<<< HEAD
         	report_type="pdf"
 		    attachment="(object.state in ('open','paid')) and ('INV'+(object.number or '').replace('/','')+'.pdf')"/>
 
+=======
+		    attachment="(object.state in ('open','paid')) and ('INV'+(object.number or '').replace('/','')+'.pdf')"/>
+         
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     </data>
 </openerp>

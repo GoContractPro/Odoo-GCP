@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+
+		<!-- views -->
+		<record id="product_partner_related_tree" model="ir.ui.view">
+			<field name="name">product.partner.related.tree</field>
+			<field name="model">product.partner.related.fields</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Product-partner related fields">
+					<field name="product_id" />
+					<field name="partner_id" />
+					<field name="name" />
+					<field name="value" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="product_partner_related_form" model="ir.ui.view">
+			<field name="name">product.partner.related.form</field>
+			<field name="model">product.partner.related.fields</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Product-partner related fields">
+					<field name="product_id" />
+					<field name="partner_id" />
+					<field name="name" />
+					<field name="value" />
+				</form>
+			</field>
+		</record>
+
+		<record id="product_partner_related_search" model="ir.ui.view">
+			<field name="name">product.partner.related.form</field>
+			<field name="model">product.partner.related.fields</field>
+			<field name="type">search</field>
+			<field name="arch" type="xml">
+				<search string="Product-partner related fields">
+					<field name="product_id" />
+					<field name="partner_id" />
+					<field name="name" />
+					<field name="value" />
+					<newline />
+					<group expand='0' string='Group by...' groups="base.group_extended">
+						<filter string='Product' icon="terp-stock_symbol-selection"
+							domain="[]" context="{'group_by' : 'product_id'}" />
+						<separator orientation="vertical" />
+						<filter string='Partner' icon="terp-stock_symbol-selection"
+							domain="[]" context="{'group_by' : 'partner_id'}" />
+						<separator orientation="vertical" />
+						<filter string='Field name' icon="terp-mrp" domain="[]"
+							context="{'group_by' : 'name'}" />
+					</group>
+				</search>
+			</field>
+		</record>
+
+		<!-- actions -->
+		<record id="open_product_partner_related_tree" model="ir.actions.act_window">
+			<field name="name">Product-partner related fields</field>
+			<field name="res_model">product.partner.related.fields</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+			<field name="view_id" ref="product_partner_related_tree" />
+			<field name="search_view_id" ref="product_partner_related_search" />
+		</record>
+
+		<!-- menus -->
+		<menuitem action="open_product_partner_related_tree" id="menu_product_partner_related_product"
+			parent="base.menu_product" sequence="100" />
+		<menuitem action="open_product_partner_related_tree" id="menu_product_partner_related_partner"
+			parent="base.menu_config_address_book" sequence="100" />
+
+
+
+	</data>
+</openerp>

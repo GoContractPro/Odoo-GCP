@@ -113,7 +113,11 @@ class quick_ship(orm.TransientModel):
                 'ups_shipper_id':sale.ups_shipper_id.id
                 })
             service_type_obj = self.pool.get('ups.shipping.service.type')
+<<<<<<< HEAD
             ups_shipping_service_ids = service_type_obj.search(cr, uid, [('description', 'like', sale.ship_service)], context=context)
+=======
+            ups_shipping_service_ids = service_type_obj.search(cr, uid, [('description', 'like', sale.ship_method)], context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             if ups_shipping_service_ids:
                 ups_shipping_service = service_type_obj.browse(cr, uid, ups_shipping_service_ids, context=context)[0]
                 ret['service'] = ups_shipping_service.id

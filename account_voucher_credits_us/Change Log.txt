@@ -1,0 +1,92 @@
+===============================================================================
+ Version Change Log (account_voucher_credits_us)
+===============================================================================
+1.24 2012-03-20 by Vinod
+	* Code clean-up.
+	
+1.23 2012-02-17 by Janeesh
+	* Fixed issue with Credit account in supplier payment
+	
+1.22 2012-01-27 by Arif
+	* Inorder to allow customer refunds, removed Overallocated Warning on Post.
+		(Since Refund payment have -ve amount)
+		
+1.21 2012-01-20 by Arif
+	* Resolved the issue (Credit use lined doesn't created is there is credit lines in pay invoice)
+	  caused by missing of payment term in invoice
+
+1.20 2011-11-29 by Arif
+	* Fixed issue of Debit lines shows after use credit
+	
+1.19 2011-11-01 by Arif
+	* Fixed the issue on trying to save supplier voucher
+
+1.18 (2011-11-01) -> Janeesh
+	* Bug fix with webclient
+1.17 (2011-09-29) -> Arif
+	* Hide Post button in Credit Card Pay Invoice
+	
+1.16 (2011-09-16) -> Arif
+	* Added dicount check box on customer pay invoice
+	* Removed the onchange on amount in Pay Invoice
+
+1.15 (2011-09-15) -> Sinoj & Arif
+	* Fixed the bug on calculation of discount on Pay Invoice
+	
+1.13 -> 1.14 (2011-05-24) By Jabir
+	* Fixed credits are not using on customer payment if no amount is entered Paid Amount
+		
+1.12 -> 1.13 (2011-04-18) By Jabir
+	* Created configuration on company to set default payment term for supplier
+	
+1.11 -> 1.12 (2011-02-07) By Jabir
+	* Supplier discount support 
+1.10 -> 1.11 (2011-02-07) By Jabir
+	* Fixed the wrong account posting for journal with type bank and cash
+	
+1.09 -> 1.10 (2011-02-07) By Jabir
+	* Removed default focus from Calculate button
+	
+1.08 -> 1.09 (2011-02-07) By Jabir
+	* Add write function on account.move.line to make ids list if it is not
+
+1.07 -> 1.08 (2011-02-04) By Sinoj
+	* Optimization and cleanup
+	
+1.06 -> 1.07 (2010-12-06) By jabir
+	* Remove payment_meth_id from account_voucher_credits_us and add code to check whether this variable exist before using it
+	
+1.05 -> 1.06 (2010-12-06) By jabir
+	* Change the domain of writeoff_account and remove extra whitespace and comments in voucher.py
+	
+1.04 -> 1.05 (2010-12-06) By jabir
+	* Take invoice partner instead of voucher partner
+	
+1.03 -> 1.04 (2010-11-24) By jabir
+	* Fixed unable to open new customer payment form issue occur due to trunk update
+	* Fixed onchange_pay function error occuring when writeoff or discount module uninstalled
+	
+1.02 -> 1.03 (2010-11-24) By jabir
+	* Select credit and debit lines of child partner along with its when a customer is selected  
+	* Automatically fill payment amount when Pay is checked in voucher lines
+	
+1.01 -> 1.02 (2010-11-12) By jabir
+	* Add all the feature in module account_voucher_jdc in this module
+	===============================================================================
+	 Version Change Log (account_voucher_jdc)
+	===============================================================================
+	  1.01 -> 1.02 (2010-11-09) By sinoj
+	  	* in "account.voucher.line", label string "Discount and Credit" changed to "Discount and Credits"
+	  
+	  1.0  -> 1.01 (2010-11-03) By sinoj
+	  	* in "account.voucher.line", label string for amount_original changed from "Original Amount" to "Original Amt." 
+	  	* in "account.voucher.line", label string for amount_unreconciled changed from "Open Balance" to "Amount Due" 
+	  	* in "account.voucher.line", label string for amount changed from "Amount" to "Payment Amt" 
+	  	* in "account.voucher.line", label string for date_original changed from "Date" to "Invoice Date" 
+	  	* in "account.voucher.line", label string for account_id changed from "Account" to "G/L Account" 
+	  	* in "account.voucher.line", New boolean field Pay 
+
+===============================================================================
+ Version Change Log (account_voucher_credits_jdc)
+===============================================================================
+ account_voucher_jdc 1.0 -> account_voucher_credits_jdc 0.01 (2010-11-03) By sinoj

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+    
+    <!-- Account Voucher Form-->
+    
+         <record model="ir.ui.view" id="view_vendor_receipt_form_1">
+            <field name="name">account.voucher.receipt.form.1</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/sheet/notebook/page/field/tree/field[@name='amount']" position="attributes" >
+                    <attribute name='on_change'> </attribute>            
+                </xpath>
+				<xpath expr="//form/sheet/notebook/page/field/tree/field[@name='amount']" position="replace">
+                    <field name="amount" string="Paid Amount"/>
+				</xpath>    
+				<xpath expr="//form/header/button[@name='cancel_voucher']" position="after">
+                    <button name="calc_diff" string="Calculate" type="object" states="draft" icon="gtk-execute" />
+				</xpath>
+				<xpath expr="//form/sheet/h1/field[@name='number']" position="after">
+				    <group colspan="4">
+                    <field name="auto_match"/>
+                    </group>
+				</xpath>								
+				
+				<xpath expr="//field[@name='line_cr_ids']/tree" position="replace">
+                    <tree string="Credits" editable="bottom">
+                        <field name="move_line_id"/>
+                        <field name="date_original" readonly="1"/>
+                        <field name="amount_original" readonly="1"/>
+                        <field name="amount" sum="Total Amt Used" string="Amt Used" />
+                        <field name="pending_credits" sum="Total Pending Credit Used" readonly="1"/>
+                        <field name="amount_unreconciled" string="Amt Available" readonly="1"/>
+                        <field name="account_id"  groups="base.group_extended" domain="[('type','=','receivable')]"/>
+                    </tree>
+                    <form string="Credits">
+                        <field name="move_line_id" />
+                        <field name="date_original" readonly="1"/>
+                        <field name="amount_original" readonly="1"/>
+                        <field name="amount" string="Amount Used" readonly="False"/>
+                        <field name="pending_credits" readonly="1" sum="Total Credit Used"/>
+                        <field name="amount_unreconciled" string="Amount Available" readonly="1"/>
+                        <field name="account_id"  groups="base.group_extended" domain="[('type','=','receivable')]"/>
+                    </form>
+				</xpath>
+				
+				<xpath expr="//field[@name='line_cr_ids']" position="replace">
+					<field name="line_cr_ids" default_get="{'journal_id':journal_id, 'type':type, 'partner_id':partner_id}" colspan="4" nolabel="1" 
+					       height="140" string="Payment Modification">
+                        <tree string="Invoices and Outstanding Transactions" editable="bottom">
+                            <field name="move_line_id" context="{'journal_id':parent.journal_id, 'partner_id':parent.partner_id}"
+                                   on_change="onchange_move_line_id(move_line_id)"
+                                   domain="[('account_id.type','in',('receivable','payable')),('reconcile_id','=', False), ('partner_id','=',parent.partner_id)]"/>
+                            <field name="date_original" readonly="1"/>
+                            <field name="date_due" readonly="1"/>
+                            <field name="amount_original" readonly="1"/>
+                            <field name="amount_unreconciled" sum="Open Balance" readonly="1"/>
+							<field name="pay" on_change="onchange_pay(amount, pay, amount_unreconciled, parent.line_cr_ids, parent.amount,credit_used, discount_used)"/>
+                            <field name="amount" sum="Payment"/>
+                            <field name="discount_used" />
+							<field name="amount_difference"/>
+							<field name="credit_used"/>
+							<field name="account_id" groups="base.group_extended" domain="[('type','=','receivable')]"/>
+                        </tree>						            
+						<form >
+							<group string="Invoice" colspan="4" col="4" >
+						        <group colspan="2" cols="2">
+						            <field name="name" readonly="True"/>
+						            <newline/>
+						            <field name="invoice_id" readonly="True"/>
+						            <newline/>
+						            <field name="date_original" readonly="True"/>
+						        </group>
+						        <group color="red" colspan="2" cols="2" >
+						            <field name="amount_original"/>
+						            <newline/>
+						            <field name="amount_unreconciled"/>
+						            <newline/>
+							        <field name='amount' />
+						            <newline/>
+						            <field name="credit_used"/>
+						            <newline />
+						            <field name="amount_difference"/>
+						        </group>
+						    </group>
+						    <notebook colspan="4" >
+						        <page string="Credit">
+						            <field name="available_credits" nolabel="1" colspan="4" string="Avilable Credits" view_mode="tree"  >
+						            </field>
+						        </page>
+						        <page string="Other Info" readonly="1">
+							        <field name='account_id'/>
+							        <field name='partner_id' readonly="1"/>
+							        <field name='untax_amount' readonly="1"/>
+							        <field name='type' readonly="1"/>
+							        <field name='account_analytic_id' readonly="1"/>
+							        <field name='date_due' readonly="1"/>
+							        <field name='company_id' readonly="1"/>
+							        <field name='pay'  on_change="onchange_pay(amount, pay, amount_unreconciled, parent.line_cr_ids,parent.amount, credit_used, discount_used)"/>
+						        </page>
+						    </notebook>
+						    <group colspan="1" cols="1">
+						    <label/><label/>
+                        		<button name="clear_values" icon='gtk-clear' string="Clear" type="object" colspan="1"/>
+                        		<button name="recalculate_values" icon='gtk-refresh' string="Re-Calculate" type="object" colspan="1"/>
+                        	</group>
+						</form>
+					
+                	</field>
+				</xpath>
+				
+            </field>
+        </record> 
+        
+        <record model="ir.ui.view" id="view_account_voucher_line_credits_to_use_tree">
+            <field name="name">account.voucher.line.credits_to_use.tree</field>
+            <field name="model">account.voucher.line.credits_to_use</field>
+            <field name="arch" type="xml">
+	            	<tree string="Available Credits" editable="top" >
+	            		<field name="use_credit" width="100" on_change="onchage_use_credit(use_credit, available_amount, parent.amount_difference)"/>
+	            		<field name="inv_credit"/>
+	            		<field name="discount_window_date"/>
+	            		<field name="orginal_amount"/>
+	            		<field name="available_amount"/>
+	            		<field name="discount_amount" on_change="onchage_discount_amount(available_amount, discount_amount)"/>
+	            		<field name="credit_bal"/>
+	            		<field name="gl_account"/>
+	            	</tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_vendor_receipt_form_2">
+            <field name="name">account.voucher.receipt.form.2</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+            <field name="arch" type="xml">
+				<xpath expr="//page[@string='Payment Information']/field/tree/field[@name='move_line_id']" position="replace">
+                     <field name="move_line_id" context="{'journal_id':parent.journal_id, 'partner_id':parent.partner_id}"
+                         domain="[('account_id.type','in',('receivable','payable')), ('reconcile_id','=', False), ('partner_id','=',parent.partner_id)]" />
+				</xpath>
+            </field>
+        </record>
+
+
+		<record id="action_proforma_voucher" model="ir.actions.act_window">
+            <field name="name">Post Voucher</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.post.voucher</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        					
+		 <record model="ir.ui.view" id="view_vendor_receipt_form_5">
+            <field name="name">account.voucher.receipt.form.5</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_vendor_receipt_form"/>
+            <field name="arch" type="xml">
+				<xpath expr="//form/header/button[@name='proforma_voucher']" position="replace">
+                    <button name="%(action_proforma_voucher)d" string="Post" states="draft" type="action" 
+                            attrs="{'invisible': ['|',('cc_info_hide','=',False),('state','&lt;&gt;','draft')]}" icon="terp-camera_test"/>
+				</xpath>
+            </field>
+        </record>
+		
+      </data>
+</openerp>
+
+
+

@@ -5,7 +5,11 @@
 			<field name="name">view_form_logistic_company</field>
 			<field name="model">logistic.company</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<form string="Logistic Company" >
+=======
+				<form string="Logistic Company" version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<sheet>
 					<h1> <field name="name"/></h1>
                     	<group>

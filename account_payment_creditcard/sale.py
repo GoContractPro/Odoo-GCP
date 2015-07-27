@@ -20,8 +20,13 @@
 #
 ##############################################################################
 from openerp.osv import fields, osv
+<<<<<<< HEAD
 from openerp.tools.translate import _
 from openerp import workflow
+=======
+from tools.translate import _
+import netsvc
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 class sale_order(osv.Model):
     _inherit = "sale.order"
@@ -45,13 +50,21 @@ class sale_order(osv.Model):
         '''
         Display Pay invoice form when clicking on Pay button from sale order
         '''
+<<<<<<< HEAD
 #         wf_service = netsvc.LocalService("workflow")
+=======
+        wf_service = netsvc.LocalService("workflow")
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         invoice_id = False
         so = self.browse(cr, uid, ids[0], context=context)
         for invoice in so.invoice_ids:
             if invoice.state != 'open':
+<<<<<<< HEAD
 #                 wf_service.trg_validate(uid, 'account.invoice', invoice.id, 'invoice_open', cr)
                 self.pool.get('account.invoice').signal_workflow(cr, uid, [invoice.id], 'invoice_open')
+=======
+                wf_service.trg_validate(uid, 'account.invoice', invoice.id, 'invoice_open', cr)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             invoice_id = invoice.id
 
         if not invoice_id:
@@ -227,11 +240,18 @@ class sale_order(osv.Model):
     }
 
     def action_ship_create(self, cr, uid, ids, context=None):
+<<<<<<< HEAD
         move_obj = self.pool.get("stock.move")
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         ret = super(sale_order, self).action_ship_create(cr, uid, ids, context=context)
         for sale_obj in self.browse(cr, uid, ids, context=context):
             if sale_obj.order_policy == 'credit_card':
                 for pick in sale_obj.picking_ids:
+<<<<<<< HEAD
                     move_obj.write(cr, uid, [x.id for x in pick.move_lines], {'invoice_state': 'credit_card'}, context=context)
                     
+=======
+                    self.pool.get('stock.picking.out').write(cr, uid, [pick.id], {'invoice_state': 'credit_card'}, context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         return ret

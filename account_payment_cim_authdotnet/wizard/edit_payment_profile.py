@@ -24,7 +24,11 @@ from openerp.osv import fields, osv
 import httplib
 from xml.dom.minidom import Document
 import xml2dic
+<<<<<<< HEAD
 from openerp.tools.translate import _
+=======
+from tools.translate import _
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 class edit_payment_profile(osv.TransientModel):
     _name = 'edit.payment.profile'

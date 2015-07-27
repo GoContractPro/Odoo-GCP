@@ -29,6 +29,10 @@ class sale_order(osv.osv):
        
         """Compute the total net weight of the given Sale Orders."""
         result = {}
+<<<<<<< HEAD
+=======
+        print "field name, arg", field_name, arg
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         for sale in self.browse(cr, uid, ids, context=context):
             result[sale.id] = 0.0
             for line in sale.order_line:

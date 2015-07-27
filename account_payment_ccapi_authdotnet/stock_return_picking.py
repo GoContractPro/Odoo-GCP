@@ -69,7 +69,11 @@ class stock_return_picking(osv.TransientModel):
         record_id = context and context.get('active_id', False) or False
         move_obj = self.pool.get('stock.move')
         pick_obj = self.pool.get('stock.picking')
+<<<<<<< HEAD
         data_obj = self.pool.get('stock.return.picking.line')
+=======
+        data_obj = self.pool.get('stock.return.picking.memory')
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         voucher_obj = self.pool.get('account.voucher')
         pick = pick_obj.browse(cr, uid, record_id, context=context)
         data = self.read(cr, uid, ids[0], context=context)
@@ -77,6 +81,10 @@ class stock_return_picking(osv.TransientModel):
         old_policy = pick.invoice_state
         
         res = super(stock_return_picking, self).create_returns(cr, uid, ids, context)
+<<<<<<< HEAD
+=======
+        
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         move_lines = data['product_return_moves']
         #@ Moving the refund process to On Delivery process of related incoming shipment
         if data['invoice_state'] == 'cc_refund':
@@ -107,7 +115,11 @@ class stock_return_picking(osv.TransientModel):
 
 stock_return_picking()
 
+<<<<<<< HEAD
 class stock_picking(osv.osv):
+=======
+class stock_picking(osv.Model):
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     
     _inherit = "stock.picking"
     _columns = {

@@ -41,6 +41,7 @@ class stock_picking(osv.Model):
         move_ids = list(set(move_ids))
         return move_ids
     
+<<<<<<< HEAD
     def __get_invoice_state(self, cr, uid, ids, name, arg, context=None):
         result = {}
         for pick in self.browse(cr, uid, ids, context=context):
@@ -72,11 +73,18 @@ class stock_picking(osv.Model):
         'cc_pre_auth':  fields.related('sale_id', 'cc_pre_auth', string='CC Pre-authorised', type='boolean'),
         'invoiced':  fields.related('sale_id', 'invoiced', string='Paid', type='boolean'),
         'invoice_state': fields.function(__get_invoice_state, type='selection', selection=[
+=======
+    _columns = {
+        'cc_pre_auth':  fields.related('sale_id', 'cc_pre_auth', string='CC Pre-authorised', type='boolean'),
+        'invoiced':  fields.related('sale_id', 'invoiced', string='Paid', type='boolean'),
+        'invoice_state': fields.selection([
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             ("invoiced", "Invoiced"),
             ("2binvoiced", "To Be Invoiced"),
             ("none", "Not Applicable"),
             ("credit_card", "Credit Card"),
             ("cc_refund", "Credit Card Refund")
+<<<<<<< HEAD
           ], string="Invoice Control", required=True,
         fnct_inv = _set_inv_state,
         store={
@@ -84,6 +92,9 @@ class stock_picking(osv.Model):
             'stock.move': (__get_picking_move, ['picking_id', 'invoice_state'], 10),
         },
         ),
+=======
+            ], "Invoice Control", select=True, required=True, readonly=True, states={'draft': [('readonly', False)]}),
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         'ship_state': fields.selection([
             ('draft', 'Draft'),
             ('in_process', 'In Process'),
@@ -97,9 +108,34 @@ class stock_picking(osv.Model):
         'ship_message': fields.text('Message'),
     }
 
+<<<<<<< HEAD
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
 class stock_move(osv.Model):
     _inherit = "stock.move"
+=======
+class stock_picking_out(osv.Model):
+
+    _inherit = "stock.picking.out"
+    
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
+    _columns = {
+        'invoice_state': fields.selection([
+            ("invoiced", "Invoiced"),
+            ("2binvoiced", "To Be Invoiced"),
+            ("none", "Not Applicable"),
+            ("credit_card", "Credit Card"),
+            ("cc_refund", "Credit Card Refund")
+            ], "Invoice Control", select=True, required=True, readonly=True, states={'draft': [('readonly', False)]}),
+    }
+<<<<<<< HEAD
+
+    
+=======
+    
+class stock_picking_in(osv.Model):
+
+    _inherit = "stock.picking.in"
+    
     _columns = {
         'invoice_state': fields.selection([
             ("invoiced", "Invoiced"),
@@ -110,4 +146,5 @@ class stock_move(osv.Model):
             ], "Invoice Control", select=True, required=True, readonly=True, states={'draft': [('readonly', False)]}),
     }
 
-    
+# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d

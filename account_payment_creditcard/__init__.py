@@ -25,5 +25,9 @@ from . import account_voucher
 from . import account_journal
 from . import stock_picking
 from . import invoice
+<<<<<<< HEAD
 # import rsa_encrypt
+=======
+import rsa_encrypt
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

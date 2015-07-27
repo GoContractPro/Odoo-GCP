@@ -19,7 +19,11 @@
 #
 ##############################################################################
 
+<<<<<<< HEAD
 #import account_financial_report
+=======
+import account_financial_report
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
 

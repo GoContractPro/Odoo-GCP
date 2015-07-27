@@ -30,8 +30,13 @@ from PIL import Image
 import tempfile
 from mako.template import Template
 import logging
+<<<<<<< HEAD
 from openerp import tools
 from openerp.tools.translate import _
+=======
+import tools
+from tools.translate import _
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 from openerp.osv import fields, osv
 import os
 # from lxml import etree
@@ -73,6 +78,7 @@ class shipping_move(osv.osv):
 
 shipping_move()
 
+<<<<<<< HEAD
 class ups_commodity_code(osv.osv):
     _name = 'ups.commodity.code'
     
@@ -86,6 +92,12 @@ ups_commodity_code()
 class stock_picking(osv.osv):
     _inherit = "stock.picking"
 
+=======
+class stock_picking(osv.osv):
+    
+    _inherit = "stock.picking"
+    
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     def _get_company_code(self, cr, user, context=None):
         res = super(stock_picking, self)._get_company_code(cr, user, context=context)
         res.append(('ups', 'UPS'))
@@ -102,10 +114,13 @@ class stock_picking(osv.osv):
                 res[do.id] = True
         return res
     
+<<<<<<< HEAD
 #     def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
 #         return self.pool.get('stock.picking')._get_ship_type(cr, uid, ids, fields, args, context)
 
 
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     
     _columns = {
         'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
@@ -146,11 +161,36 @@ class stock_picking(osv.osv):
         'ups_bill_receiver_account': fields.char('Receiver Account', size=32, help="The UPS account number of Freight Collect"),
         'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
         'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
+<<<<<<< HEAD
         'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
         'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping"),
         'status_message': fields.char('Status', size=128, readonly=True),
         }
 
+=======
+        
+        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
+    }
+    
+    def on_change_sale_id(self, cr, uid, ids, sale_id=False, state=False, context=None):
+        vals = {}
+        if sale_id:
+            sale_obj = self.pool.get('sale.order').browse(cr, uid, sale_id)
+            service_type_obj = self.pool.get('ups.shipping.service.type')
+            ups_shipping_service_ids = service_type_obj.search(cr, uid, [('description', '=', sale_obj.ship_method)], context=context)
+            if ups_shipping_service_ids:
+                vals['ups_service'] = ups_shipping_service_ids[0]
+                shipping_obj = self.pool.get('ups.account.shipping')
+                ups_shipping_ids = shipping_obj.search(cr, uid, [('ups_shipping_service_ids', 'in', ups_shipping_service_ids[0])], context=context)
+                if ups_shipping_ids:
+                    vals['shipper'] = ups_shipping_ids[0]
+                    log_company_obj = self.pool.get('logistic.company')
+                    logistic_company_ids = log_company_obj.search(cr, uid, [('ups_shipping_account_ids', 'in', ups_shipping_ids[0])], context=context)
+                    if logistic_company_ids:
+                        vals['logis_company'] = logistic_company_ids[0]
+        return {'value': vals}
+    
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     def onchange_bill_shipping(self, cr, uid, ids, bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id,
                                shipper, context=None):
         vals = {}
@@ -164,6 +204,7 @@ class stock_picking(osv.osv):
         if not ups_bill_receiver_address_id:
             vals['ups_bill_receiver_address_id'] = partner_id
         return {'value' : vals}
+<<<<<<< HEAD
     
     def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
         
@@ -213,6 +254,76 @@ class stock_picking(osv.osv):
     
     
     
+=======
+
+stock_picking()
+
+class stock_picking_out(osv.osv):
+    _inherit = "stock.picking.out"
+
+    def _get_company_code(self, cr, user, context=None):
+        return self.pool.get('stock.picking')._get_company_code(cr, user, context)
+    
+    def _get_ship_type(self, cr, uid, ids, fields, args, context=None):
+        return self.pool.get('stock.picking')._get_ship_type(cr, uid, ids, fields, args, context)
+    
+    _columns = {
+        'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
+        'shipper': fields.many2one('ups.account.shipping', 'Shipper', help='The specific user ID and shipper. Setup in the company configuration.'),
+        'shipment_digest': fields.text('ShipmentDigest'),
+        'negotiated_rates': fields.float('NegotiatedRates'),
+        'shipment_identific_no': fields.char('ShipmentIdentificationNumber', size=64,),
+        'tracking_no': fields.char('TrackingNumber', size=64,),
+        'trade_mark': fields.related('shipper', 'trademark', type='char', size=1024, string='Trademark'),
+        'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
+        'ups_pickup_type': fields.selection([
+            ('01', 'Daily Pickup'),
+            ('03', 'Customer Counter'),
+            ('06', 'One Time Pickup'),
+            ('07', 'On Call Air'),
+            ('11', 'Suggested Retail Rates'),
+            ('19', 'Letter Center'),
+            ('20', 'Air Service Center'),
+            ], 'Pickup Type'),
+        'ups_packaging_type': fields.many2one('shipping.package.type', 'Packaging Type'),
+        'ups_use_cc': fields.boolean('Credit Card Payment'),
+        'ups_cc_type': fields.selection([
+            ('01', 'American Express'),
+            ('03', 'Discover'),
+            ('04', 'MasterCard'),
+            ('05', 'Optima'),
+            ('06', 'VISA'),
+            ('07', 'Bravo'),
+            ('08', 'Diners Club')
+            ], 'Card Type'),
+        'ups_cc_number': fields.char('Credit Card Number', size=32),
+        'ups_cc_expiaration_date': fields.char('Expiaration Date', size=6, help="Format is 'MMYYYY'"),
+        'ups_cc_security_code': fields.char('Security Code', size=4,),
+        'ups_cc_address_id': fields.many2one('res.partner', 'Address'),
+        'ups_third_party_account': fields.char('Third Party Account Number', size=32),
+        'ups_third_party_address_id': fields.many2one('res.partner', 'Third Party Address'),
+        'ups_third_party_type': fields.selection([('shipper', 'Shipper'), ('consignee', 'Consignee')], 'Third Party Type'),
+        'ups_bill_receiver_account': fields.char('Receiver Account', size=32, help="The UPS account number of Freight Collect"),
+        'ups_bill_receiver_address_id': fields.many2one('res.partner', 'Receiver Address'),
+        'label_format_id': fields.many2one('shipping.label.type', 'Label Format Code'),
+        
+        'is_intnl':fields.function(_get_ship_type,type="boolean",string="Is international Shipping")
+        }
+
+    def onchange_bill_shipping(self, cr, uid, ids, bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id,
+                               shipper, context=None):
+        vals = {}
+        if bill_shipping == 'shipper':
+            if not ups_cc_address_id and shipper:
+                ship_address = self.pool.get('ups.account.shipping').read(cr, uid, shipper, ['address'], context=context)['address']
+                if ship_address:
+                    vals['ups_cc_address_id'] = ship_address[0]
+        else:
+            vals['ups_use_cc'] = False
+        if not ups_bill_receiver_address_id:
+            vals['ups_bill_receiver_address_id'] = partner_id
+        return {'value' : vals}
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 #     def action_process(self, cr, uid, ids, context=None):
 #         sale_order_line = []
@@ -240,14 +351,24 @@ class stock_picking(osv.osv):
 
 
     def action_done(self, cr, uid, ids, context=None):
+<<<<<<< HEAD
         res = super(stock_picking, self).action_done(cr, uid, ids, context=context)
+=======
+        res = super(stock_picking_out, self).action_done(cr, uid, ids, context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
         for picking in self.browse(cr, uid, ids, context=context):
             vals = {}
             service_type_obj = self.pool.get('ups.shipping.service.type')
+<<<<<<< HEAD
             ship_service = picking.sale_id and picking.sale_id.ship_service
             if ship_service:
                 service_type_ids = service_type_obj.search(cr, uid, [('description', 'like', ship_service)], context=context)
+=======
+            ship_method = picking.sale_id and picking.sale_id.ship_method
+            if ship_method:
+                service_type_ids = service_type_obj.search(cr, uid, [('description', 'like', ship_method)], context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                 if service_type_ids:
                   vals['ups_service'] = service_type_ids[0]
                   service_type = service_type_obj.browse(cr, uid, service_type_ids[0], context=context)
@@ -262,7 +383,11 @@ class stock_picking(osv.osv):
         if sale_id:
             sale_obj = self.pool.get('sale.order').browse(cr, uid, sale_id)
             service_type_obj = self.pool.get('ups.shipping.service.type')
+<<<<<<< HEAD
             ups_shipping_service_ids = service_type_obj.search(cr, uid, [('description', '=', sale_obj.ship_service)], context=context)
+=======
+            ups_shipping_service_ids = service_type_obj.search(cr, uid, [('description', '=', sale_obj.ship_method)], context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             if ups_shipping_service_ids:
                 vals['ups_service'] = ups_shipping_service_ids[0]
                 shipping_obj = self.pool.get('ups.account.shipping')
@@ -281,7 +406,11 @@ class stock_picking(osv.osv):
             ids = ids[0]
         do = picking_obj.browse(cr, uid, ids)
         if do.ship_company_code != 'ups':
+<<<<<<< HEAD
             return super(stock_picking, self).process_void(cr, uid, ids, context=context)
+=======
+            return super(stock_picking_out, self).process_void(cr, uid, ids, context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         data_for_Access_Request = {
             'AccessLicenseNumber': do.shipper.id and do.shipper.accesslicensenumber or '',
             'UserId': do.shipper.id and do.shipper.userid or '',
@@ -461,11 +590,20 @@ class stock_picking(osv.osv):
 # 
     def process_ship_accept(self, cr, uid, do, packages, context=None):
         shipment_accept_request_xml = self.create_ship_accept_request_new(cr, uid, do, context=context)
+<<<<<<< HEAD
         if do.delivery_method.test_mode:
             acce_web = do.delivery_method.ship_accpt_test_web or ''
             acce_port = do.delivery_method.ship_accpt_test_port
         else:
             acce_port = do.delivery_method.ship_accpt_port
+=======
+        if do.logis_company.test_mode:
+            acce_web = do.logis_company.ship_accpt_test_web or ''
+            acce_port = do.logis_company.ship_accpt_test_port
+        else:
+            acce_web = do.logis_company.ship_accpt_web or ''
+            acce_port = do.logis_company.ship_accpt_port
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         if acce_web:
             parse_url = urlparse(acce_web)
             serv = parse_url.netloc
@@ -1170,12 +1308,20 @@ class stock_picking(osv.osv):
         package_obj = self.pool.get('stock.packages')
         deliv_order = self.browse(cr, uid, type(ids) == type([]) and ids[0] or ids, context=context)
         if deliv_order.ship_company_code != 'ups':
+<<<<<<< HEAD
             return super(stock_picking, self).process_ship(cr, uid, ids, context=context)
+=======
+            return super(stock_picking_out, self).process_ship(cr, uid, ids, context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         error_flag = False
         ship_move_ids = {}
         do_transaction = True
         response_dic = {}
+<<<<<<< HEAD
         if not (deliv_order.delivery_method or deliv_order.shipper or deliv_order.ups_service):
+=======
+        if not (deliv_order.logis_company or deliv_order.shipper or deliv_order.ups_service):
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             raise osv.except_osv("Warning", "Please select Logistics Company, Shipper and Shipping Service")
         if not deliv_order.packages_ids:
             raise osv.except_osv("Warning", "Please add shipping packages before doing Process Shipping.")
@@ -1203,6 +1349,7 @@ class stock_picking(osv.osv):
                 ship_confirm_request_xml = self.create_ship_confirm_request_new(cr, uid, deliv_order, lines)
                 ship_confirm_web = ''
                 ship_confirm_port = ''
+<<<<<<< HEAD
                 if deliv_order.delivery_method:
                     if deliv_order.delivery_method.test_mode:
                         ship_confirm_web = deliv_order.delivery_method.ship_req_test_web
@@ -1210,6 +1357,15 @@ class stock_picking(osv.osv):
                     else:
                         ship_confirm_web = deliv_order.delivery_method.ship_req_web
                         ship_confirm_port = deliv_order.delivery_method.ship_req_port
+=======
+                if deliv_order.logis_company:
+                    if deliv_order.logis_company.test_mode:
+                        ship_confirm_web = deliv_order.logis_company.ship_req_test_web
+                        ship_confirm_port = deliv_order.logis_company.ship_req_test_port
+                    else:
+                        ship_confirm_web = deliv_order.logis_company.ship_req_web
+                        ship_confirm_port = deliv_order.logis_company.ship_req_port
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                     if ship_confirm_web:
                         parse_url = urlparse(ship_confirm_web)
                         serv = parse_url.netloc
@@ -1221,7 +1377,10 @@ class stock_picking(osv.osv):
                     """1.make and call function to send request/ 2.make function to process the response and write it """
                     res = conn.getresponse()
                     result = res.read()
+<<<<<<< HEAD
                     print"result",result
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     #                 result[:result.find('PUBLIC')+ len('PUBLIC')]+''+result[result.find('PUBLIC')+ len('PUBLIC'):]
                     response_dic = xml2dic.main(result)
                     response = ''
@@ -1312,7 +1471,11 @@ class stock_picking(osv.osv):
 
     def do_partial(self, cr, uid, ids, partial_datas, context=None):
         res = self._get_journal_id(cr, uid, ids, context=context)
+<<<<<<< HEAD
         result_partial = super(stock_picking, self).do_partial(cr, uid, ids, partial_datas, context=context)
+=======
+        result_partial = super(stock_picking_out, self).do_partial(cr, uid, ids, partial_datas, context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         if res and res[0]:
             journal_id = res[0][0]
             result = result_partial
@@ -1324,6 +1487,7 @@ class stock_picking(osv.osv):
                     inv_obj = self.pool.get('account.invoice')
                     if result:
                         inv_obj.write(cr, uid, result.values(), {
+<<<<<<< HEAD
                            'ship_service': sale.ship_service,
                            'shipcharge': sale.shipcharge,
                            'sale_account_id': sale.ship_method_id and sale.ship_method_id.account_id and \
@@ -1520,6 +1684,17 @@ class stock_picking(osv.osv):
         return True
 
 stock_picking()
+=======
+                           'ship_method': sale.ship_method,
+                           'shipcharge': sale.shipcharge,
+                           'sale_account_id': sale.ship_method_id and sale.ship_method_id.account_id and \
+                                              sale.ship_method_id.account_id.id or False,
+                           'ship_method_id': sale.ship_method_id and sale.ship_method_id.id})
+                        inv_obj.button_reset_taxes(cr, uid, result.values(), context=context)
+        return result_partial
+
+stock_picking_out()
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 class stock(osv.osv_memory):
     

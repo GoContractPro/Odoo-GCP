@@ -1,0 +1,15 @@
+===============================================================================
+ Version Change Log (base_jdc)
+===============================================================================
+2.00 (2014-08-07) By Serpent Consulting Services Pvt Ltd.
+ 	* Code migration to v7
+ 
+1.02 (2012-03-20) By Sinoj
+ 	* Code clean-up
+ 	
+ 1.01 (2011-01-13) By Sinoj
+ 	* Module is reviewed and comments added
+ 	
+ 1.0 (2010-11-23) By jabir
+ 	* Created "National Acct Parent" variable in partner and displayed it in tree and form view
+ 	* Displayed parent partner in partner form

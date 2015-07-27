@@ -41,6 +41,7 @@ class ups_account_shipping(osv.osv):
         'atten_name': fields.char('AttentionName', size=64, required=True, select=1),
         'tax_id_no': fields.char('Tax Identification Number', size=64 , select=1, help="Shipper's Tax Identification Number."),
         'logistic_company_id': fields.many2one('logistic.company', 'Parent Logistic Company'),
+<<<<<<< HEAD
         'delivery_mthd_id': fields.many2one('delivery.method', 'Parent Delivery Method'),
 #         'ups_shipping_service_ids': fields.one2many('ups.shipping.service.type', 'ups_account_id', 'Shipping Service'),
         'ups_shipping_service_ids':fields.many2many('ups.shipping.service.type', 'shipping_service_rel', 'ups_account_id', 'service_id', 'Shipping Service'),
@@ -53,6 +54,18 @@ class ups_account_shipping(osv.osv):
         'company_id': fields.many2one('res.company', 'Company'),
         'partner_id': fields.many2one('res.partner', 'Transport Company', required=True, help="The UPS account contact information and and address"),
 
+=======
+#         'ups_shipping_service_ids': fields.one2many('ups.shipping.service.type', 'ups_account_id', 'Shipping Service'),
+        'ups_shipping_service_ids':fields.many2many('ups.shipping.service.type', 'shipping_service_rel', 'ups_account_id', 'service_id', 'Shipping Service'),
+        'address': fields.property(
+           'res.partner',
+           type='many2one',
+           relation='res.partner',
+           string="Shipper Address",
+           view_load=True),
+        'trademark': fields.char('Trademark', size=1024, select=1),
+        'company_id': fields.many2one('res.company', 'Company'),
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     }
     _defaults = {
         'active': True
@@ -107,7 +120,11 @@ class delivery_method(osv.osv):
         return res
     
     _columns={
+<<<<<<< HEAD
                 'ship_company_code': fields.selection(_get_company_code, 'Type', method=True, required=True, size=64),
+=======
+                'ship_company_code': fields.selection(_get_company_code, 'Logistic Company', method=True, required=True, size=64),
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                 'ship_req_web': fields.char('Ship Request Website', size=256 ),
                 'ship_req_port': fields.integer('Ship Request Port'),
                 'ship_req_test_web': fields.char('Test Ship Request Website', size=256 ),
@@ -129,12 +146,21 @@ class delivery_method(osv.osv):
                'test_mode': fields.boolean('Test Mode'),
                'url': fields.char('Website',size=256 , select=1),
                'company_id': fields.many2one('res.company', 'Company'),
+<<<<<<< HEAD
 #               'ship_account_id': fields.property(
 #               'account.account',
 #               type='many2one',
 #               relation='account.account',
 #               string="Cost Account",
 #               view_load=True),
+=======
+               'ship_account_id': fields.property(
+               'account.account',
+               type='many2one',
+               relation='account.account',
+               string="Cost Account",
+               view_load=True),
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             'note': fields.text('Notes'),
               }
     _defaults = {

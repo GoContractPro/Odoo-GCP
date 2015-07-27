@@ -2,7 +2,11 @@
 <openerp>
      <data>
           <!--  Account post voucher Form -->
+<<<<<<< HEAD
           
+=======
+
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         <record id="account_voucher_post_view" model="ir.ui.view">
              <field name="name">account.post.voucher.form</field>
              <field name="model">account.post.voucher</field>
@@ -11,14 +15,21 @@
 					<group colspan="2" col="4">
 						<field name="total_paid" readonly="True"/>
 						<field name="total_allocated" readonly="True"/>
+<<<<<<< HEAD
 						<field name="ok_to_go" invisible="True" on_change="onchange_ok_to_go(ok_to_go)"/>
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					</group>
 					<group height="100" width="320">
 						<separator string="Confirm Amounts?"/>
 						<newline/>
 						<group  colspan="2" col="4">
 							<button special="cancel" string="Cancel" icon="gtk-cancel"/>
+<<<<<<< HEAD
 							<button name="launch_wizard" string="Yes" type="object" attrs="{'invisible':[('ok_to_go', '>', 0.0)]}" icon="gtk-ok" default_focus="1"/>
+=======
+							<button name="launch_wizard" string="Yes" type="object" icon="gtk-ok" default_focus="1"/>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 		 				</group>
  					</group>
 				</form>

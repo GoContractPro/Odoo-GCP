@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 	<data>
+<<<<<<< HEAD
+=======
+		<!-- add the total weight to the order form -->
+<!-- 	 	<record model="ir.ui.view" id="sale_weight_form"> -->
+<!-- 			<field name="name">sale_weight.view_form</field> -->
+<!-- 			<field name="model">sale.order</field> -->
+<!-- 			<field name="inherit_id" ref="sale.view_order_form"/> -->
+<!-- 			<field name="arch" type="xml"> -->
+<!-- 			     <xpath expr="//button[@name='button_dummy']" position="after"> -->
+<!-- 			         <field name="total_weight_net"/> -->
+<!--                 </xpath> -->
+<!-- 			</field> -->
+<!-- 		</record>  -->
+
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
  		<!-- add the total weight to the order list -->
 	   	<record model="ir.ui.view" id="sale_weight_tree">
 			<field name="name">sale_weight.view_tree</field>

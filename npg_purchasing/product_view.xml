@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<openerp>
+	<data>
+		<record id="oddello_purchasing_product_form_view_inherit" model="ir.ui.view">
+			<field name="name">oddello.purchasing.product.form.cost</field>
+			<field name="model">product.product</field>
+			<field name="type">form</field>
+			<field name="inherit_id" ref="stock.view_product_standard_price_form"/>
+			<field name="arch" type="xml">
+				<field name="standard_price" position="replace">
+                    <group col="2" colspan="1">
+                        <field name="standard_price" nolabel="1"/>
+                    </group>
+                </field>
+                <field name="default_code" position="after">
+	            	<field name="cust_code"/>
+				</field>
+			</field>
+		</record>
+
+		<record id="oddello_product_search_form_view_inherit" model="ir.ui.view">
+			<field name="name">oddello.product.search.form</field>
+			<field name="model">product.product</field>
+			<field name="type">search</field>
+			<field name="inherit_id" ref="product.product_search_form_view"/>
+			<field name="arch" type="xml">
+				<field name="pricelist_id" position="after">
+	            	<field name="cust_code"/>
+				</field>
+			</field>
+		</record>
+	</data>
+</openerp>

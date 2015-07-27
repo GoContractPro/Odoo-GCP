@@ -6,7 +6,11 @@
             <field name="name">Quick Ship</field>
             <field name="model">quick.ship</field>
             <field name="arch" type="xml">
+<<<<<<< HEAD
                 <form string="Quick Ship" >
+=======
+                <form string="Quick Ship" version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                     <group colspan='4'>
 						<group>
 							<field name='saleorder_id' on_change="onchange_sale_id(saleorder_id)"/>

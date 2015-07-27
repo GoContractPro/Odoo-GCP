@@ -13,6 +13,16 @@
 				<xpath expr="/form/sheet/group/group[1]/field[@name='partner_invoice_id']" position="before">
 					<field name="partner_order_id" domain="[('parent_id','=',partner_id)]" groups="sale.group_delivery_invoice_address" context="{'default_type':'invoice'}"/>
                 </xpath>
+<<<<<<< HEAD
+=======
+				<xpath expr="//page[@string='Other Information']" position="inside" >
+					<group colspan="4" col="4">
+						<separator colspan="4" string="Shipping details"/>
+						<field name="logis_company" on_change="onchange_logis_company(logis_company)"/>
+						<field name="ship_company_code"/>
+					</group>
+				</xpath>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 				
             </field>
         </record>

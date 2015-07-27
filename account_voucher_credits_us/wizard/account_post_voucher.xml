@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+     <data>
+          <!--  Account post voucher Form -->
+          
+        <record id="account_voucher_post_view" model="ir.ui.view">
+             <field name="name">account.post.voucher.form</field>
+             <field name="model">account.post.voucher</field>
+             <field name="arch" type="xml">
+				<form string="Post Voucher">
+					<group colspan="2" col="4">
+						<field name="total_paid" readonly="True"/>
+						<field name="total_allocated" readonly="True"/>
+						<field name="ok_to_go" invisible="True" on_change="onchange_ok_to_go(ok_to_go)"/>
+					</group>
+					<group height="100" width="320">
+						<separator string="Confirm Amounts?"/>
+						<newline/>
+						<group  colspan="2" col="4">
+							<button special="cancel" string="Cancel" icon="gtk-cancel"/>
+							<button name="launch_wizard" string="Yes" type="object" attrs="{'invisible':[('ok_to_go', '>', 0.0)]}" icon="gtk-ok" default_focus="1"/>
+		 				</group>
+ 					</group>
+				</form>
+			</field>
+		</record>
+
+        <record id="action_proforma_voucher" model="ir.actions.act_window">
+            <field name="name">Post Voucher</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">account.post.voucher</field>
+			<field name="view_id" ref="account_voucher_post_view"/>
+            <field name="target">new</field>
+        </record>
+
+	</data>
+</openerp>

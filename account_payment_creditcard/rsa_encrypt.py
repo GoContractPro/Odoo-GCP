@@ -22,7 +22,11 @@
 
 from Crypto.PublicKey import RSA
 import base64
+<<<<<<< HEAD
 import openerp.tools
+=======
+import tools
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 def rsa_enc():
     """

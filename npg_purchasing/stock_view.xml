@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_picking_in_form_oddello_po" model="ir.ui.view">
+                <field name="name">stock.picking.in.form.inherit oddello po</field>
+                <field name="model">stock.picking.in</field>
+                <field name="type">form</field>
+                <field name="inherit_id" ref="stock.view_picking_form" />
+                <field name="arch" type="xml">
+                    <xpath expr="//field[@name='date']" position="after">
+						<field name="promise_date_po"/>
+					</xpath>
+					<field name="min_date"  position="attributes">
+    					<attribute name="invisible">True</attribute>
+   					</field>
+
+                </field>
+        </record>
+
+		<record id="view_stock_picking_in_tree_oddello_po" model="ir.ui.view">
+			<field name="name">stock.picking.in.tree.inherit oddello po</field>
+			<field name="model">stock.picking.in</field>
+			<field name="inherit_id" ref="stock.view_picking_in_tree"/>
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='date']" position="after">
+					<field name="promise_date_po"/>
+				</xpath>
+				<field name="min_date"  position="attributes">
+    				<attribute name="invisible">True</attribute>
+   				</field>
+
+			</field>
+		</record>
+	</data>
+</openerp>

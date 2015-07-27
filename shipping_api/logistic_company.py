@@ -35,6 +35,10 @@ class logistic_company(osv.osv):
         'company_id': fields.many2one('res.company', 'Company'),
         'test_mode': fields.boolean('Test Mode'),
         'ship_account_id': fields.property(
+<<<<<<< HEAD
+=======
+           'account.account',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
            type='many2one',
            relation='account.account',
            string="Cost Account",

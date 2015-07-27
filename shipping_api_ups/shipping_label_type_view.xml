@@ -7,7 +7,11 @@
 			<field name="name">shipping.label.type.view.form</field>
 			<field name="model">shipping.label.type</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<form string="Shipping Label" >
+=======
+				<form string="Shipping Label" version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<sheet>
 						<group>
 							<field name='name' string= "Description"/>
@@ -27,7 +31,11 @@
 			<field name="name">shipping.label.type.view.tree</field>
 			<field name="model">shipping.label.type</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<tree string="Shipping Label" >
+=======
+				<tree string="Shipping Label" version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<field name='name'/>
 					<field name='code'/>
 					<field name="http_user_agent"/>
@@ -41,7 +49,11 @@
 			<field name="name">shipping.label.type.view.search</field>
 			<field name="model">shipping.label.type</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<search string="Shipping Label" >
+=======
+				<search string="Shipping Label" version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<field name='name'/>
 					<field name='code'/>
 				</search>
@@ -56,6 +68,10 @@
 			<field name="search_view_id" ref="shipping_label_type_view_search"/>
 		</record>
 		<menuitem id="ups_label_type_id" name="Label Format Code"
+<<<<<<< HEAD
 			parent="shipping_api.shipping_menu" action="action_shipping_label_type" />
+=======
+			parent="ups_shipping_service_type_in_config" action="action_shipping_label_type" />
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 	</data>
 </openerp>

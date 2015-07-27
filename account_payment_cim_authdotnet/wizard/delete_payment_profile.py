@@ -23,7 +23,11 @@
 from openerp.osv import fields, osv
 from xml.dom.minidom import Document
 import xml2dic
+<<<<<<< HEAD
 from openerp.tools.translate import _
+=======
+from tools.translate import _
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 import httplib
 
 class delete_payment_profile(osv.TransientModel):

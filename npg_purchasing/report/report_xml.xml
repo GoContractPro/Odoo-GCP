@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <report auto="False"
+        id="purchase.report_purchase_order"
+        model="purchase.order"
+        name="npg.purchase.order"
+        rml="npg_purchasing/report/purchase_order.rml"
+        string="Purchase Order"
+        header="False"/>
+
+    </data>
+</openerp>

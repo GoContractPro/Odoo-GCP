@@ -34,9 +34,15 @@
     'data': [
          'security/account_security.xml',
          'security/ir.model.access.csv',
+<<<<<<< HEAD
           'account_voucher_view.xml',
           'account_journal_view.xml',
           'stock_picking_view.xml',
+=======
+         'account_voucher_view.xml',
+         'account_journal_view.xml',
+         'stock_picking_view.xml',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
          'invoice_view.xml',
          'sale_stock_view.xml',
     ],

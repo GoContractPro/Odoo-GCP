@@ -35,12 +35,20 @@
         'wizard/quick_ship_view.xml',
         'ups_view.xml',
         'logistic_company_view.xml',
+<<<<<<< HEAD
          'stock_view.xml',
+=======
+        'stock_view.xml',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         'report/shipping_report.xml',
         'stock_package_view.xml',
         'sale_view.xml',
         'shipping_label_type_view.xml',
+<<<<<<< HEAD
 #        'wizard/shipping_rate_view.xml',
+=======
+        'wizard/shipping_rate_view.xml',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         'security/ir.model.access.csv',
         'security/security.xml',
         ],

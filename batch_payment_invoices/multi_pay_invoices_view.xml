@@ -104,8 +104,13 @@
 	                    <field name='print_check' attrs="{'readonly':True}" color='black' />
 						<field name="date_due" />
 						<field name="partner_id" groups="base.group_user" />
+<<<<<<< HEAD
 		                <field name="number"/>
 		                <field name="supplier_invoice_number"/>
+=======
+<!--		                <field name="number"/>-->
+		                <field name="reference" invisible="1"/>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 		                <field name="name" invisible="1"/>
 		                <field name="journal_id" invisible="1"/>
 		                <field name="period_id" invisible="1" groups="account.group_account_user"/>
@@ -149,7 +154,11 @@
                     <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
 	                    <field name="amount_due_by" string="Invoice Date" help="Find the invoices on due on or before this date" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
 	                    <field name="payment_date" help="Date to be displayed on payments" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+<<<<<<< HEAD
 	                    <field name="payment_journal"  help="Select the Bank journal to post payments too" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+=======
+	                    <field name="payment_journal" domain="['|',('allow_check_writing','=','True'),('use_preprint_check','=','True')]" help="Select the Bank journal to post payments too" attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 	                </group>
 	                <group attrs="{'readonly':[('state','in',('printed','cancel'))]}">
 	                	<field name="payment_method" string="Find On or Before" help='Choose to find all invoices due before "Payment Due By" or to find invoices due only exactly on "Payment Due By".' attrs="{'readonly':[('state','in',('printed','cancel'))]}"/>
@@ -168,7 +177,12 @@
 	                    <field name='pay' attrs="{'readonly':True}"  />
 						<field name="date_due" />
 						<field name="partner_id" groups="base.group_user" />
+<<<<<<< HEAD
 		                <field name="number" string="Invoice Number"/>
+=======
+		                <field name="supplier_invoice_number" string="Description"/>
+		                <field name="reference" invisible="1"/>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 		                <field name="name" invisible="1"/>
 		                <field name="journal_id" invisible="1"/>
 		                <field name="period_id" invisible="1" groups="account.group_account_user"/>

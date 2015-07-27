@@ -7,7 +7,11 @@
 			<field name="name">Update Shipping Status</field>
 			<field name="model">ship.status</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<form string="Update Shipping Status" >
+=======
+				<form string="Update Shipping Status" version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 				    <group>
 						<field name="status"/>
 					</group>

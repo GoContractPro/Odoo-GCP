@@ -81,7 +81,11 @@ class shipping_rate_wizard(orm.TransientModel):
             if sale_id:
                 sale_obj.write(cr , uid, [sale_id], {
                     'shipcharge': data.shipping_cost,
+<<<<<<< HEAD
                     'ship_service': data.ups_service_id and data.ups_service_id.description or '',
+=======
+                    'ship_method': data.ups_service_id and data.ups_service_id.description or '',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                     'sale_account_id': data.logis_company and data.logis_company.ship_account_id and data.logis_company.ship_account_id.id or False,
                     'ship_company_code': data.ship_company_code,
                     'logis_company': data.logis_company and data.logis_company.id or False,
@@ -100,7 +104,11 @@ class shipping_rate_wizard(orm.TransientModel):
             if inv_id:
                 inv_obj.write(cr , uid, [inv_id], {
                     'shipcharge': data.shipping_cost,
+<<<<<<< HEAD
                     'ship_service': data.ups_service_id and data.ups_service_id.description or '',
+=======
+                    'ship_method': data.ups_service_id and data.ups_service_id.description or '',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                     }, context=context)
                 return {'nodestroy': False, 'type': 'ir.actions.act_window_close'}
         return True

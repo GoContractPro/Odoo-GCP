@@ -20,12 +20,30 @@
 #
 ##############################################################################
 
+<<<<<<< HEAD
 import base64
 import time
 import openerp.addons.decimal_precision as dp
 from openerp.osv import fields, osv
 from openerp import SUPERUSER_ID, netsvc, api
 
+=======
+import netsvc
+import base64
+import time
+import decimal_precision as dp
+from openerp.osv import fields, osv
+
+class ups_commodity_code(osv.osv):
+    _name = 'ups.commodity.code'
+    
+    _columns = {
+                'name':fields.char("Code",size=32),
+                'desc':fields.text("Description")
+                }
+    
+ups_commodity_code()
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 class stock_picking(osv.osv):
     
@@ -93,7 +111,11 @@ class stock_picking(osv.osv):
         return result.keys()
 
     def _get_company_code(self, cr, user, context=None):
+<<<<<<< HEAD
         return super(stock_picking, self)._get_company_code(cr, user, context=context)
+=======
+        return []
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     
     _columns = {
         'logis_company': fields.many2one('logistic.company', 'Logistics Company', help='Name of the Logistics company providing the shipper services.'),
@@ -179,7 +201,12 @@ class stock_picking(osv.osv):
         'inv_address_id': fields.many2one('res.partner', 'Sold To Address', help='Only applicable when Sold to option is empty or not present.'),
         'blanket_begin_date': fields.date('Blanket Begin Date'),
         'blanket_end_date': fields.date('Blanket End Date'),
+<<<<<<< HEAD
         'comm_code': fields.char('Commodity Code', size=256,),
+=======
+#        'comm_code': fields.char('Commodity Code', size=256,),
+        'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
         'exp_carrier': fields.char('ExportingCarrier', size=256),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
@@ -287,6 +314,7 @@ class stock_picking(osv.osv):
 
 stock_picking()
 
+<<<<<<< HEAD
 # class stock_picking_out(osv.osv):
 #     
 #     _inherit = "stock.picking.out"
@@ -450,6 +478,171 @@ stock_picking()
 #     
 # 
 # stock_picking_out()
+=======
+class stock_picking_out(osv.osv):
+    
+    _inherit = "stock.picking.out"
+    
+    def _total_weight_net(self, cr, uid, ids, field_name, arg, context=None):
+        return self.pool.get('stock.picking')._total_weight_net(cr, uid, ids, field_name, arg, context)
+    
+    def _get_order(self, cr, uid, ids, context=None):
+        return self.pool.get('stock.picking')._get_order(cr, uid, ids, context)
+    
+    def _total_ord_weight_net(self, cr, uid, ids, field_name, arg, context=None):
+        return self.pool.get('stock.picking')._total_ord_weight_net(cr, uid, ids, field_name, arg, context)
+    
+    def _get_company_code(self, cr, user, context=None):
+        return self.pool.get('stock.picking')._get_company_code(cr, user, context)
+    
+    def onchange_logis_company(self, cr, uid, ids, logistic_company_id, context=None):
+        return self.pool.get('stock.picking').onchange_logis_company(cr, uid, ids, logistic_company_id, context)
+    
+    def distribute_weight(self, cr, uid, ids, context=None):
+        return self.pool.get('stock.picking').distribute_weight(cr, uid, ids, context)
+    
+    def process_ship(self, cr, uid, ids, context=None):
+        return self.pool.get('stock.picking').process_ship(cr, uid, ids, context)
+    
+    
+    _columns = {
+        'logis_company': fields.many2one('logistic.company', 'Logistics Account', help='Name of the Logistics company providing the shipper services.'),
+        'freight': fields.boolean('Shipment', help='Indicates if the shipment is a freight shipment.'),
+        'sat_delivery': fields.boolean('Saturday Delivery', help='Indicates is it is appropriate to send delivery on Saturday.'),
+        'package_type': fields.selection([
+            ('01', 'Letter'),
+            ('02', 'Customer Supplied Package'),
+            ('03', 'Tube'),
+            ('04', 'PAK'),
+            ('21', 'ExpressBox'),
+            ('24', '25KG Box'),
+            ('25', '10KG Box'),
+            ('30', 'Pallet'),
+            ('2a', 'Small Express Box'),
+            ('2b', 'Medium Express Box'),
+            ('2c', 'Large Express Box')
+            ], 'Package Type', help='Indicates the type of package'),
+        'bill_shipping': fields.selection([
+            ('shipper', 'Shipper'),
+            ('receiver', 'Receiver'),
+            ('thirdparty', 'Third Party')
+            ], 'Bill Shipping to', help='Shipper, Receiver, or Third Party.'),
+        'with_ret_service': fields.boolean('With Return Services', help='Include Return Shipping Information in the package.'),
+        'tot_ship_weight': fields.function(_total_weight_net, method=True, type='float', digits=(16, 3), string='Shipment Weight',
+            store={
+                'stock.picking': (lambda self, cr, uid, ids, c={}: ids, ['packages_ids'], -10),
+                'stock.packages': (_get_order, ['weight'], -10),
+                }, help="Adds the Total Weight of all the packages in the Packages Table.",
+                ),
+        'tot_del_order_weight': fields.function(_total_ord_weight_net, method=True, readonly=True, string='Total Order Weight', store=False,
+                                                 help="Adds the Total Weight of all the packages in the Packages Table."),
+        'packages_ids': fields.one2many("stock.packages", 'pick_id', 'Packages Table'),
+        'shipcharge': fields.float('Shipping Cost', readonly=True),
+        'ship_state': fields.selection([
+            ('draft', 'Draft'),
+            ('in_process', 'In Process'),
+            ('ready_pick', 'Ready for Pickup'),
+            ('shipped', 'Shipped'),
+            ('delivered', 'Delivered'),
+            ('void', 'Void'),
+            ('hold', 'Hold'),
+            ('cancelled', 'Cancelled')
+            ], 'Shipping Status', readonly=True, help='The current status of the shipment'),
+        'trade_mark': fields.text('Trademarks AREA'),
+        'ship_message': fields.text('Message'),
+        'address_validate': fields.selection([
+            ('validate', 'Validate'),
+            ('nonvalidate', 'No Validation')
+            ], 'Address Validation', help=''' No Validation = No address validation.
+                                              Validate = Fail on failed address validation.
+                                              Defaults to validate. Note: Full address validation is not performed. Therefore, it is
+                                              the responsibility of the Shipping Tool User to ensure the address entered is correct to
+                                              avoid an address correction fee.'''),
+        'ship_description': fields.text('Description'),
+        'ship_from': fields.boolean('Ship From', help='Required if pickup location is different from the shipper\'s address..'),
+        'ship_from_tax_id_no': fields.char('Identification Number', size=64 , select=1),
+        'ship_from_address': fields.many2one('res.partner', 'Ship From Address'),
+#         'address': fields.many2one('res.partner', 'Ship From Address'),
+        'tot_order_weight': fields.related('sale_id', 'total_weight_net', type='float', relation='sale.order', string='Total Order Weight'),
+        'comm_inv': fields.boolean('Commercial Invoice'),
+        'cer_orig': fields.boolean('U.S. Certificate of Origin'),
+        'nafta_cer_orig': fields.boolean('NAFTA Certificate of Origin'),
+        'sed': fields.boolean('Shipper Export Declaration (SED)'),
+        'prod_option': fields.selection([
+            ('01', 'AVAILABLE TO CUSTOMS UPON REQUEST'),
+            ('02', 'SAME AS EXPORTER'),
+            ('03', 'ATTACHED LIST'),
+            ('04', 'UNKNOWN'),
+            (' ', ' ')
+            ], 'Option'),
+        'prod_company': fields.char('CompanyName', size=256, help='Only applicable when producer option is empty or not present.'),
+        'prod_tax_id_no': fields.char('TaxIdentificationNumber', size=256, help='Only applicable when producer option is empty or not present.'),
+        'prod_address_id': fields.many2one('res.partner', 'Producer Address', help='Only applicable when producer option is empty or not present.'),
+        'inv_option': fields.selection([
+            ('01', 'Unknown'),
+            ('02', 'Various'),
+            (' ', ' ')
+            ], 'Sold to Option'),
+        'inv_company': fields.char('CompanyName', size=256, help='Only applicable when Sold to option is empty or not present.'),
+        'inv_tax_id_no': fields.char('TaxIdentificationNumber', size=256, help='Only applicable when Sold to option is empty or not present.'),
+        'inv_att_name': fields.char('AttentionName', size=256, help='Only applicable when Sold to option is empty or not present.'),
+        'inv_address_id': fields.many2one('res.partner', 'Sold To Address', help='Only applicable when Sold to option is empty or not present.'),
+        'blanket_begin_date': fields.date('Blanket Begin Date'),
+        'blanket_end_date': fields.date('Blanket End Date'),
+   #     'comm_code': fields.char('Commodity Code', size=256,),
+        'comm_code':fields.many2one('ups.commodity.code','Commodity Code'),
+        
+        'exp_carrier': fields.char('ExportingCarrier', size=256),
+        'ship_company_code': fields.selection(_get_company_code, 'Logistics Company', method=True, size=64),
+        'ship_charge': fields.float('Value', digits_compute=dp.get_precision('Account'))
+    }
+
+    _defaults = {
+        'address_validate': 'nonvalidate',
+        'comm_inv': False,
+        'cer_orig': False,
+        'nafta_cer_orig': False,
+        'sed': False,
+        'ship_state' : 'draft',
+        'bill_shipping': 'shipper',
+        'ship_charge': 0.0
+    }
+
+    def print_labels(self, cr, uid, ids, context=None):
+        if not ids: return []
+        return {
+            'type': 'ir.actions.report.xml',
+            'report_name': 'multiple.label.print',
+            'datas': {
+                'model': 'stock.picking',
+                'id': ids and ids[0] or False,
+                'ids': ids,
+                'report_type': 'pdf'
+                },
+            'nodestroy': True
+        }
+    
+    def print_packing_slips(self, cr, uid, ids, context=None):
+        if not ids: return []
+        packages_ids = []
+        for package in self.browse(cr, uid, ids[0]).packages_ids:
+            packages_ids.append(package.id)
+        x = {
+            'type': 'ir.actions.report.xml',
+            'report_name': 'package.packing.slip.print',
+            'datas': {
+                'model': 'stock.packages',
+                'id': ids and ids[0] or False,
+                'ids': packages_ids,
+                'report_type': 'pdf'
+                },
+            'nodestroy': True
+        }
+        return x
+    
+
+stock_picking_out()
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 # class stock_partial_picking(osv.osv_memory):
 #     
@@ -532,4 +725,17 @@ class Prod(osv.osv):
         return super(Prod, self).search(cr, uid, args, offset, limit,
                 order, context=context, count=count)
 Prod()
+<<<<<<< HEAD
+=======
+
+class ups_commodity_code(osv.osv):
+    _name = 'ups.commodity.code'
+    
+    _columns = {
+                'name':fields.char("Code",size=32),
+                'desc':fields.text("Description")
+                }
+    
+ups_commodity_code()
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -23,9 +23,15 @@ from openerp.osv import osv, fields
 import httplib
 from xml.dom.minidom import Document
 import xml2dic
+<<<<<<< HEAD
 from openerp.tools.translate import _
 
 class res_partner(osv.osv):
+=======
+from tools.translate import _
+
+class res_partner(osv.Model):
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     _inherit = 'res.partner'
     _rec_name = 'payment_profile_id'
     _columns = {
@@ -207,6 +213,10 @@ class res_partner(osv.osv):
                 if xsd:
                     self._setparameter(Param_Dic, 'xsd', xsd)
                 Customer_Profile_ID = self.createCustomerProfile(Param_Dic)
+<<<<<<< HEAD
+=======
+                print "Error_Message ",Customer_Profile_ID
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                 if Customer_Profile_ID and type(Customer_Profile_ID) == type(''):
                     cust_prof_id = self.pool.get('cust.profile').create(cr, uid, {'name':Customer_Profile_ID})
                     cust_obj.write(cr, uid, ids, {'payment_profile_id':cust_prof_id})

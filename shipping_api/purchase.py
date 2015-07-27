@@ -25,9 +25,12 @@ from openerp.osv import fields, osv
 class purchase_order(osv.osv):
        
     _inherit = "purchase.order"
+<<<<<<< HEAD
     _columns = {
            'warehouse_id': fields.many2one('stock.warehouse', 'Destination Warehouse'),     
         }
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
        
     def _get_warehouse(self, cr, uid, ids, context=None):
         res = self.pool.get('stock.warehouse').search(cr, uid, [])

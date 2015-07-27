@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	 <data>
+	
+        <!-- Mrp Disassemble Location -->
+        
+		<record id="view_mrp_disassemble_location_tree" model="ir.ui.view">
+			<field name="name">mrp.disassemble.location.tree</field>
+			<field name="model">mrp.disassemble.location</field>
+			<field name="type">tree</field>
+			<field name="arch" type="xml">
+				<tree string="Locations">
+					<field name="location_id" />
+					<field name="type" />
+				</tree>
+			</field>
+		</record>
+
+		<record id="view_mrp_disassemble_location_form" model="ir.ui.view">
+			<field name="name">mrp.disassemble.location.form</field>
+			<field name="model">mrp.disassemble.location</field>
+			<field name="type">form</field>
+			<field name="arch" type="xml">
+				<form string="Locations">
+					<field name="location_id" />
+					<field name="type" />
+				</form>
+			</field>
+		</record>
+
+		<record id="action_mrp_disassemble_location_tree" model="ir.actions.act_window">
+			<field name="name">Location for Products Finished</field>
+			<field name="res_model">mrp.disassemble.location</field>
+			<field name="view_type">form</field>
+			<field name="view_mode">tree,form</field>
+		</record>
+
+		<menuitem
+            id="menu_mrp_config_disassemble"
+            name="Disassemble"
+            parent="mrp.menu_mrp_configuration" 
+            sequence="50" />
+		
+		<menuitem
+            id="menu_mrp_config_disassemble_finish_loc"
+            name="Locations for Products Finished"
+            parent="menu_mrp_config_disassemble"
+            sequence="50" action="action_mrp_disassemble_location_tree" />
+		
+	  </data>
+</openerp>

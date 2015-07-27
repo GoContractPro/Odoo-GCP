@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+     <data>
+          
+        <record id="npg_auto_pack_hotp_form_view" model="ir.ui.view">
+             <field name="name">wizard.xml.npg.auto.pack.form</field>
+             <field name="model">auto.pack.items.edi</field>
+             <field name="arch" type="xml">
+				<form string="Export EDI" version="7.0">
+					<group height="50" width="320">
+						<separator string="Do you wish to auto-pack items in this order?"/>
+						<newline/>
+						<footer>
+							<button special="cancel" string="Cancel" icon="gtk-cancel"/>
+							or
+							<button name="split" string="Ok" type="object" icon="gtk-ok" default_focus="1"/>
+		 				</footer>
+ 					</group>
+				</form>
+			</field>
+		</record>
+
+        <record id="action_npg_auto_pack_items" model="ir.actions.act_window">
+            <field name="name">Auto-Pack Items</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">auto.pack.items.edi</field>
+			<field name="view_id" ref="npg_auto_pack_hotp_form_view"/>
+            <field name="target">new</field>
+        </record>
+        
+	</data>
+</openerp>

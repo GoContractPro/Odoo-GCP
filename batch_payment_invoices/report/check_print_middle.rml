@@ -151,7 +151,11 @@
                 <para style="P19">[[formatLang( l['amount_original']) ]]</para>
               </td>
               <td>
+<<<<<<< HEAD
                 <para style="P19">[[ formatLang (l['amount']) ]]</para>
+=======
+                <para style="P19">[[ formatLang( l['amount_due']) ]]</para>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
               </td>
               <td>
                 <para style="P19">
@@ -159,7 +163,11 @@
                 </para>
               </td>
               <td>
+<<<<<<< HEAD
                 <para style="P19">[[ formatLang(voucher.amount) ]]</para>
+=======
+                <para style="P19">[[ formatLang (l['amount']) ]]</para>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
               </td>
             </tr>
           </blockTable>
@@ -321,7 +329,11 @@
                 <para style="P19">[[ formatLang (l['amount_original']) ]]</para>
               </td>
               <td>
+<<<<<<< HEAD
                 <para style="P19">[[ formatLang (l['amount']) ]]</para>
+=======
+                <para style="P19">[[ formatLang (l['amount_due']) ]]</para>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
               </td>
               <td>
                 <para style="P19">
@@ -329,7 +341,11 @@
                 </para>
               </td>
               <td>
+<<<<<<< HEAD
                 <para style="P19">[[ formatLang (voucher.amount) ]]</para>
+=======
+                <para style="P19">[[ formatLang (l['amount']) ]]</para>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
               </td>
             </tr>
           </blockTable>

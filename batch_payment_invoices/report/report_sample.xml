@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <openerp>
 <data noupdate="1">
+<<<<<<< HEAD
 <!--    <record id="aeroo_multi_pay_invoice_report_id" model="ir.actions.report.xml">-->
 <!--        <field name="name">Multi Pay Invoice Report</field>-->
 <!--        <field name="type">ir.actions.report.xml</field>-->
@@ -36,6 +37,29 @@
     		/>
 
 	-->
+=======
+    <record id="aeroo_multi_pay_invoice_report_id" model="ir.actions.report.xml">
+        <field name="name">Multi Pay Invoice Report</field>
+        <field name="type">ir.actions.report.xml</field>
+        <field name="model">account.invoice</field>
+        <field name="report_name">multi_pay_invoice_report</field>
+        <field name="report_type">aeroo</field>
+        <field name="in_format">oo-ods</field>
+        <field name="parser_loc">batch_payment_invoices/report/parser.py</field>
+        <field name="report_rml">batch_payment_invoices/report/printed_invoice.ods</field>
+        <field name="parser_state">loc</field>
+        <field name="tml_source">file</field>
+    </record>
+    <ir_set>
+        <field eval="'action'" name="key"/>
+        <field eval="'client_print_multi'" name="key2"/>
+        <field eval="['account.invoice']" name="models"/>
+        <field name="name">Multi Pay Invoice Report</field>
+        <field eval="'ir.actions.report.xml,'+str(aeroo_multi_pay_invoice_report_id)" name="value"/>
+        <field eval="True" name="isobject"/>
+        <field eval="True" name="replace"/>
+    </ir_set> 
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 	
 	<report id="report_account_voucher"
             string="Voucher"

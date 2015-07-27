@@ -1,0 +1,52 @@
+# -*- coding: utf-8 -*-
+##############################################################################
+#
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as
+#    published by the Free Software Foundation, either version 3 of the
+#    License, or (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+##############################################################################
+
+from osv import fields, osv
+from tools.translate import _
+import amazonerp_osv as connection_obj
+
+class amazon_inactive_product(osv.osv_memory):
+    _name = "amazon.inactive.product"
+    _rec_name = 'inactive_products'
+
+    _columns = {
+        'inactive_products' : fields.many2many('product.product', 'amazon_inactive_product_rel','wizard_id', 'product_id',string='Inactive Products on Amazon')
+    }
+    def submit_inactive_product(self,cr,uid,ids,context={}):
+
+<<<<<<< .mine
+        inactive_products = self.browse(cr,uid,ids[0]).inactive_products
+        for each_products in inactive_products:
+            
+        return True
+
+=======
+    def default_get(self, cr, uid, fields, context=None):
+        res = super(amazon_inactive_product, self).default_get(cr, uid, fields, context=context)
+        inactive_product_ids = []
+        if context is None:
+            context = {}
+        if context.get('active_model', False):
+                inactive_product_ids = context.get('active_ids', [])
+        return  res
+
+>>>>>>> .r1161
+amazon_inactive_product()

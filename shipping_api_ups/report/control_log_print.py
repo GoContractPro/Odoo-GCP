@@ -23,7 +23,11 @@
 import time
 import base64
 
+<<<<<<< HEAD
 from openerp.report import report_sxw
+=======
+from report import report_sxw
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 from openerp.osv import osv,fields
 
 class report_sxw_new(report_sxw.report_sxw):

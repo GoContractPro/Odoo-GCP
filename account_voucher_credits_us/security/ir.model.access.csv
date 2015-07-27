@@ -1,0 +1,2 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"access_account_voucher_line_credits_to_use","account.voucher.line.credits_to_use","model_account_voucher_line_credits_to_use","base.group_user",1,1,1,1

@@ -123,7 +123,10 @@ class account_voucher(osv.Model):
         '''
         if context is None:
             context = {}
+<<<<<<< HEAD
         context=dict(context)     
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         context.update({'cc_no':'no_mask'})
         if not isinstance(ids,list):
             ids = [ids]
@@ -153,7 +156,10 @@ class account_voucher(osv.Model):
             context = {}
         if fields and 'cc_number' in fields and 'key' not in fields:
             fields.append('key')
+<<<<<<< HEAD
         context=dict(context)     
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         vals = super(account_voucher, self).read(cr, uid, ids, fields, context, load)
         if isinstance(vals, list):
             for val in vals:
@@ -224,7 +230,11 @@ class account_voucher(osv.Model):
         'cc_zip':fields.char('Postal/Zip', size=32,),
         'cc_country':fields.char('Country', size=32,),
         'cc_order_date':fields.date('Order Date',),
+<<<<<<< HEAD
         'cc_order_amt':fields.float('Order Amt'),
+=======
+        'cc_order_amt':fields.float('Order Amt',required=True),
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         'cc_number':fields.char('Credit Card Number', size=256),
         'cc_v':fields.char('Card Code Verification', size=3),
         'cc_e_d_month':fields.char('Expiration Date MM', size=32),
@@ -299,9 +309,13 @@ class account_voucher(osv.Model):
         
         if cc_allow_refunds:
             res['value']['cc_info_hide'] = True
+<<<<<<< HEAD
         if  context.has_key('sale_id'):
             context=dict(context) 
             context.update({'sale_id':sale_id})
+=======
+        context.update({'sale_id':sale_id})
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         if not sale_id:
             sale_id = context.get('sale_id')
         if sale_id and res['value'].get('line_cr_ids') :

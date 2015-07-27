@@ -20,6 +20,10 @@
 #
 ##############################################################################
 
+<<<<<<< HEAD
 #import shipping_rate_calculation
+=======
+import shipping_rate_calculation
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

@@ -31,7 +31,11 @@
     "init_xml" : [],
     "demo_xml" : [],
     "data"     : [
+<<<<<<< HEAD
 #                 'wizard/account_financial_report_view.xml',
+=======
+                 'wizard/account_financial_report_view.xml',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                  'npg_account_report_view.xml',
                  'security/ir.model.access.csv',
                  'report.xml'

@@ -29,8 +29,13 @@
 #
 ##############################################################################
 
+<<<<<<< HEAD
 from openerp.report import report_sxw
 from openerp.report.report_sxw import rml_parse
+=======
+from report import report_sxw
+from report.report_sxw import rml_parse
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 import lorem
 import random
 
@@ -46,8 +51,13 @@ class Parser(report_sxw.rml_parse):
         })
 
     def hello_world(self, name):
+<<<<<<< HEAD
         return "Hello, %s!" % name
 
+=======
+        return "Hello, %s!" % name    
+    
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     #get list partner in invoice selected
     def _get_partner(self, object):
         res_partner = self.pool.get('res.partner')
@@ -59,9 +69,15 @@ class Parser(report_sxw.rml_parse):
         for partner in res_partner.browse(self.cr, self.uid, list_partner):
             result.append({'partner_name': partner.name,
                            'partner_id': partner.id,
+<<<<<<< HEAD
                            })
         return result
 
+=======
+                           })            
+        return result
+    
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     # get invoice in invoice with supplier
     def _get_invoice(self, object,partner_id):
         res_partner = self.pool.get('res.partner')
@@ -83,6 +99,12 @@ class Parser(report_sxw.rml_parse):
                            'state': invoice.state or '',
                            'amount_untaxed': invoice.amount_untaxed or '',
                            'amount_total': invoice.amount_total or '',
+<<<<<<< HEAD
                            })
 
         return result
+=======
+                           })                
+            
+        return result    
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d

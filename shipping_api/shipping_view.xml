@@ -2,7 +2,11 @@
 <openerp>
 	<data>
 
+<<<<<<< HEAD
 		<menuitem id="shipping_menu" parent="npg_delivery.menu_delivery" sequence="55" name="UPS"/>
+=======
+		<menuitem id="shipping_menu" parent="stock.menu_stock_root" sequence="55" name="Shipping"/>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 		<!-- Shipping log -->
 		<record id="shipping_move_filter" model="ir.ui.view">
@@ -56,7 +60,11 @@
 			<field name="name">shipping.move.form</field>
 			<field name="model">shipping.move</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<form string='Shipping Log' >
+=======
+				<form string='Shipping Log' version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<sheet>
 						<group colspan="4" col="4" string="">
 							<field name='partner_id' readonly="1"/>

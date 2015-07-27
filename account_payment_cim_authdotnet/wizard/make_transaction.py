@@ -25,7 +25,11 @@ import httplib
 from xml.dom.minidom import Document
 import xml2dic
 import time
+<<<<<<< HEAD
 from openerp.tools.translate import _
+=======
+from tools.translate import _
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 class make_transaction(osv.TransientModel):
     _name = 'make.transaction'

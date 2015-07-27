@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    	<!--        Purchase Order Form view       	-->
+
+	    <record id="view_order_form_inherit" model="ir.ui.view">
+			<field name="name">purchase.order.form.inherit</field>
+			<field name="model">purchase.order</field>
+			<field name="type">form</field>
+			<field name="inherit_id" ref="purchase.purchase_order_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='company_id']" position="after">
+					<field name="promise_date" />
+					<field name="requester"/>
+				</xpath>
+				<xpath expr="//field[@name='partner_id']" position="after">
+					<field name="partner_contact_id" context="{'default_type':'contact'}"/> />
+				</xpath>
+				<xpath expr="//field[@name='pricelist_id']" position="after">
+					<field name="incoterm_id" widget="selection" />
+				</xpath>
+				<xpath expr="//field[@name='partner_id']" position="attributes">
+					<attribute name='on_change'>onchange_partner_id(partner_id)</attribute>
+				</xpath>
+				<xpath expr="//field[@name='order_line']" position="attributes">
+					<attribute name='context'>{'partner_id':partner_id}</attribute>
+				</xpath>
+				<xpath expr="//field[@name='order_line']/tree/field[@name='product_id']" position="attributes">
+					<attribute name='context'>{'partner_id':parent.partner_id}</attribute>
+				</xpath>
+			</field>
+		</record>
+
+        <record id="view_order_tree_inherit" model="ir.ui.view">
+			<field name="name">purchase.order.tree.inherit</field>
+			<field name="model">purchase.order</field>
+			<field name="type">tree</field>
+			<field name="inherit_id" ref="purchase.purchase_order_tree" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='company_id']" position="after">
+					<field name="promise_date" />
+				</xpath>
+				<field name="minimum_planned_date" position="attributes">
+					<attribute name="invisible">True</attribute>
+				</field>
+			</field>
+		</record>
+
+      </data>
+</openerp>

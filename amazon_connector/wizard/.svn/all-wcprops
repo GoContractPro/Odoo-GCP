@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/bista/!svn/ver/1168/BistaOpenERP/amazon_connector_latest/wizard
+END
+create_amazon_shop.xml
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/bista/!svn/ver/1085/BistaOpenERP/amazon_connector_latest/wizard/create_amazon_shop.xml
+END
+amazon_product_lookup.py
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svn/bista/!svn/ver/1173/BistaOpenERP/amazon_connector_latest/wizard/amazon_product_lookup.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/bista/!svn/ver/1173/BistaOpenERP/amazon_connector_latest/wizard/__init__.py
+END
+create_amazon_shop.py
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/bista/!svn/ver/1154/BistaOpenERP/amazon_connector_latest/wizard/create_amazon_shop.py
+END
+amazon_product_lookup.xml
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/bista/!svn/ver/1158/BistaOpenERP/amazon_connector_latest/wizard/amazon_product_lookup.xml
+END

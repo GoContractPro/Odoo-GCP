@@ -35,12 +35,22 @@ class account_voucher(osv.Model):
     _columns = {
         'name':fields.char('Memo', size=256),
         'log_ref': fields.char('Check-log Ref', size=128),
+<<<<<<< HEAD
 #        'origin' : fields.char('Origin', size=128),
         'check_status' :fields.selection([('void','Voided'),('print','Printed'),('re_print','Re-Printed'),('clear','Cleared')]),
         'chk_seq': fields.char("Check Number", size=64, readonly=True),
         'invoice_ids': fields.one2many('account.invoice', 'voucher_id', 'Invoices', ondelete='cascade'),
         'jtype':fields.related('journal_id','type', string="Journal Type", type='selection', selection=[('sale', 'Sale'),('sale_refund','Sale Refund'), ('purchase', 'Purchase'), ('purchase_refund','Purchase Refund'), ('cash', 'Cash'), ('bank', 'Bank and Checks'), ('general', 'General'), ('situation', 'Opening/Closing Situation')],),
     }                                                                                                    
+=======
+#         'origin' : fields.char('Origin', size=128),
+        'check_status' :fields.selection([('void','Voided'),('print','Printed'),('re_print','Re-Printed'),('clear','Cleared')]),
+        'chk_seq': fields.char("Check Number", size=64, readonly=True),
+        'invoice_ids': fields.one2many('account.invoice', 'voucher_id', 'Invoices', ondelete='cascade'),
+        'reference': fields.char('Origin', size=64, readonly=True, states={'draft':[('readonly',False)]}, help="Source document which generated the payment."),
+        'jtype':fields.related('journal_id','type', string="Journal Type", type='selection', selection=[('sale', 'Sale'),('sale_refund','Sale Refund'), ('purchase', 'Purchase'), ('purchase_refund','Purchase Refund'), ('cash', 'Cash'), ('bank', 'Bank and Checks'), ('general', 'General'), ('situation', 'Opening/Closing Situation')],),
+    }
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
     def print_checks(self, cr, uid, ids, context=None):
         check_state = self.browse(cr, uid, ids[0],context=None).check_status

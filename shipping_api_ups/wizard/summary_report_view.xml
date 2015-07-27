@@ -7,7 +7,11 @@
 			<field name="name">Print Summary Report</field>
 			<field name="model">ship.summary_report</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<form string="Print Summary Report" >
+=======
+				<form string="Print Summary Report" version="7.0" >
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<group col="4" height="55">
 						<button special="cancel" string="Cancel" icon="gtk-close" />
 						<button name="print_summary_report" string="Print" type="object" icon="gtk-ok"  />

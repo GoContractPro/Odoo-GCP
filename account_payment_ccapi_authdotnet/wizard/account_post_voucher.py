@@ -21,7 +21,11 @@
 ##############################################################################
 
 from openerp.osv import fields, osv
+<<<<<<< HEAD
 from openerp.tools.translate import _
+=======
+from tools.translate import _
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 class account_post_voucher(osv.TransientModel):
     _name = 'account.post.voucher'
@@ -29,7 +33,10 @@ class account_post_voucher(osv.TransientModel):
     _columns = {
         'total_paid': fields.float('Total Received'),
         'total_allocated': fields.float('Total Allocated'),
+<<<<<<< HEAD
         'ok_to_go': fields.float('OK to Go'),
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     }
 
     def _get_total_paid(self, cr, uid, context=None):
@@ -44,8 +51,13 @@ class account_post_voucher(osv.TransientModel):
         obj_voucher = self.pool.get('account.voucher')
         amount = 0.00
         if context.get('active_id'):
+<<<<<<< HEAD
             amount = obj_voucher.browse(cr, uid, context['active_id'], context=context).amount 
           
+=======
+            amount = obj_voucher.browse(cr, uid, context['active_id'], context=context).amount
+
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         return amount
 
     def _get_total_allocated(self, cr, uid, context=None):
@@ -62,6 +74,7 @@ class account_post_voucher(osv.TransientModel):
         total_allocated = 0.0
         for line in voucher.line_cr_ids:
             total_allocated += line.amount
+<<<<<<< HEAD
         
         return total_allocated
 
@@ -82,10 +95,15 @@ class account_post_voucher(osv.TransientModel):
         for line in voucher.line_cr_ids:
             total_allocated += line.amount
         return total_allocated - voucher.amount
+=======
+
+        return total_allocated
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
     _defaults = {
         'total_paid': _get_total_paid,
         'total_allocated': _get_total_allocated,
+<<<<<<< HEAD
         'ok_to_go': _get_ok_to_go,
     }
     
@@ -102,6 +120,10 @@ class account_post_voucher(osv.TransientModel):
             return {'warning': {'title': _('Overallocated invoices'), 'message': _('Reduce allocations to match Total Receipt')}}
         return {'value': {}}
         
+=======
+    }
+
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     def launch_wizard(self, cr, uid, ids, context=None):
         """
         Don't allow post if total_allocated > total_paid.

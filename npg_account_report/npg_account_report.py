@@ -25,7 +25,11 @@ from openerp import netsvc
 import time
 from datetime import datetime, timedelta
 from openerp.tools.translate import _
+<<<<<<< HEAD
 from openerp.tools import frozendict
+=======
+
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 class sale_order(osv.osv):
     _inherit = 'sale.order'
@@ -86,6 +90,7 @@ class account_invoice(osv.osv):
         }
     
     
+<<<<<<< HEAD
 #    def onchange_partner_id(self, type, partner_id,\
 #            date_invoice=False, payment_term=False, partner_bank_id=False, company_id=False):
 #        """
@@ -113,6 +118,35 @@ class account_invoice(osv.osv):
 #            res['value'].update({'partner_invoice_id': addr['invoice'],
 #                                    'partner_shipping_id': addr['delivery'],})
 #        return res
+=======
+    def onchange_partner_id(self, cr, uid, ids, type, partner_id,\
+            date_invoice=False, payment_term=False, partner_bank_id=False, company_id=False):
+        """
+         Overridden On Change Partner method to add shipping address of the partner.
+         @param self: The object pointer.
+         @param cr: A database cursor
+         @param uid: Current Logged in User's Identifier.
+         @param ids: List of ids.
+         @param type : Type of invoice
+         @param partner_id : Identifier for Customer/Supplier
+         @param date_invoice : Invoice date
+         @param payment_term : Payment Term selected on Invoice
+         @param partner_bank_id : Bank Account selected on Invoice
+         @param company_id : Company
+         @return: True
+        """
+        res = super(account_invoice, self).onchange_partner_id(cr, uid, ids, type, partner_id, date_invoice=date_invoice,payment_term=payment_term, partner_bank_id=partner_bank_id, company_id=company_id)
+        if type == 'out_invoice' or type == 'in_invoice':
+            shipping_address = False
+            salesman_id = False
+            if partner_id:
+                addr = self.pool.get('res.partner').address_get(cr, uid, [partner_id], ['delivery', 'invoice', 'contact'])
+            else:
+               return res 
+            res['value'].update({'partner_invoice_id': addr['invoice'],
+                                    'partner_shipping_id': addr['delivery'],})
+        return res
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
     
 account_invoice()
@@ -145,7 +179,11 @@ class purchase_order(osv.osv):
         :return: ID of created invoice.
         :rtype: int
         """
+<<<<<<< HEAD
         if context is None or isinstance(context,frozendict):
+=======
+        if context is None:
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             context = {}
         journal_obj = self.pool.get('account.journal')
         inv_obj = self.pool.get('account.invoice')
@@ -174,7 +212,11 @@ class purchase_order(osv.osv):
                 inv_line_id = inv_line_obj.create(cr, uid, inv_line_data, context=context)
                 inv_lines.append(inv_line_id)
 
+<<<<<<< HEAD
                 po_line.write({'invoice_lines': [(4, inv_line_id)]})
+=======
+                po_line.write({'invoice_lines': [(4, inv_line_id)]}, context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
             # get invoice data and create invoice
             inv_data = {
@@ -206,4 +248,8 @@ class purchase_order(osv.osv):
         return res
 
     
+<<<<<<< HEAD
 purchase_order()
+=======
+purchase_order()
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d

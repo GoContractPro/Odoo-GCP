@@ -1,0 +1,2 @@
+"id","name","group_id:id","model_id:id","perm_read","perm_write","perm_create","perm_unlink"
+"product_partner_related_fields_user_write","Write access for Product-Partner relationed fields","base.group_user","model_product_partner_related_fields",1,1,1,1

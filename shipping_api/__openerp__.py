@@ -30,7 +30,11 @@
     'website': ' http://www.novapointgroup.com',
     'depends': ['email_template','npg_delivery','account_analytic_default', 'purchase'],
     'data': [
+<<<<<<< HEAD
 #        'wizard/shipping_rate_view.xml',
+=======
+        'wizard/shipping_rate_view.xml',
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         'stock_package_data.xml',
         'security/ir.model.access.csv',
         'logistic_company_view.xml',

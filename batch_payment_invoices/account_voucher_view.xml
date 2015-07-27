@@ -10,7 +10,11 @@
             <field name="arch" type="xml">
                 <field name="allow_check" position="after">
                     <newline/>
+<<<<<<< HEAD
 <!--                    <field name='origin'/>-->
+=======
+                    <field name='origin'/>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                     <field name='chk_seq'/>
                     <field name='log_ref' invisible="1"/>
                     <newline/>

@@ -31,5 +31,9 @@
 
 import amount_to_words
 import check_print
+<<<<<<< HEAD
 # import parser
+=======
+import parser
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 

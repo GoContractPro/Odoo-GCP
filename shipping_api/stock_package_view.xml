@@ -7,7 +7,11 @@
 			<field name="name">shipping.package.type.view.form</field>
 			<field name="model">shipping.package.type</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<form string="Shipping Package" >
+=======
+				<form string="Shipping Package" version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<sheet>
 						<field name='name'/>
 						<field name='code'/>
@@ -106,7 +110,11 @@
 			<field name="name">stock.packages.form</field>
 			<field name="model">stock.packages</field>
 			<field name="arch" type="xml">
+<<<<<<< HEAD
 				<form string='Shipping Packages' >
+=======
+				<form string='Shipping Packages' version="7.0">
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 					<sheet>
 						<group colspan="4" col="4">
 							<group colspan="2" col="2">

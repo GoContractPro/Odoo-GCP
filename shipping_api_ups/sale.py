@@ -21,8 +21,12 @@
 ##############################################################################
 
 from openerp.osv import fields, osv
+<<<<<<< HEAD
 from openerp.tools.translate import _
 import xml2dic
+=======
+from tools.translate import _
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 
 
 class res_partner(osv.osv):
@@ -47,7 +51,11 @@ class sale_order(osv.osv):
         if result:
             for sale in self.browse(cr, uid, ids):
                 if sale.ship_company_code == 'ups':
+<<<<<<< HEAD
                     pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('picking_type_code', '=', 'outgoing')], context=context)
+=======
+                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('type', '=', 'out')], context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                     if pick_ids:
                         vals = {
                             'ship_company_code': 'ups',
@@ -57,6 +65,7 @@ class sale_order(osv.osv):
                             'ups_pickup_type': sale.ups_pickup_type,
                             'ups_packaging_type': sale.ups_packaging_type and sale.ups_packaging_type.id or False,
                             'ship_from_address':sale.ups_shipper_id and sale.ups_shipper_id.address and sale.ups_shipper_id.address.id or False,
+<<<<<<< HEAD
                             'shipcharge':sale.shipcharge or False,
                             'packages_ids': [(0,0, {
                                                     'package_type':sale.ups_packaging_type and sale.ups_packaging_type.id or False,
@@ -68,6 +77,13 @@ class sale_order(osv.osv):
                         pick_obj.write(cr, uid, pick_ids, vals)
                 else:
                     pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('picking_type_code', '=', 'outgoing')])
+=======
+                            'shipcharge':sale.shipcharge or False
+                            }
+                        pick_obj.write(cr, uid, pick_ids, vals)
+                else:
+                    pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('type', '=', 'out')])
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
                     if pick_ids:
                         pick_obj.write(cr, uid, pick_ids, {'shipper': False, 'ups_service': False}, context=context)
         return result
@@ -87,6 +103,7 @@ class sale_order(osv.osv):
          domain = [('id', 'in', service_type_ids)]
          return {'domain': {'ups_service_id': domain}}
      
+<<<<<<< HEAD
     def onchange_ups_shipper_id(self, cr, uid, ids, ups_shipper_id = False, context=None):
 
         res = {}
@@ -124,6 +141,8 @@ class sale_order(osv.osv):
 
         return res
      
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
     def _method_get(self, cr, uid, context=None):
         res = super(sale_order, self)._method_get(cr, uid, context=context)
         res.append(('ups.account', 'UPS'))
@@ -138,7 +157,11 @@ class sale_order(osv.osv):
             ('pay_pal', 'Paypal'),
             ('no_charge', 'No Charge')], 'Payment Method'),
         'ship_company_code': fields.selection(_get_company_code, 'Logistic Company', method=True, size=64),
+<<<<<<< HEAD
         'ups_shipper_id': fields.many2one('ups.account.shipping', 'Shipping Account'),
+=======
+        'ups_shipper_id': fields.many2one('ups.account.shipping', 'Shipper'),
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         'ups_service_id': fields.many2one('ups.shipping.service.type', 'Service Type'),
         'ups_pickup_type': fields.selection([
             ('01', 'Daily Pickup'),
@@ -172,19 +195,30 @@ class sale_order(osv.osv):
         }
     
     def get_rate(self, cr, uid, ids, context=None):
+<<<<<<< HEAD
         
         sale_obj = self.pool.get('sale.order')
         
         data = self.browse(cr, uid, ids[0], context=context)
+=======
+         sale_obj = self.pool.get('sale.order')
+        
+         data = self.browse(cr, uid, ids[0], context=context)
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 #        sale_obj.write(cr,uid,context.get('active_ids'),{'ups_shipper_id':data.ups_shipper_id.id,
 #                                                         'ups_service_id':data.ups_service_id.id,
 #                                                         'ups_pickup_type':data.ups_pickup_type,
 #                                                         'ups_packaging_type':data.ups_packaging_type.id},context=context)
+<<<<<<< HEAD
         if context is None:
+=======
+         if context is None:
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             context = {}
 #        if not (data['rate_selection'] == 'rate_request' and data['ship_company_code'] == 'ups'):
 #            return super(shipping_rate_wizard, self).get_rate(cr, uid, ids, context)
 #        if context.get('active_model', False) == 'sale.order':
+<<<<<<< HEAD
         weight = data.total_weight_net or 0.00
         
 #         invoice = self.pool.get('account.invoice').browse(cr, uid, context['active_id'], context=context)
@@ -223,6 +257,45 @@ class sale_order(osv.osv):
 #            url = 'https://wwwcie.ups.com/ups.app/xml/Rate' or 'https://onlinetools.ups.com/ups.app/xml/Rate'
 
         rate_request = """<?xml version=\"1.0\"?>
+=======
+        
+         weight = data.total_weight_net or 0.00
+         
+#         invoice = self.pool.get('account.invoice').browse(cr, uid, context['active_id'], context=context)
+#         weight = invoice.total_weight_net or 0.00
+         receipient_zip = data.partner_id and data.partner_id.zip or ''
+         receipient_country_code = data.partner_id.country_id and data.partner_id.country_id.code or ''
+         access_license_no = data.ups_shipper_id and  data.ups_shipper_id.accesslicensenumber or ''
+         user_id = data.ups_shipper_id and  data.ups_shipper_id.userid or ''
+         password = data.ups_shipper_id and data.ups_shipper_id.password or ''
+         pickup_type_ups = data.ups_pickup_type
+         shipper_zip = data.ups_shipper_id and data.ups_shipper_id.address and data.ups_shipper_id.address.zip or ''
+         shipper_country_code =  data.ups_shipper_id and data.ups_shipper_id.address and  data.ups_shipper_id.address.country_id and \
+                                 data.ups_shipper_id.address.country_id.code or ''
+         ups_info_shipper_no = data.ups_shipper_id and data.ups_shipper_id.acc_no or ''
+         service_type_ups = data.ups_service_id and data.ups_service_id.shipping_service_code or ''
+         packaging_type_ups = data.ups_packaging_type.code
+         test_mode = False
+         test_mode = data.delivery_method and data.delivery_method.test_mode or True
+         
+         if test_mode:
+             url = unicode(data.delivery_method.ship_rate_test_web)
+#                port = data.logis_company.ship_rate_test_port
+         else:
+             url = unicode(data.delivery_method.ship_rate_web)
+#                port = data.logis_company.ship_rate_port
+             
+         if data.ups_service_id:
+             request_action ="rate"
+             request_option ="rate"
+         else:
+             request_action ="shop"
+             request_option ="shop"
+         
+#            url = 'https://wwwcie.ups.com/ups.app/xml/Rate' or 'https://onlinetools.ups.com/ups.app/xml/Rate'
+
+         rate_request = """<?xml version=\"1.0\"?>
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
          <AccessRequest xml:lang=\"en-US\">
              <AccessLicenseNumber>%s</AccessLicenseNumber>
              <UserId>%s</UserId>
@@ -281,6 +354,7 @@ class sale_order(osv.osv):
                                                 ups_info_shipper_no,receipient_zip, receipient_country_code, shipper_zip, shipper_country_code, 
                                                 service_type_ups, packaging_type_ups, weight)
          
+<<<<<<< HEAD
         rates_obj = self.pool.get('shipping.rates.sales')
         so = data.id
         rids = rates_obj.search(cr,uid,[('sales_id','=', so )])
@@ -356,6 +430,88 @@ class sale_order(osv.osv):
     #         mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'shipping_api_ups', 'view_for_shipping_rate_wizard_shipping')
         return True
 
+=======
+         rates_obj = self.pool.get('shipping.rates.sales')
+         so = data.id
+         rids = rates_obj.search(cr,uid,[('sales_id','=', so )])
+         rates_obj.unlink(cr, uid, rids, context)
+         serv_obj = self.pool.get('ups.shipping.service.type')
+         
+         try:
+             print rate_request
+             from urllib2 import Request, urlopen, URLError, quote
+             request = Request(url.encode('utf-8').strip(), rate_request.encode('utf-8').strip())
+             response_text = urlopen(request).read()
+#             p.agent_info = u' '.join((agent_contact, agent_telno)).encode('utf-8').strip()
+             print response_text
+             
+             response_dic = xml2dic.main(response_text)
+             str_error = ''
+             for response in response_dic['RatingServiceSelectionResponse'][0]['Response']:
+                 if response.get('Error'):
+                     for item in response['Error']:
+                         if item.get('ErrorDescription'):
+                             str_error = item['ErrorDescription']
+                             self.write(cr, uid, [data.id], {'status_message': "Error : " + item['ErrorDescription'] })
+             if not str_error:
+#                     print response_dic
+
+                 amount = None
+                 ups_service_id = None
+# Get all the return Shipping rates as options                    
+                 for response in response_dic['RatingServiceSelectionResponse']:
+                     
+                     
+                     if response.get('RatedShipment'):
+                         
+                         warning = None
+                         vals = {}
+                         for val in response['RatedShipment']:
+                             if val.get('TotalCharges'):
+                                 vals['totalcharges'] = float(val['TotalCharges'][1]['MonetaryValue'])
+                             if val.get('GuaranteedDaysToDelivery'):
+                                 vals['daystodelivery'] = val['GuaranteedDaysToDelivery']
+                             if val.get('Service'):
+                                 service_code = val['Service'][0]['Code'] 
+                                 service = serv_obj.search(cr,uid,[('shipping_service_code','=',service_code)])                 
+                                 vals['service'] =service[0]
+                             if val.get('RatedShipmentWarning'):
+                                 if not warning:
+                                      warning =  val['RatedShipmentWarning']
+                                 else:
+                                      warning = warning + ", " + val['RatedShipmentWarning']
+                                      
+                         # get the lowest cost shipping rate as default on Sales Order                                       
+                                      
+                         if (amount is None) or amount > vals['totalcharges']: 
+                             amount = vals['totalcharges']
+                             ups_service_id = vals['service']
+                             status_mesage = warning 
+                             
+                         vals['ratedshipmentwarning'] = warning
+                         vals['sales_id'] = context.get('active_id')
+                         rates_obj.create(cr,uid,vals,context)
+                         
+                 sale_obj.write(cr,uid,context.get('active_ids'),{'shipcharge':amount or 0.00,'ups_service_id':ups_service_id,'status_message':warning},context=context)
+
+                 return True
+                 rates_obj.write(cr, uid, context.get('active_ids'), { 'status_message': 'Success!'},context=context)
+         except URLError, e:
+             if hasattr(e, 'reason'):
+                 print 'Could not reach the server, reason: %s' % e.reason
+             elif hasattr(e, 'code'):
+                 print 'Could not fulfill the request, code: %d' % e.code
+             raise
+            
+            
+#         mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'shipping_api_ups', 'view_for_shipping_rate_wizard_shipping')
+         return True
+
+
+
+
+    
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
 sale_order()
 
 class shipping_rates_sales(osv.osv):
@@ -370,14 +526,21 @@ class shipping_rates_sales(osv.osv):
         'service': fields.many2one('ups.shipping.service.type', 'Shipping Service' ),
         }
     
+<<<<<<< HEAD
     def select_ship_service(self,cr,uid,ids,context=None):
+=======
+    def select_ship_method(self,cr,uid,ids,context=None):
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
         sale_obj = self.pool.get('sale.order')
         vals = {}
         for service in self.browse(cr, uid, ids, context=context):
             self.pool.get('sale.order')
             vals['ups_service_id']  = service.service.id
             vals['shipcharge'] = service.totalcharges
+<<<<<<< HEAD
             vals['ship_service'] = service.service.description
+=======
+>>>>>>> c1979f64b3360c86d60e00c92be0271d89f97f2d
             sale_obj.write(cr,uid,[service.sales_id.id],vals,context)
         mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')
         return {

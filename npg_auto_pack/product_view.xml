@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<openerp>
+	<data>
+		<record id="npg_auto_pack_product_form_view" model="ir.ui.view">
+            <field name="name">form.product.npg.auto.pack</field>
+            <field name="model">product.product</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="stock.view_normal_procurement_locations_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group[@string='Counter-Part Locations Properties']" position="after">
+                    <group name="packing" string="Packing">
+	                	<field name="case_pack"/>
+	                	<field name="case_pack_weight"/>
+	                </group>
+				</xpath>
+            </field>
+        </record>
+	</data>
+</openerp>
