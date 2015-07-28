@@ -27,7 +27,10 @@
     'author':'Novapoint Group LLC',
     'website':'http://www.novapointgroup.com',
     'depends':['purchase'],
-    'data':['wizard/purchase_advance_invoice_view.xml','purchase_view.xml','account_invoice_view.xml'],
+    'data':[
+            'wizard/purchase_advance_invoice_view.xml',
+            'purchase_view.xml',
+            'account_invoice_view.xml'],
     'demo':[],
     'test':[],
     'auto_install': False,
