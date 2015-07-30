@@ -46,7 +46,7 @@ class deposit_ticket(orm.Model):
         res_groups_obj = self.pool.get('res.groups')
         group_verifier_id = model_data_obj._get_id(
             cr, uid,
-            'account_banking__make_deposit', 'group_make_deposits_verifier'
+            'account_banking_make_deposit', 'group_make_deposits_verifier'
         )
         for deposit in self.browse(cr, uid, ids, context=context):
             if group_verifier_id:
