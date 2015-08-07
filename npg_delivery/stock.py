@@ -146,21 +146,57 @@ class stock_picking(osv.osv):
                             'ship_service' : carrier_obj.name }}
         return res
 
-    def action_invoice_create(self, cr, uid, ids, journal_id=False,
-            group=False, type='out_invoice', context=None):
+    #===========================================================================
+    # def action_invoice_create(self, cr, uid, ids, journal_id=False,
+    #         group=False, type='out_invoice', context=None):
+    #     invoice_obj = self.pool.get('account.invoice')
+    #     picking_obj = self.pool.get('stock.picking')
+    #     invoice_line_obj = self.pool.get('account.invoice.line')
+    #     result = super(stock_picking, self).action_invoice_create(cr, uid,
+    #             ids, journal_id=journal_id, group=group, type=type,
+    #             context=context)
+    #     for picking in picking_obj.browse(cr, uid, result.keys(), context=context):
+    #         invoice = invoice_obj.browse(cr, uid, result[picking.id], context=context)
+    #         invoice_line = self._prepare_shipping_invoice_line(cr, uid, picking, invoice, context=context)
+    #         if invoice_line:
+    #             invoice_line_obj.create(cr, uid, invoice_line)
+    #             invoice_obj.button_compute(cr, uid, [invoice.id], context=context)
+    #     return result
+    #===========================================================================
+    
+    def _invoice_create_line(self, cr, uid, moves, journal_id, inv_type='out_invoice', context=None):
         invoice_obj = self.pool.get('account.invoice')
-        picking_obj = self.pool.get('stock.picking')
-        invoice_line_obj = self.pool.get('account.invoice.line')
-        result = super(stock_picking, self).action_invoice_create(cr, uid,
-                ids, journal_id=journal_id, group=group, type=type,
-                context=context)
-        for picking in picking_obj.browse(cr, uid, result.keys(), context=context):
-            invoice = invoice_obj.browse(cr, uid, result[picking.id], context=context)
-            invoice_line = self._prepare_shipping_invoice_line(cr, uid, picking, invoice, context=context)
-            if invoice_line:
-                invoice_line_obj.create(cr, uid, invoice_line)
-                invoice_obj.button_compute(cr, uid, [invoice.id], context=context)
-        return result
+        move_obj = self.pool.get('stock.move')
+        invoices = {}
+        for move in moves:
+            company = move.company_id
+            origin = move.picking_id.name
+            partner, user_id, currency_id = move_obj._get_master_data(cr, uid, move, company, context=context)
+
+            key = (partner, currency_id, company.id, user_id)
+
+            if key not in invoices:
+                # Get account and payment terms
+                invoice_vals = self._get_invoice_vals(cr, uid, key, inv_type, journal_id, origin, context=context)
+                invoice_id = self._create_invoice_from_picking(cr, uid, move.picking_id, invoice_vals, context=context)
+                invoices[key] = invoice_id
+                invoice = invoice_obj.browse(cr,uid,invoice_id,context=context)
+                #Call to create invoice line for shipping
+                invoice_line = self._prepare_shipping_invoice_line(cr, uid, move.picking_id, invoice, context=context)
+                if invoice_line:
+                    move_obj._create_invoice_line_from_vals(cr, uid, move, invoice_line, context=context)
+
+            invoice_line_vals = move_obj._get_invoice_line_vals(cr, uid, move, partner, inv_type, context=context)
+            invoice_line_vals['invoice_id'] = invoices[key]
+            invoice_line_vals['origin'] = origin
+
+            move_obj._create_invoice_line_from_vals(cr, uid, move, invoice_line_vals, context=context)
+            move_obj.write(cr, uid, move.id, {'invoice_state': 'invoiced'}, context=context)
+
+        invoice_obj.button_compute(cr, uid, invoices.values(), context=context, set_total=(inv_type in ('in_invoice', 'in_refund')))
+        return invoices.values()
+    
+    
     def _get_default_uom(self,cr,uid,c):
         uom_categ, uom_categ_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'product', 'product_uom_categ_kgm')
         return self.pool.get('product.uom').search(cr, uid, [('category_id', '=', uom_categ_id),('factor','=',1)])[0]
