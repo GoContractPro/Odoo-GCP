@@ -177,7 +177,7 @@ class stock_picking(osv.osv):
 
             if key not in invoices:
                 # Get account and payment terms
-                invoice_vals = self._get_invoice_vals(cr, uid, key, inv_type, journal_id, origin, context=context)
+                invoice_vals = self._get_invoice_vals(cr, uid, key, inv_type, journal_id, move, context=context)
                 invoice_id = self._create_invoice_from_picking(cr, uid, move.picking_id, invoice_vals, context=context)
                 invoices[key] = invoice_id
                 invoice = invoice_obj.browse(cr,uid,invoice_id,context=context)
