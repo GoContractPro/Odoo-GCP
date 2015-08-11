@@ -83,7 +83,7 @@
                     <field name="remaining_qty" invisible="1"/>
                     <field name="string_availability_info"/>
                     <field name="state"/>
-                    <button name="do_unreserve" states="assigned" string="Cancel Availability" type="object" groups="base.group_user"/>
+                    <button name="do_unreserve" states="assigned" icon="gtk-cancel" string="Cancel Availability" type="object" groups="base.group_user"/>
                 </tree>
             </field>
         </record>
