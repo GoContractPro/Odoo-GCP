@@ -1530,8 +1530,8 @@ class stock(osv.osv_memory):
             context = {}
         invoice_ids = []
         res = super(stock, self).create_invoice(cr, uid, ids, context=context)
-        invoice_ids += res.values()
-        picking_pool = self.pool.get('stock.picking.out')
+        invoice_ids = res
+        picking_pool = self.pool.get('stock.picking')
         invoice_pool = self.pool.get('account.invoice')
         active_picking = picking_pool.browse(cr, uid, context.get('active_id', False), context=context)
         if active_picking:
