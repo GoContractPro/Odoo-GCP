@@ -31,7 +31,7 @@
     """,
     'author': 'NovaPoint Group Inc, Stephen Levenhagen',
     'website': 'www.novapointgroup.com',
-    'depends': [],
+    'depends': ['delivery'],
     'init_xml': [],
     'data': [
         "views/report_saleorder.xml",
