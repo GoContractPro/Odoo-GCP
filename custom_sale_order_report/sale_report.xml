@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <report 
+            id="custom_report_sale_order"
+            string="Quotation / Order 2"
+            model="sale.order" 
+            report_type="qweb-pdf"
+            file="custom_sale_order_report.custom_report_saleorder" 
+            name="custom_sale_order_report.custom_report_saleorder" 
+        />
+    </data>
+</openerp>
