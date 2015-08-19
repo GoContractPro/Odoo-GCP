@@ -3,7 +3,7 @@
 <data>
 <template id="custom_report_saleorder_document">
 
-        <div class="page">
+        <div class="header">
         	<div class="oe_structure"/>
             <div class="row" style="font-size: 12pt">
 	            <div class="col-xs-6" >
@@ -11,15 +11,16 @@
 	                 <div t-field="o.company_id.logo"
 	                 	t-field-options='{"widget": "image"}'/>
 	                 <div t-field="o.company_id.partner_id"
-	                     t-field-options='{"widget": "contact", "fields": ["address", "name","phone", "fax"], "no_marker": true}' />                 	                     
+	                     t-field-options='{"widget": "contact", "fields": ["address","phone", "fax","email"], "no_marker": false}' />                 	                     
 	            </div>
 	         
-	        	<div class="col-xs-5 col-xs-offset-1" >
-	             	<h2>
+	        	<div class="col-xs-5 col-xs-offset-1" > 
+	        		
+	             	<h1>
 		                <span t-if="o.state not in ['draft','sent']">Sales Order</span>
 		                <span t-if="o.state in ['draft','sent']">Sales Quotation</span>
-	            	</h2>
-	            
+	            	</h1>
+	            	
 				<table>
 					<tr t-if="o.date_order" >
 	                	<td>
@@ -43,7 +44,9 @@
 	             </table>
 	           	</div>
 	         </div>
-        	
+	         </div> 
+	         
+        	<div class="page">
 			<div class="row">
 				<div class="col-xs-5 pull-left">
                 <table  class="table table-condensed" style="border: 1px solid black">
