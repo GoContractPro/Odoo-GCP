@@ -92,7 +92,7 @@
               <tbody>
                <tr style="background-color: lightgrey; font-weight: bold">
                    <td style="border: 1px solid black">Customer</td>
-                   <td style="border: 1px solid black">P.o. Number</td>
+                   <td style="border: 1px solid black">P.O. Number</td>
                    <td style="border: 1px solid black">Sales Rep Name</td>
               </tr>             
               <tr>
