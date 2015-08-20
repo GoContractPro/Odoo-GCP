@@ -3,9 +3,18 @@
     <data>
         <report 
             id="custom_report_sale_order"
-            string="Quotation / Order 2"
+            string="Custom Quotation / Order pdf"
             model="sale.order" 
             report_type="qweb-pdf"
+            file="custom_sale_order_report.custom_report_saleorder" 
+            name="custom_sale_order_report.custom_report_saleorder" 
+        />
+
+        <report 
+            id="custom_report_sale_order_html"
+            string="Custom Quotation / Order html"
+            model="sale.order" 
+            report_type="qweb-html"
             file="custom_sale_order_report.custom_report_saleorder" 
             name="custom_sale_order_report.custom_report_saleorder" 
         />

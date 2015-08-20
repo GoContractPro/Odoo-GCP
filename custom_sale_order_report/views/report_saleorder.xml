@@ -11,20 +11,22 @@
 	                 <div t-field="o.company_id.logo"
 	                 	t-field-options='{"widget": "image"}'/>
 	                 <div t-field="o.company_id.partner_id"
-	                     t-field-options='{"widget": "contact", "fields": ["address","phone", "fax","email"], "no_marker": false}' />                 	                     
+	                     t-field-options='{"widget": "contact", "fields": ["address"], "no_marker": true}' />                 	                     
 	            </div>
 	         
 	        	<div class="col-xs-5 col-xs-offset-1" > 
 	        		
 	             	<h1>
+	             		<span style="color:#D3D3D3; font-weight: 900">
 		                <span t-if="o.state not in ['draft','sent']">Sales Order</span>
 		                <span t-if="o.state in ['draft','sent']">Sales Quotation</span>
+		                </span>
 	            	</h1>
 	            	
 				<table>
 					<tr t-if="o.date_order" >
 	                	<td>
-		                    <strong >Ordered Number:</strong>
+		                    <strong>Ordered Number: </strong>
 	                    </td>
 	                    <td>  
 	                    	<span t-field="o.name"/> 
@@ -32,8 +34,8 @@
 	                </tr>
 	                <tr t-if="o.date_order" >
 	                	<td>
-		                    <strong t-if="o.state not in ['draft','sent']">Date Ordered:</strong>
-		                    <strong t-if="o.state in ['draft','sent']">Quotation Date:</strong>
+		                    <strong t-if="o.state not in ['draft','sent']">Date Ordered: </strong>
+		                    <strong t-if="o.state in ['draft','sent']">Quotation Date: </strong>
 	                    </td>
 	                    <td>  
 	                    	<span t-field="o.date_order" />
@@ -48,11 +50,12 @@
 	         
         	<div class="page">
 			<div class="row">
+				<p> </p>
 				<div class="col-xs-5 pull-left">
                 <table  class="table table-condensed" style="border: 1px solid black">
                 	<tbody>
                 		
-                		<tr style= "background-color: lightgrey">
+                		<tr style= "background-color: lightgrey; font-weight: bold">
                 			<td style="border: 1px solid black">Sold To:</td>
                 		</tr>
                 		<tr> 
@@ -69,13 +72,13 @@
                 <table  class="table table-condensed"  style="border: 1px solid black">
                 	<tbody>
                 		
-                        <tr style= "background-color: lightgrey">
+                        <tr style= "background-color: lightgrey; font-weight: bold">
                 			<td style="border: 1px solid black">Ship To:</td>
                 		</tr>
                 		<tr>
                         	<td style="border: 1px solid black"> 
                         		<span t-field="o.partner_shipping_id" 
-                            	t-field-options='{"widget": "contact", "fields": ["address", "name", "phone", "fax"], "no_marker": true}'/>
+                            	t-field-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": true}'/>
                         		<p t-if="o.partner_id.vat">VAT: <span t-field="o.partner_id.vat"/></p>
                         	</td>
                 		</tr>
@@ -87,18 +90,18 @@
 			
             <table class="table table-condensed" style="border: 1px solid black"  >
               <tbody>
-               <tr style= "background-color: lightgrey">
+               <tr style="background-color: lightgrey; font-weight: bold">
                    <td style="border: 1px solid black">Customer</td>
-                   <td style="border: 1px solid black">Purchase Number</td>
+                   <td style="border: 1px solid black">P.o. Number</td>
                    <td style="border: 1px solid black">Sales Rep Name</td>
               </tr>             
               <tr>
               	<td style="border: 1px solid black"><span t-field="o.partner_id.name"/></td>
-              	<td style="border: 1px solid black"><span t-field="o.origin"/></td>
+              	<td style="border: 1px solid black"><span t-field="o.client_order_ref"/></td>
               	<td style="border: 1px solid black"><span t-field="o.user_id.name"/></td>
               </tr>
               
-              <tr style= "background-color: lightgrey">
+              <tr style= "background-color: lightgrey; font-weight: bold" >
                 <td style="border: 1px solid black">Customer Contact</td>
                 <td style="border: 1px solid black">Shipping Method</td>
                 <td style="border: 1px solid black">Payment Terms</td>
@@ -162,7 +165,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Taxes</td>
+                            <td><strong>Taxes</strong></td>
                             <td class="text-right">
                                 <span t-field="o.amount_tax"
                                     t-field-options='{"widget": "monetary", "display_currency": "o.pricelist_id.currency_id"}'/>
@@ -185,6 +188,18 @@
                 <span t-field="o.payment_term.note"/>
             </p>
             <div class="oe_structure"/>
+        </div>
+        <div class="footer">
+        
+        	<div class="row text-center">
+        		
+        		<p><strong>
+	        		Phone: <span t-field="o.company_id.partner_id.phone"/>
+	        		Fax: <span t-field="o.company_id.partner_id.fax"/>
+		        	Email: <span t-field="o.company_id.partner_id.email"/>
+	        	</strong></p>
+	        	
+        	</div>
         </div>
     
 </template>
