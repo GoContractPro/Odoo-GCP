@@ -1,5 +1,8 @@
  <openerp>
     <data>
+    
+    	 <delete model="ir.ui.view" id="delivery.view_order_withcarrier_form" />
+    	 
          <record id="view_order_withcarrier_form" model="ir.ui.view">
             <field name="name">delivery.sale.order_withcarrier.form.view</field>
             <field name="model">sale.order</field>
@@ -29,12 +32,12 @@
 					 </group>
 					 <group col="6" colspan="2" name="delivery_method">
 	  			 		 <field name="delivery_method" domain="[('active','=',True)]" on_change="onchange_delivery_method(delivery_method)"/> 
-                         <field name="carrier_id" context="{'sale_order_id':active_id or False ,'delivery_method':delivery_method}" 
+                         
+	                     <field name="transport_id" readonly='1' invisible='1'/>			
+	                     <field name="sale_account_id" string="Delivery Expense Account" />
+	                     <field name="carrier_id" context="{'sale_order_id':active_id or False ,'delivery_method':delivery_method}" 
                          		attrs="{'invisible':[('ship_company_code','!=','grid')]}"
 	                     		class="oe_inline" on_change="onchange_carrier_id(carrier_id)"/>
-	                     <field name="transport_id" context="{'search_transport_company': True}" 
-	                     		readonly='1'/>			
-	                     <field name="sale_account_id" />
 	                     <button name="delivery_set" string="Add to Quote" type="object" 
 		                         class="oe_edit_only" 
 		                         attrs="{'invisible':['|','|',('carrier_id','=',False),('ship_company_code','!=','grid'),('state','not in',('draft','sent','progress'))]}"/>

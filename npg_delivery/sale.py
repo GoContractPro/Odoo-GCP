@@ -38,6 +38,7 @@ class sale_order(osv.osv):
                     'ship_service': order.ship_service,
 #                    'ship_method_id': order.ship_method_id.id,
                     'sale_account_id': order.sale_account_id.id,
+                    'sale_order': order.id ,
                     })
                 inv_obj.button_reset_taxes(cr, uid, [inv_id], context=context)
         return inv_id

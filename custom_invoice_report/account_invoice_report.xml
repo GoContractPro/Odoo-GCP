@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <report 
+            id="custom_report_account_invoice"
+            string="Custom Invoice pdf"
+            model="account.invoice" 
+            report_type="qweb-pdf"
+            file="custom_invoice_report.custom_report_invoice" 
+            name="custom_invoice_report.custom_report_invoice" 
+        />
+
+        <report 
+            id="custom_report_invoice_html"
+            string="Custom Invoice html"
+            model="account.invoice" 
+            report_type="qweb-html"
+            file="custom_invoice_report.custom_report_invoice" 
+            name="custom_invoice_report.custom_report_invoice" 
+        />
+    </data>
+</openerp>

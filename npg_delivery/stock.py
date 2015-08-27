@@ -28,6 +28,20 @@ import openerp.addons.decimal_precision as dp
 class stock_picking(osv.osv):
     _inherit = 'stock.picking'
 
+    def _get_invoice_vals(self, cr, uid, key, inv_type, journal_id, move, context=None):
+        inv_vals = super(stock_picking, self)._get_invoice_vals(cr, uid, key, inv_type, journal_id, move, context=context)
+        sale = move.picking_id.sale_id
+        if sale:
+            inv_vals.update({
+                'sale_order': sale.id,
+                'stock_picking': key
+                })
+        if move.picking_id:
+            inv_vals.update({
+                'picking_id': move.picking_id.id,
+                })
+        return inv_vals
+
     def _cal_weight(self, cr, uid, ids, name, args, context=None):
         res = {}
         uom_obj = self.pool.get('product.uom')

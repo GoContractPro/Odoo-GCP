@@ -225,6 +225,8 @@ class account_invoice(osv.osv):
         'carrier_id':fields.many2one("delivery.carrier", "Delivery Service", help="The Delivery service Choices defined for Transport or Logistics Company"),
         'delivery_method': fields.many2one("delivery.method","Delivery Method", help=" The Delivery Method or Category"),
         'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping"),
+        'sale_id': fields.many2one('sale.order', 'Sale Order', readonly=True, help="Source sales order."),
+        'picking_id': fields.many2one('stock.picking', 'Picking Order', readonly=True, help="Source Delivery Picking Order."),
         # Added from sale negociated shipping
         'amount_total': fields.function(_amount_all, method=True, digits_compute=dp.get_precision('Account'), string='Total',
             store = {
