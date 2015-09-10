@@ -59,7 +59,17 @@ class edit_payment_profile(osv.TransientModel):
              ('done', 'Done'),
              ('processing', 'Processing'),
              ('preprocessing', 'PreProcessing'),
-            ], 'State', readonly=True, size=32)
+            ], 'State', readonly=True, size=32),
+                
+        'first_name':fields.char('FirstName', size=256),
+        'address':fields.char('Address', size=256),
+        'city':fields.char('City', size=256),
+        'add_state':fields.char('State', size=256),
+        'zip':fields.char('Zip', size=256),
+        'country':fields.char('Country', size=256),
+        'phone_number':fields.char('Phone Number', size=256),
+        'fax_number':fields.char('Fax Number', size=256),
+            
     }
 
     _defaults = {
@@ -116,6 +126,33 @@ class edit_payment_profile(osv.TransientModel):
 
             parent_card_number = self.search_dic(get_PaymentProfile_response_dictionary, 'cardNumber')
             parent_exp_date = self.search_dic(get_PaymentProfile_response_dictionary, 'expirationDate')
+            
+            first_name = self.search_dic(get_PaymentProfile_response_dictionary, 'firstName')
+            address = self.search_dic(get_PaymentProfile_response_dictionary, 'address')
+            city = self.search_dic(get_PaymentProfile_response_dictionary, 'city')
+            add_state = self.search_dic(get_PaymentProfile_response_dictionary, 'state')
+            zip = self.search_dic(get_PaymentProfile_response_dictionary, 'zip')
+            country = self.search_dic(get_PaymentProfile_response_dictionary, 'country')
+            phone_number = self.search_dic(get_PaymentProfile_response_dictionary, 'phoneNumber')
+            fax_number = self.search_dic(get_PaymentProfile_response_dictionary, 'faxNumber')
+            
+            if first_name and first_name.get('firstName'):
+                Payment_Profile_Details['first_name'] = first_name['firstName']
+            if address and address.get('address'):
+                Payment_Profile_Details['address'] = address['address']
+            if city and city.get('city'):
+                Payment_Profile_Details['city'] = city['city']
+            if add_state and add_state.get('state'):
+                Payment_Profile_Details['add_state'] = add_state['state']
+            if zip and zip.get('zip'):
+                Payment_Profile_Details['zip'] = zip['zip']
+            if country and country.get('country'):
+                Payment_Profile_Details['country'] = country['country']
+            if phone_number and phone_number.get('phoneNumber'):
+                Payment_Profile_Details['phone_number'] = phone_number['phoneNumber']
+            if fax_number and fax_number.get('faxNumber'):
+                Payment_Profile_Details['fax_number'] = fax_number['faxNumber']
+            
             if parent_card_number.get('cardNumber'):
                 Payment_Profile_Details['cc_number'] = parent_card_number['cardNumber']
 
@@ -124,6 +161,7 @@ class edit_payment_profile(osv.TransientModel):
 
             if parent_exp_date.get('cardCode'):
                 Payment_Profile_Details['cardCode'] = parent_exp_date['cardCode']
+                
 
             return Payment_Profile_Details
 
@@ -211,7 +249,21 @@ class edit_payment_profile(osv.TransientModel):
         existing_profile = self.getCustomerPaymentProfileRequest(Param_Dic)
         existing_profile['state'] = 'processing'
         self.write(cr, uid, ids, existing_profile)
-        return True
+#         return True
+        mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_payment_cim_authdotnet', 'edit_payment_profile_form_view')
+        return {
+            'name':_("Edit Payment Profile"),
+            'view_mode': 'form',
+            'view_id': modid,
+            'view_type': 'form',
+            'res_model': 'edit.payment.profile',
+            'type': 'ir.actions.act_window',
+            'target':'new',
+            'nodestroy': True,
+            'domain': '[]',
+            'res_id': ids[0],
+            'context':context,
+        }
 
     def updateCustomerPaymentProfile(self, dic):
         KEYS = dic.keys()
@@ -254,68 +306,68 @@ class edit_payment_profile(osv.TransientModel):
                     customerType = doc1.createElement("customerType")
                     paymentProfile.appendChild(customerType)
 
-                    billTo = doc1.createElement("billTo")
-                    paymentProfile.appendChild(billTo)
-                    if 'firstName' in KEYS:
-                        firstName = doc1.createElement("firstName")
-                        billTo.appendChild(firstName)
-                        ptext = doc1.createTextNode(self._clean_string(dic['firstName']))
-                        firstName.appendChild(ptext)
+            billTo = doc1.createElement("billTo")
+            paymentProfile.appendChild(billTo)
+            if 'firstName' in KEYS:
+                firstName = doc1.createElement("firstName")
+                billTo.appendChild(firstName)
+                ptext = doc1.createTextNode(self._clean_string(dic['firstName']))
+                firstName.appendChild(ptext)
 
-                    if 'lastName' in KEYS:
-                        lastName = doc1.createElement("lastName")
-                        billTo.appendChild(lastName)
-                        ptext = doc1.createTextNode(self._clean_string(dic['lastName']))
-                        lastName.appendChild(ptext)
+            if 'lastName' in KEYS:
+                lastName = doc1.createElement("lastName")
+                billTo.appendChild(lastName)
+                ptext = doc1.createTextNode(self._clean_string(dic['lastName']))
+                lastName.appendChild(ptext)
 
-                    if 'company' in KEYS:
-                        company = doc1.createElement("company")
-                        billTo.appendChild(companycompany)
-                        ptext = doc1.createTextNode(self._clean_string(dic['company']))
-                        company.appendChild(ptext)
+            if 'company' in KEYS:
+                company = doc1.createElement("company")
+                billTo.appendChild(companycompany)
+                ptext = doc1.createTextNode(self._clean_string(dic['company']))
+                company.appendChild(ptext)
 
-                    if 'address' in KEYS:
-                        address = doc1.createElement("address")
-                        billTo.appendChild(address)
-                        ptext = doc1.createTextNode(self._clean_string(dic['address']))
-                        address.appendChild(ptext)
+            if 'address' in KEYS:
+                address = doc1.createElement("address")
+                billTo.appendChild(address)
+                ptext = doc1.createTextNode(self._clean_string(dic['address']))
+                address.appendChild(ptext)
 
-                        ##State code must be given here
-                    if 'state' in KEYS:
-                        state = doc1.createElement("state")
-                        billTo.appendChild(state)
-                        ptext = doc1.createTextNode(self._clean_string(dic['state']))
-                        state.appendChild(ptext)
+                ##State code must be given here
+            if 'state' in KEYS:
+                state = doc1.createElement("state")
+                billTo.appendChild(state)
+                ptext = doc1.createTextNode(self._clean_string(dic['state']))
+                state.appendChild(ptext)
 
-                    if 'city' in KEYS:
-                        city = doc1.createElement("city")
-                        billTo.appendChild(city)
-                        ptext = doc1.createTextNode(self._clean_string(dic['city']))
-                        city.appendChild(ptext)
+#             if 'city' in KEYS:
+#                 city = doc1.createElement("city")
+#                 billTo.appendChild(city)
+#                 ptext = doc1.createTextNode(self._clean_string(dic['city']))
+#                 city.appendChild(ptext)
 
-                    if 'zip' in KEYS:
-                        zip = doc1.createElement("zip")
-                        billTo.appendChild(zip)
-                        ptext = doc1.createTextNode(self._clean_string(dic['zip']))
-                        zip.appendChild(ptext)
+            if 'zip' in KEYS:
+                zip = doc1.createElement("zip")
+                billTo.appendChild(zip)
+                ptext = doc1.createTextNode(self._clean_string(dic['zip']))
+                zip.appendChild(ptext)
 
-                    if 'country' in KEYS:
-                        country = doc1.createElement("country")
-                        billTo.appendChild(country)
-                        ptext = doc1.createTextNode(self._clean_string(dic['country']))
-                        country.appendChild(ptext)
+            if 'country' in KEYS:
+                country = doc1.createElement("country")
+                billTo.appendChild(country)
+                ptext = doc1.createTextNode(self._clean_string(dic['country']))
+                country.appendChild(ptext)
 
-                    if 'phoneNumber' in KEYS:
-                        phoneNumber = doc1.createElement("phoneNumber")
-                        billTo.appendChild(phoneNumber)
-                        ptext = doc1.createTextNode(self._clean_string(dic['phoneNumber']))
-                        phoneNumber.appendChild(ptext)
+            if 'phoneNumber' in KEYS:
+                phoneNumber = doc1.createElement("phoneNumber")
+                billTo.appendChild(phoneNumber)
+                ptext = doc1.createTextNode(self._clean_string(dic['phoneNumber']))
+                phoneNumber.appendChild(ptext)
 
-                    if 'faxNumber' in KEYS:
-                        faxNumber = doc1.createElement("faxNumber")
-                        billTo.appendChild(faxNumber)
-                        ptext = doc1.createTextNode(self._clean_string(dic['faxNumber']))
-                        faxNumber.appendChild(ptext)
+            if 'faxNumber' in KEYS:
+                faxNumber = doc1.createElement("faxNumber")
+                billTo.appendChild(faxNumber)
+                ptext = doc1.createTextNode(self._clean_string(dic['faxNumber']))
+                faxNumber.appendChild(ptext)
 
             payment = doc1.createElement("payment")
             paymentProfile.appendChild(payment)
@@ -375,7 +427,7 @@ class edit_payment_profile(osv.TransientModel):
             partner = self.pool.get(parent_model).browse(cr, uid, parent_id)
         else:
             parent_model_obj = self.pool.get(parent_model).browse(cr, uid, parent_id)
-            partner = parent_model_obj.address_id.partner_id
+            partner = parent_model_obj.address_id
 
         cardNumber = data.cc_number or ''
         expirationDate = ''
@@ -411,6 +463,16 @@ class edit_payment_profile(osv.TransientModel):
                 self._setparameter(Param_Dic, 'cardCode', cardCode)
             self._setparameter(Param_Dic, 'customerProfileId', prof_id)
             self._setparameter(Param_Dic, 'customerPaymentProfileId', customerPaymentProfileId)
+            
+#             Update address details
+
+            self._setparameter(Param_Dic, 'firstName', data.first_name or '')
+            self._setparameter(Param_Dic, 'state', data.add_state or '')
+            self._setparameter(Param_Dic, 'zip', data.zip or '')
+            self._setparameter(Param_Dic, 'city', data.city or '')
+            self._setparameter(Param_Dic, 'country', data.country or '')
+            self._setparameter(Param_Dic, 'phoneNumber', data.phone_number or '')
+            self._setparameter(Param_Dic, 'faxNumber', data.fax_number or '')
 
             Customer_Payment_Profile_ID = self.updateCustomerPaymentProfile(Param_Dic)
             if not Customer_Payment_Profile_ID or type(Customer_Payment_Profile_ID) == type({}):
