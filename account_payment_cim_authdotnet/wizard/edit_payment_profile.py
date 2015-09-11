@@ -386,6 +386,12 @@ class edit_payment_profile(osv.TransientModel):
                 ptext = doc1.createTextNode(self._clean_string(dic['address']))
                 address.appendChild(ptext)
 
+            if 'city' in KEYS:
+                city = doc1.createElement("city")
+                billTo.appendChild(city)
+                ptext = doc1.createTextNode(self._clean_string(dic['city']))
+                city.appendChild(ptext)
+                
                 ##State code must be given here
             if 'state' in KEYS:
                 state = doc1.createElement("state")
@@ -393,11 +399,6 @@ class edit_payment_profile(osv.TransientModel):
                 ptext = doc1.createTextNode(self._clean_string(dic['state']))
                 state.appendChild(ptext)
 
-#             if 'city' in KEYS:
-#                 city = doc1.createElement("city")
-#                 billTo.appendChild(city)
-#                 ptext = doc1.createTextNode(self._clean_string(dic['city']))
-#                 city.appendChild(ptext)
 
             if 'zip' in KEYS:
                 zip = doc1.createElement("zip")
