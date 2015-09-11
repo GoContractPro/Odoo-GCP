@@ -189,10 +189,10 @@ class edit_payment_profile(osv.TransientModel):
             
             if first_name and first_name.get('firstName'):
                 Payment_Profile_Details['first_name'] = first_name['firstName']
-            if last_name and first_name.get('lastName'):
-                Payment_Profile_Details['last_name'] = first_name['lastName']
-            if company and first_name.get('company'):
-                Payment_Profile_Details['company'] = first_name['company']
+            if last_name and last_name.get('lastName'):
+                Payment_Profile_Details['last_name'] = last_name['lastName']
+            if company and company.get('company'):
+                Payment_Profile_Details['company'] = company['company']
             if address and address.get('address'):
                 Payment_Profile_Details['address'] = address['address']
             if city and city.get('city'):
