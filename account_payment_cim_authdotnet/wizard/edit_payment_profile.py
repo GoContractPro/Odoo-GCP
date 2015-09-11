@@ -62,6 +62,7 @@ class edit_payment_profile(osv.TransientModel):
             ], 'State', readonly=True, size=32),
                 
         'first_name':fields.char('FirstName', size=256),
+        'last_name':fields.char('LastName', size=256),
         'address':fields.char('Address', size=256),
         'city':fields.char('City', size=256),
         'add_state':fields.char('State', size=256),
@@ -69,15 +70,63 @@ class edit_payment_profile(osv.TransientModel):
         'country':fields.char('Country', size=256),
         'phone_number':fields.char('Phone Number', size=256),
         'fax_number':fields.char('Fax Number', size=256),
+        'company':fields.char('Company', size=256),
             
     }
 
     _defaults = {
         'partner_id': _get_partner,
         'state':_get_state,
-        'payment_profile_id':_get_profile_id
+#         'payment_profile_id':_get_profile_id
         }
 
+    def default_get(self, cr, uid, fields, context=None):
+        if context is None:
+            context = {}
+        res = super(edit_payment_profile, self).default_get(cr, uid, fields, context=context)
+        
+        customerPaymentProfileId = False
+        if context['active_model'] == 'cust.payment.profile':
+            customerPaymentProfileId = context.get('active_id')
+        if customerPaymentProfileId:
+            customerPaymentProfileId = self.pool.get('cust.payment.profile').browse(cr,uid,customerPaymentProfileId,context).name
+        existing_profile = self.get_payment_profile_info(cr, uid, customerPaymentProfileId=customerPaymentProfileId, context=context)
+
+        if 'payment_profile_id' in fields:
+            res.update({'payment_profile_id': context.get('active_id')})
+        if 'cc_ed_month' in fields:
+            res.update({'cc_number': existing_profile.get('cc_number',False)})
+        if 'cc_ed_month' in fields:
+            res.update({'cc_ed_month': existing_profile.get('cc_ed_month',False)})
+        if 'cc_ed_year' in fields:
+            res.update({'cc_ed_year': existing_profile.get('cc_ed_year',False)})
+        if 'cc_code' in fields:
+            res.update({'cc_code': existing_profile.get('cc_code',False)})
+        if 'state' in fields:
+            res.update({'state': existing_profile.get('state',False)})
+        if 'first_name' in fields:
+            res.update({'first_name': existing_profile.get('first_name',False)})
+        if 'last_name' in fields:
+            res.update({'last_name': existing_profile.get('last_name',False)})
+        if 'fax_number' in fields:
+            res.update({'fax_number': existing_profile.get('fax_number',False)})
+        if 'phone_number' in fields:
+            res.update({'phone_number': existing_profile.get('phone_number',False)})
+        if 'country' in fields:
+            res.update({'country': existing_profile.get('country',False)})
+        if 'address' in fields:
+            res.update({'address': existing_profile.get('address',False)})
+        if 'city' in fields:
+            res.update({'city': existing_profile.get('city',False)})
+        if 'add_state' in fields:
+            res.update({'add_state': existing_profile.get('add_state',False)})
+        if 'zip' in fields:
+            res.update({'zip': existing_profile.get('zip',False)})
+        if 'company' in fields:
+            res.update({'company': existing_profile.get('company',False)})
+            
+        return res
+    
     def getCustomerPaymentProfileRequest(self, dic):
             profile_dictionary = dic
             KEYS = dic.keys()
@@ -128,6 +177,8 @@ class edit_payment_profile(osv.TransientModel):
             parent_exp_date = self.search_dic(get_PaymentProfile_response_dictionary, 'expirationDate')
             
             first_name = self.search_dic(get_PaymentProfile_response_dictionary, 'firstName')
+            last_name = self.search_dic(get_PaymentProfile_response_dictionary, 'lastName')
+            company = self.search_dic(get_PaymentProfile_response_dictionary, 'company')
             address = self.search_dic(get_PaymentProfile_response_dictionary, 'address')
             city = self.search_dic(get_PaymentProfile_response_dictionary, 'city')
             add_state = self.search_dic(get_PaymentProfile_response_dictionary, 'state')
@@ -138,6 +189,10 @@ class edit_payment_profile(osv.TransientModel):
             
             if first_name and first_name.get('firstName'):
                 Payment_Profile_Details['first_name'] = first_name['firstName']
+            if last_name and first_name.get('lastName'):
+                Payment_Profile_Details['last_name'] = first_name['lastName']
+            if company and first_name.get('company'):
+                Payment_Profile_Details['company'] = first_name['company']
             if address and address.get('address'):
                 Payment_Profile_Details['address'] = address['address']
             if city and city.get('city'):
@@ -153,16 +208,14 @@ class edit_payment_profile(osv.TransientModel):
             if fax_number and fax_number.get('faxNumber'):
                 Payment_Profile_Details['fax_number'] = fax_number['faxNumber']
             
-            if parent_card_number.get('cardNumber'):
+            if parent_card_number and parent_card_number.get('cardNumber'):
                 Payment_Profile_Details['cc_number'] = parent_card_number['cardNumber']
 
-            if parent_exp_date.get('expirationDate'):
+            if parent_exp_date and parent_exp_date.get('expirationDate'):
                 Payment_Profile_Details['cc_ed_year'] = parent_exp_date['expirationDate']
 
-            if parent_exp_date.get('cardCode'):
+            if parent_exp_date and parent_exp_date.get('cardCode'):
                 Payment_Profile_Details['cardCode'] = parent_exp_date['cardCode']
-                
-
             return Payment_Profile_Details
 
     def request_to_server(self, Request_string, url, url_path):
@@ -208,18 +261,18 @@ class edit_payment_profile(osv.TransientModel):
         else:
             dic[key] = value
 
-    def get_payment_profile_info(self, cr, uid, ids, context=None):
+    def get_payment_profile_info(self, cr, uid, customerPaymentProfileId='', context=None):
         Param_Dic = {}
         parent_model = context.get('active_model')
         parent_id = context.get('active_id')
-        data = self.browse(cr, uid, ids[0])
+#         data = self.browse(cr, uid, ids[0])
         if parent_model == 'res.partner':
             partner = self.pool.get(parent_model).browse(cr, uid, parent_id)
         else:
             parent_model_obj = self.pool.get(parent_model).browse(cr, uid, parent_id)
             partner = parent_model_obj.partner_id
 
-        customerPaymentProfileId = data.payment_profile_id.name
+#         customerPaymentProfileId = data.payment_profile_id.name
 
         Customer_Profile_ID = partner.payment_profile_id.name
 
@@ -248,22 +301,23 @@ class edit_payment_profile(osv.TransientModel):
 
         existing_profile = self.getCustomerPaymentProfileRequest(Param_Dic)
         existing_profile['state'] = 'processing'
-        self.write(cr, uid, ids, existing_profile)
+        return existing_profile
+#         self.write(cr, uid, ids, existing_profile)
 #         return True
-        mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_payment_cim_authdotnet', 'edit_payment_profile_form_view')
-        return {
-            'name':_("Edit Payment Profile"),
-            'view_mode': 'form',
-            'view_id': modid,
-            'view_type': 'form',
-            'res_model': 'edit.payment.profile',
-            'type': 'ir.actions.act_window',
-            'target':'new',
-            'nodestroy': True,
-            'domain': '[]',
-            'res_id': ids[0],
-            'context':context,
-        }
+#         mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_payment_cim_authdotnet', 'edit_payment_profile_form_view')
+#         return {
+#             'name':_("Edit Payment Profile"),
+#             'view_mode': 'form',
+#             'view_id': modid,
+#             'view_type': 'form',
+#             'res_model': 'edit.payment.profile',
+#             'type': 'ir.actions.act_window',
+#             'target':'new',
+#             'nodestroy': True,
+#             'domain': '[]',
+#             'res_id': ids[0],
+#             'context':context,
+#         }
 
     def updateCustomerPaymentProfile(self, dic):
         KEYS = dic.keys()
@@ -322,7 +376,7 @@ class edit_payment_profile(osv.TransientModel):
 
             if 'company' in KEYS:
                 company = doc1.createElement("company")
-                billTo.appendChild(companycompany)
+                billTo.appendChild(company)
                 ptext = doc1.createTextNode(self._clean_string(dic['company']))
                 company.appendChild(ptext)
 
@@ -467,7 +521,10 @@ class edit_payment_profile(osv.TransientModel):
 #             Update address details
 
             self._setparameter(Param_Dic, 'firstName', data.first_name or '')
+            self._setparameter(Param_Dic, 'lastName', data.last_name or '')
+            self._setparameter(Param_Dic, 'company', data.company or '')
             self._setparameter(Param_Dic, 'state', data.add_state or '')
+            self._setparameter(Param_Dic, 'address', data.address or '')
             self._setparameter(Param_Dic, 'zip', data.zip or '')
             self._setparameter(Param_Dic, 'city', data.city or '')
             self._setparameter(Param_Dic, 'country', data.country or '')

@@ -160,7 +160,7 @@ class create_payment_profile(osv.TransientModel):
 
             if 'company' in KEYS:
                 company = doc1.createElement("company")
-                billTo.appendChild(companycompany)
+                billTo.appendChild(company)
                 ptext = doc1.createTextNode(self._clean_string(dic['company']))
                 company.appendChild(ptext)
 
@@ -312,7 +312,7 @@ class create_payment_profile(osv.TransientModel):
 
             if 'company' in KEYS:
                 company = doc1.createElement("company")
-                billTo.appendChild(companycompany)
+                billTo.appendChild(company)
                 ptext = doc1.createTextNode(self._clean_string(dic['company']))
                 company.appendChild(ptext)
 
@@ -440,6 +440,8 @@ class create_payment_profile(osv.TransientModel):
             self._setparameter(Param_Dic, 'expirationDate', expirationDate)
             if addr_id:
                 self._setparameter(Param_Dic, 'firstName', addr_id.name or '')
+                self._setparameter(Param_Dic, 'lastName', addr_id.name or '')
+                self._setparameter(Param_Dic, 'company', addr_id.parent_id and addr_id.parent_id.name or addr_id.name or '')
                 self._setparameter(Param_Dic, 'address', addr_id.street or '')
                 self._setparameter(Param_Dic, 'state', addr_id.state_id.name or '')
                 self._setparameter(Param_Dic, 'zip', addr_id.zip or '')

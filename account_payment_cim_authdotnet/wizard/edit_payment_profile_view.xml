@@ -7,16 +7,19 @@
 			<field name="arch" type="xml" >
 				<form string="Edit Payment Profile" version="7.0">
 				   	<group string="Card Details">
-						<field name="payment_profile_id" context="{'edit_payment_profile':'edit_payment_profile'}" attrs="{'readonly':[('state','=','preprocessing')]}"/>
-						<field name="cc_number"  attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
-						<field name="cc_ed_year" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
-						<field name="cc_ed_month" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+						<field name="payment_profile_id" required="1" context="{'edit_payment_profile':'edit_payment_profile'}" attrs="{'readonly':[('state','=','processing')]}"/>
+						<field name="cc_number" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+						<field name="cc_ed_year" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+						<field name="cc_ed_month" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 						<field name="cc_code" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 						<field name="state" invisible='1' />
 					</group>
 					<group string="Address Details">
 						<field name="first_name"  attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
-<!--						<field name="city" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/-->
+						<field name="last_name" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+						<field name="company" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+						<field name="address" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+						<field name="city" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 						<field name="add_state" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 						<field name="zip" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 						<field name="country" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
@@ -24,9 +27,10 @@
 						<field name="fax_number" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 					</group>
 					<footer>
-                        <button special="cancel" string="Cancel" icon="gtk-cancel"/>
 						<button name="get_payment_profile_info" string="Next" type="object" icon="gtk-ok" default_focus="1" attrs="{'invisible':[('state','in',['done','processing'])]}"/>
 						<button name="update_payment_profile_info" string="Update" type="object" icon="gtk-ok" default_focus="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel"/>
 	 				</footer>
 				</form>
 			</field>
