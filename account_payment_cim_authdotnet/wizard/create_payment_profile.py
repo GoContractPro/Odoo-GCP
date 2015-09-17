@@ -44,8 +44,9 @@ class create_payment_profile(osv.TransientModel):
 
     _columns = {
         'cc_number':fields.char('Credit Card Number', size=32, required=True),
-        'cc_ed_month':fields.char('Expiration Date MM', size=2, required=True),
-        'cc_ed_year':fields.char('Expiration Date YYYY', size=4 , required=True),
+#         'cc_ed_month':fields.char('Expiration Date MM', size=2, required=True),
+#         'cc_ed_year':fields.char('Expiration Date YYYY', size=4 , required=True),
+        'cc_ed_date':fields.char('Expiration Date YYYY-MM', size=7),
         'cc_verify_code':fields.char('Card Code Verification', size=4),
         'partner_id':fields.many2one('res.partner', 'Customer'),
         'address_id':fields.many2one('res.partner', 'Address'),
@@ -410,8 +411,8 @@ class create_payment_profile(osv.TransientModel):
         cardCode = data.cc_verify_code or ''
         description = data.description or ''
 
-        expirationDate = data.cc_ed_year + '-' + data.cc_ed_month
-
+#         expirationDate = data.cc_ed_year + '-' + data.cc_ed_month
+        expirationDate = data.cc_ed_date
         Param_Dic = {}
         email = ''
         merchantCustomerId = ''

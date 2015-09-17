@@ -9,8 +9,10 @@
 				   	<group string="Card Details">
 						<field name="payment_profile_id" required="1" context="{'edit_payment_profile':'edit_payment_profile'}" attrs="{'readonly':[('state','=','processing')]}"/>
 						<field name="cc_number" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
-						<field name="cc_ed_year" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
-						<field name="cc_ed_month" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
+<!--						<field name="cc_ed_year" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>-->
+<!--						<field name="cc_ed_month" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>-->
+						
+						<field name="cc_ed_date" placeholder="YYYY-MM" required="1" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 						<field name="cc_code" attrs="{'invisible':[('state','in',['draft','preprocessing'])]}"/>
 						<field name="state" invisible='1' />
 					</group>

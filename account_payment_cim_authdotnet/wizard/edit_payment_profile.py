@@ -51,8 +51,9 @@ class edit_payment_profile(osv.TransientModel):
         'payment_profile_id':fields.many2one('cust.payment.profile', 'Payment Profile', required=True),
         'partner_id':fields.many2one('res.partner', 'Customer', required=True),
         'cc_number':fields.char('Credit Card Number', size=32),
-        'cc_ed_month':fields.char('Expiration Date MM', size=32),
-        'cc_ed_year':fields.char('Expiration Date YYYY', size=32),
+#         'cc_ed_month':fields.char('Expiration Date MM', size=32),
+#         'cc_ed_year':fields.char('Expiration Date YYYY', size=32),
+        'cc_ed_date':fields.char('Expiration Date YYYY-MM', size=7),
         'cc_code':fields.char('Card Code', size=32),
         'state':fields.selection(
             [('draft', 'Draft'),
@@ -94,12 +95,14 @@ class edit_payment_profile(osv.TransientModel):
 
         if 'payment_profile_id' in fields:
             res.update({'payment_profile_id': context.get('active_id')})
-        if 'cc_ed_month' in fields:
+        if 'cc_number' in fields:
             res.update({'cc_number': existing_profile.get('cc_number',False)})
-        if 'cc_ed_month' in fields:
-            res.update({'cc_ed_month': existing_profile.get('cc_ed_month',False)})
-        if 'cc_ed_year' in fields:
-            res.update({'cc_ed_year': existing_profile.get('cc_ed_year',False)})
+#         if 'cc_ed_month' in fields:
+#             res.update({'cc_ed_month': existing_profile.get('cc_ed_month',False)})
+#         if 'cc_ed_year' in fields:
+#             res.update({'cc_ed_year': existing_profile.get('cc_ed_year',False)})
+        if 'cc_ed_date' in fields:
+            res.update({'cc_ed_date': existing_profile.get('cc_ed_date',False)})
         if 'cc_code' in fields:
             res.update({'cc_code': existing_profile.get('cc_code',False)})
         if 'state' in fields:
@@ -172,7 +175,7 @@ class edit_payment_profile(osv.TransientModel):
             Request_string = xml = doc1.toxml(encoding="utf-8")
             get_transaction_response_xml = self.request_to_server(Request_string, url, url_path)
             get_PaymentProfile_response_dictionary = xml2dic.main(get_transaction_response_xml)
-
+            
             parent_card_number = self.search_dic(get_PaymentProfile_response_dictionary, 'cardNumber')
             parent_exp_date = self.search_dic(get_PaymentProfile_response_dictionary, 'expirationDate')
             
@@ -212,7 +215,7 @@ class edit_payment_profile(osv.TransientModel):
                 Payment_Profile_Details['cc_number'] = parent_card_number['cardNumber']
 
             if parent_exp_date and parent_exp_date.get('expirationDate'):
-                Payment_Profile_Details['cc_ed_year'] = parent_exp_date['expirationDate']
+                Payment_Profile_Details['cc_ed_date'] = parent_exp_date['expirationDate']
 
             if parent_exp_date and parent_exp_date.get('cardCode'):
                 Payment_Profile_Details['cardCode'] = parent_exp_date['cardCode']
@@ -485,9 +488,9 @@ class edit_payment_profile(osv.TransientModel):
             partner = parent_model_obj.address_id
 
         cardNumber = data.cc_number or ''
-        expirationDate = ''
-        if data.cc_ed_year and data.cc_ed_month:
-            expirationDate = data.cc_ed_year + '-' + data.cc_ed_month
+        expirationDate = data.cc_ed_date
+#         if data.cc_ed_year and data.cc_ed_month:
+#             expirationDate = data.cc_ed_year + '-' + data.cc_ed_month
         cardCode = data.cc_code or ''
 
         Trans_key = partner.company_id.auth_config_id.transaction_key
