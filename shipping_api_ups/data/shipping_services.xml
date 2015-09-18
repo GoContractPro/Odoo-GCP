@@ -1,0 +1,127 @@
+<?xml version="1.0" ?>
+<openerp>
+    <data noupdate="0">
+        <record id="shipping_service_type_01" model="ups.shipping.service.type">
+            <field name="category">01</field>
+            <field name="description">UPS Next Day Air</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">01</field>
+            <field name="shipping_service_code">01</field>       
+        </record>
+        <record id="shipping_service_type_07" model="ups.shipping.service.type">
+            <field name="category">07</field>
+            <field name="description">UPS Express</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">07</field>
+            <field name="shipping_service_code">07</field>       
+        </record>
+        <record id="shipping_service_type_03" model="ups.shipping.service.type">
+            <field name="category">03</field>
+            <field name="description">UPS Ground</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">03</field>
+            <field name="shipping_service_code">03</field>       
+        </record>
+        <record id="shipping_service_type_12" model="ups.shipping.service.type">
+            <field name="category">12</field>
+            <field name="description">UPS Three-Day Select</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">12</field>
+            <field name="shipping_service_code">12</field>       
+        </record>
+        <record id="shipping_service_type_11" model="ups.shipping.service.type">
+            <field name="category">11</field>
+            <field name="description">UPS Standard</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">11</field>
+            <field name="shipping_service_code">11</field>       
+        </record>
+        <record id="shipping_service_type_13" model="ups.shipping.service.type">
+            <field name="category">13</field>
+            <field name="description">UPS Next Day Air Save</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">13</field>
+            <field name="shipping_service_code">13</field>       
+        </record>
+        <record id="shipping_service_type_14" model="ups.shipping.service.type">
+            <field name="category">14</field>
+            <field name="description">UPS Next Day Air Early</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">14</field>
+            <field name="shipping_service_code">14</field>       
+        </record>
+        <record id="shipping_service_type_54" model="ups.shipping.service.type">
+            <field name="category">54</field>
+            <field name="description">UPS Express Plus</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">54</field>
+            <field name="shipping_service_code">54</field>       
+        </record>
+        <record id="shipping_service_type_59" model="ups.shipping.service.type">
+            <field name="category">59</field>
+            <field name="description">UPS Second Day Air A.M.</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">59</field>
+            <field name="shipping_service_code">59</field>       
+        </record>
+        <record id="shipping_service_type_02" model="ups.shipping.service.type">
+            <field name="category">02</field>
+            <field name="description">UPS Second Day Air</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">02</field>
+            <field name="shipping_service_code">02</field>       
+        </record>
+        <record id="shipping_service_type_12" model="ups.shipping.service.type">
+            <field name="category">12</field>
+            <field name="description">UPS 3 Day Select</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">12</field>
+            <field name="shipping_service_code">12</field>       
+        </record>
+        <record id="shipping_service_type_08" model="ups.shipping.service.type">
+            <field name="category">08</field>
+            <field name="description">UPS Expidited</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">08</field>
+            <field name="shipping_service_code">08</field>       
+        </record>
+        <record id="shipping_service_type_65" model="ups.shipping.service.type">
+            <field name="category">65</field>
+            <field name="description">UPS Saver</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">65</field>
+            <field name="shipping_service_code">65</field>  
+         </record>    
+		<record id="shipping_service_type_82" model="ups.shipping.service.type">
+            <field name="category">82</field>
+            <field name="description">UPS Today StandardSM</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">82</field>
+            <field name="shipping_service_code">82</field>       
+        </record>   
+        <record id="shipping_service_type_83" model="ups.shipping.service.type">
+            <field name="category">83</field>
+            <field name="description">UPS Today Dedicated CourrierSM</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">83</field>
+            <field name="shipping_service_code">83</field>
+        </record>
+        <record id="shipping_service_type_85" model="ups.shipping.service.type">
+            <field name="category">85</field>
+            <field name="description">UPS Today Express</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">85</field>
+            <field name="shipping_service_code">85</field>       
+        </record>
+        <record id="shipping_service_type_70" model="ups.shipping.service.type">
+            <field name="category">70</field>
+            <field name="description">UPS Access Point Economy</field>
+            <field name="is_intnl">False</field>
+            <field name="rating_service_code">70</field>
+            <field name="shipping_service_code">70</field>       
+        </record>
+      
+       
+        
+    </data>
+</openerp>

@@ -20,7 +20,7 @@
 #
 ##############################################################################
 {
-    'name': 'Import CSV Data',
+    'name': 'Import Data',
     'version': '1.0',
     'category': 'Import',
     'description': """
@@ -29,10 +29,10 @@
     'author': 'NovaPoint Group LLC, Stephen Levenhagen',
     'website': ' http://www.novapointgroup.com',
     'depends': ['npg_warning','account'],
-    'data': ['import_csv_view.xml',],
-    'demo': [
-    ],
+    'data': ['import_data_view.xml',],
+    'demo': [],
     'auto_install': False,
     'installable': True,
+    'qweb' : [],
 }
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

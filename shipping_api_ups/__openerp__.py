@@ -43,6 +43,7 @@
 #        'wizard/shipping_rate_view.xml',
         'security/ir.model.access.csv',
         'security/security.xml',
+        'data/shipping_services.xml',
         ],
     'demo': ['demo/shipping_service_demo.xml'],
     'test': ['test/shipping_api_ups.yml'],

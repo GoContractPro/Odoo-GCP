@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="npg_view_import_data_form" model="ir.ui.view">
+            <field name="name">import.data.form</field>
+            <field name="model">import.data.file</field>
+            <field name="arch" type="xml">
+                <form string="Read File" version="7.0">
+                    <group col="4">
+                    	<field name="name"/>
+                        <field name="attachment" widget="many2many_binary" />
+                        <field name="start_time"/>
+                    	<field name="end_time"/>
+                    	<field name="model_id"/>
+                    </group>
+                    
+                    <newline/>
+                    
+                    <group col="8">
+                    	<button name='action_get_headers_csv' string="Get CSV Headers" context="{'model':model_id}" type="object" class="oe_highlight"/>
+                    	<button name='action_get_headers_dbf' string="Get DBF Headers" context="{'model':model_id}" type="object" class="oe_highlight"/>
+                    	 
+                    	 <field name='do_update' />
+                         <field name="test_sample_size" />
+                         <button name="action_import_data" string="Test" type="object" clase="oe_highlight" context="{'test':True}"/>
+                         <newline/>
+                         <button name="action_import_data" string="Import" type="object" class="oe_highlight"/>
+                   </group>
+                          <field name="header_ids" context="{'model':model_id}"> 
+	                    	<tree  editable="bottom">
+	                    		<field name="name"/>
+	                    		<field name="is_unique"/>
+	                    		<field name="create"/>
+	                    	 	<field name="model" required="1" readonly="1"/>
+	                    		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
+	                    		<field name="search_domain"/>
+	                    		<field name="descr"/>
+	                    	</tree> 
+	                    	</field> 
+	                  <!--   	<field name="test_o2m">
+	                    		<tree  editable="bottom">
+			                    		<field name="name"/>
+			                    		<field name="m2o_id"/>
+			                    		<field name="is_unique"/>
+			                    		<field name="create"/>
+			                    	 	
+			                    		
+			                    		<field name="search_domain"/>
+			                    		<field name="descr"/>
+			                    </tree>
+							</field> --> 
+                    <group>
+
+                    	<field name="error_log"/>  
+                    </group>
+                    
+
+                </form>
+            </field>
+        </record>
+        
+        <record id="view_import_data_tree" model="ir.ui.view">
+            <field name="name">import.data.tree</field>
+            <field name="model">import.data.file</field>
+            <field name="arch" type="xml">
+                <tree string="Import Data Files" version="7.0">
+                    	<field name="name"/>
+                        <field name="attachment" />
+                 </tree>
+            </field>
+        </record>
+
+        <record id="action_import_data" model="ir.actions.act_window">
+            <field name="name">Import Data</field>
+            <field name="res_model">import.data.file</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_import_data_tree" />
+        </record> 
+
+        <menuitem action="action_import_data" id="menu_import_data" parent="base.menu_config"/>
+
+    </data>
+</openerp>

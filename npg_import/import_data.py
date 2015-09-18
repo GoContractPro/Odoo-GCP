@@ -30,8 +30,9 @@ import cStringIO
 import base64
 from datetime import datetime
 import time
+from  dbfread import DBF
 
-import logging
+import logging 
 import sys
 
 _logger = logging.getLogger(__name__)
@@ -39,23 +40,24 @@ _logger = logging.getLogger(__name__)
 def index_get(L, i, v=None):
     try: return L.index(i)
     except: return v
-    
-class import_header_csv(osv.osv): 
+
+class import_data_header(osv.osv): 
     # The Model Is a map from Odoo Data to CSV Sheet Data
-    _name = 'import.header.csv'
-    _description = "Map Odoo Data to CSV  Import Sheet Columns"
+    _name = "import.data.header"
+    _description = "Map Odoo Fields to Import Fields"
     
-    _columns = { 'name':fields.char('CSV Header Field', size=64, required = True),
-                'csv_id':fields.many2one('import.csv','Import CSV'),
+    _columns = { 'name':fields.char('Import Field Name', size=64, required = True),
+                'import_data_file_id':fields.many2one('import.data.file','Import Data',required=True, ondelete='cascade',),
+                'o2m_id':fields.many2one('some.data.o2m','o2m test',required=True, ondelete='cascade',),
                 'is_unique':fields.boolean('Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated '),
                 'model':fields.many2one('ir.model','Model'),
-                'model_field':fields.many2one('ir.model.fields','Model Field'),
+                'model_field':fields.many2one('ir.model.fields','Odoo Model Field'),
                 'relation_model': fields.many2one('ir.model', 'Relation Model',
-                    help="The   model this field is related to"),
-                'search':fields.char('Domian Search  ', size=256,
-                     help="Define search domains for related records subsitute Values from CSV columns in search using ${'Column Name'} example: [('odoo_field_name', '=', ${'Column Name'}] "),
-                
+                    help="The  model this field is related to"),
+                'search_domain':fields.char('Domian Search  ', size=256,
+                     help="Define search domains for related records subsitute Values from CSV columns in search using ${'Column Name'} example: [('odoo_field_name', '=', ${'Column Name'}] "),           
                 'create':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
+                'descr':fields.text('description')
                 }
     
     def _get_model(self,cr,uid,context={}):
@@ -68,33 +70,39 @@ class import_header_csv(osv.osv):
     def onchange_name(self, cr, uid, ids, name, context=None):
         # TODO set model_field value to Search  if Name matches the models Field Name,
         # TODo set relation_model if the model_field is found and is a Relation Feild
-        return
+        return    
 
-class import_csv(osv.osv):
-    _name = 'import.csv'
+
+class import_data_file(osv.osv):
+    
+    _name = "import.data.file"
+    _description = "Holds import Data file information"
+    
     _columns = {
-        'name':fields.char('Name',size=32, ),
-        'model_id': fields.many2one('ir.model', 'Model', ondelete='cascade', required= True,
+        'name':fields.char('Name',size=32,required = True ), 
+        'model_id': fields.many2one('ir.model', 'Model', ondelete='cascade', required= False,
             help="The model to import"),
         'start_time': fields.datetime('Start',  readonly=True),
         'end_time': fields.datetime('End',  readonly=True),
-        'browse_path': fields.binary('Csv File Path', required=True),
+        'attachment': fields.many2many('ir.attachment',
+            'data_import_ir_attachments_rel',
+            'import_data_id', 'attachment_id', 'Import File'),
         'error_log': fields.text('Error Log'),
         'test_sample_size': fields.integer('Test Sample Size'),
         'do_update': fields.boolean('Allow Update', 
                 help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
-        'header_csv_ids': fields.one2many('import.header.csv','csv_id','CSV Columns Map'),
-        'index':fields.integer("Index")
+        'header_ids': fields.one2many('import.data.header','import_data_file_id','Fields Map'),
+        'index':fields.integer("Index"),
         }
     
     _defaults = {
         'test_sample_size':10
         }
-    def _match_header(self, header, fields):
+    def _match_header(self, header, fields, options):
         """ Attempts to match a given header to a field of the
         imported model.
 
-        :param str header: header name from the CSV file
+        :param str header: header name from the data file
         :param fields:
         :param dict options:
         :returns: an empty list if the header couldn't be matched, or
@@ -127,13 +135,54 @@ class import_csv(osv.osv):
             traversal.append(field)
         return traversal
     
+    def action_get_headers_dbf(self, cr, uid, ids, context=None):
+        if context is None:
+            context = {}
+        for wiz_rec in self.browse(cr, uid, ids, context=context):
+            for attach in wiz_rec.attachment:
+                data_file = attach.datas
+                continue
+            try:
+                table_data = DBF(data_file)
+            except:
+                raise osv.except_osv('Warning', 'Make sure you are using a DBF format File!')
+            
+            if not table_data:
+                raise osv.except_osv('Warning', 'The file contains no data')
+            
+                header_obj = self.pool.get('import.data.header')
+                header_ids=header_obj.search(cr, uid,[('data_id','=',ids[0])])
+                    
+                if header_ids:
+                    header_obj.unlink(cr,uid,header_ids,context=None)
+                    
+
+                
+                for record in table_data:
+                    n=0
+                    for header, data in record:
+                        n += 1
+                        field_ids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', wiz_rec.model_id.id)])
+                        header_id = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': n , 'data_id':wiz_rec.id, 'model_field':field_ids and field_ids[0] or False, 'model':wiz_rec.model_id.id},context=context)
+                    continue    
+#             model_obj = self.pool[wiz_rec.model_id.model]
+#             fields_got = model_obj.fields_get(cr, uid, context=context)
+#             blacklist = orm.MAGIC_COLUMNS + [model_obj.CONCURRENCY_CHECK_FIELD]
+#             for name, field in fields_got.iteritems():
+#                 if name in blacklist:
+#                     continue
+        return 
     
     def action_get_headers_csv(self, cr, uid, ids, context=None):
         if context is None:
             context = {}
         for wiz_rec in self.browse(cr, uid, ids, context=context):
+
+            for attach in wiz_rec.attachment:
+                data_file = attach.datas
+                continue
+            str_data = base64.decodestring(data_file)
             
-            str_data = base64.decodestring(wiz_rec.browse_path)
             if not str_data:
                 raise osv.except_osv('Warning', 'The file contains no data')
             try:
@@ -141,8 +190,8 @@ class import_csv(osv.osv):
             except:
                 raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
             
-            header_csv_obj = self.pool.get('import.header.csv')
-            header_csv_ids=header_csv_obj.search(cr, uid,[('csv_id','=',ids[0])])
+            header_csv_obj = self.pool.get('import.data.header')
+            header_csv_ids=header_csv_obj.search(cr, uid,[('data_id','=',ids[0])])
             
             if header_csv_ids:
                 header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
@@ -154,7 +203,7 @@ class import_csv(osv.osv):
             for header in headers_list:
                 n += 1
                 fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', wiz_rec.model_id.id)])
-                rid = self.pool.get('import.header.csv').create(cr,uid,{'name':header,'index': n , 'csv_id':wiz_rec.id, 'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id},context=context)
+                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': n , 'csv_id':wiz_rec.id, 'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id},context=context)
                 
 #             model_obj = self.pool[wiz_rec.model_id.model]
 #             fields_got = model_obj.fields_get(cr, uid, context=context)
@@ -164,7 +213,7 @@ class import_csv(osv.osv):
 #                     continue
         return True
     
-    def search_header_exists(self, cr, uid, ids, model_id,header_dict,context = None): 
+    def search_header_exists(self, cr, uid, ids, model_id, header_dict, context = None): 
         ir_model_obj = self.pool.get('ir.model')
         ir_model_fields_obj = self.pool.get('ir.model.fields')
 #         model=ir_model_obj.browse(cr,uid,model_id)
@@ -210,9 +259,7 @@ class import_csv(osv.osv):
     
         return search_string
     
-    def index_get(L, i, v=None):
-        try: return L.index(i) 
-        except: return v
+
     
     def action_import_csv(self, cr, uid, ids, context=None):
 
@@ -221,9 +268,14 @@ class import_csv(osv.osv):
             context = {}
         for wiz_rec in self.browse(cr, uid, ids, context=context):
             
-            if not wiz_rec.header_csv_ids:
+            if not wiz_rec.header_ids:
                 raise osv.except_osv('Warning', 'No Header selected in Header list')
-            str_data = base64.decodestring(wiz_rec.browse_path)
+            
+            for attach in wiz_rec.attachment:
+                data_file = attach.datas
+                continue
+            str_data = base64.decodestring(data_file)
+            
             if not str_data:
                 raise osv.except_osv('Warning', 'The file contains no data')
             try:
@@ -242,7 +294,7 @@ class import_csv(osv.osv):
             
             header_map = {}
             unique_fields = []
-            for hd in wiz_rec.header_csv_ids:
+            for hd in wiz_rec.header_ids:
                 if hd.model_field:
                     label = hd.model_field.field_description or ''
                     header_map.update({hd.model_field.name : hd.name})
@@ -274,7 +326,7 @@ class import_csv(osv.osv):
                     
                 # Create Vals Dict    
                 vals ={}
-                for hd in wiz_rec.header_csv_ids:
+                for hd in wiz_rec.header_ids:
                     model_field = hd.model_field
                     if not model_field or not headers_dict.has_key(model_field.name): continue
                     field_text = data[headers_dict[model_field.name]]
@@ -385,5 +437,8 @@ class import_csv(osv.osv):
         
         warn_obj = self.pool.get( 'warning.warning')
         return warn_obj.info(cr, uid, title='Import Information',message = msg)
+    
+    
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
