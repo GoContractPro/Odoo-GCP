@@ -856,7 +856,7 @@ class stock_picking(osv.osv):
                 'lab_height': do.label_format_id.height or 0,
                 'lab_width': do.label_format_id.width or 0,
                 'shipment_description': do.note  or do.name or so.origin,
-                'shipper_name': do.shipper.name or '',
+                'shipper_name': do.shipper.address.name or '',
                 'shipper_attention_name': do.shipper.atten_name or '',
                 'shipper_phone_number': do.shipper.address and do.shipper.address.phone or '',
                 'shipper_number': do.shipper.acc_no or '',
