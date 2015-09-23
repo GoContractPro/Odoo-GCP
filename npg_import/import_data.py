@@ -31,6 +31,7 @@ import base64
 from datetime import datetime
 import time
 from  dbfread import DBF
+#from dbfpy import dbf
 
 import logging 
 import sys
@@ -41,14 +42,14 @@ def index_get(L, i, v=None):
     try: return L.index(i)
     except: return v
 
+
 class import_data_header(osv.osv): 
     # The Model Is a map from Odoo Data to CSV Sheet Data
     _name = "import.data.header"
     _description = "Map Odoo Fields to Import Fields"
     
     _columns = { 'name':fields.char('Import Field Name', size=64, required = True),
-                'import_data_file_id':fields.many2one('import.data.file','Import Data',required=True, ondelete='cascade',),
-                'o2m_id':fields.many2one('some.data.o2m','o2m test',required=True, ondelete='cascade',),
+                'import_data_id':fields.many2one('import.data.file','Import Data',required=True, ondelete='cascade',),
                 'is_unique':fields.boolean('Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated '),
                 'model':fields.many2one('ir.model','Model'),
                 'model_field':fields.many2one('ir.model.fields','Odoo Model Field'),
@@ -79,21 +80,22 @@ class import_data_file(osv.osv):
     _description = "Holds import Data file information"
     
     _columns = {
-        'name':fields.char('Name',size=32,required = True ), 
-        'model_id': fields.many2one('ir.model', 'Model', ondelete='cascade', required= False,
-            help="The model to import"),
-        'start_time': fields.datetime('Start',  readonly=True),
-        'end_time': fields.datetime('End',  readonly=True),
-        'attachment': fields.many2many('ir.attachment',
-            'data_import_ir_attachments_rel',
-            'import_data_id', 'attachment_id', 'Import File'),
-        'error_log': fields.text('Error Log'),
-        'test_sample_size': fields.integer('Test Sample Size'),
-        'do_update': fields.boolean('Allow Update', 
-                help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
-        'header_ids': fields.one2many('import.data.header','import_data_file_id','Fields Map'),
-        'index':fields.integer("Index"),
-        }
+            'name':fields.char('Name',size=32,required = True ), 
+            'model_id': fields.many2one('ir.model', 'Model', ondelete='cascade', required= False,
+                help="The model to import"),
+            'start_time': fields.datetime('Start',  readonly=True),
+            'end_time': fields.datetime('End',  readonly=True),
+            'attachment': fields.many2many('ir.attachment',
+                'data_import_ir_attachments_rel',
+                'import_data_id', 'attachment_id', 'CSV File'),
+            'error_log': fields.text('Error Log'),
+            'test_sample_size': fields.integer('Test Sample Size'),
+            'do_update': fields.boolean('Allow Update', 
+                    help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
+            'header_ids': fields.one2many('import.data.header','import_data_id','Fields Map'),
+            'index':fields.integer("Index"),
+            'dbf_path':fields.char('DBF Path',size=256),
+            }
     
     _defaults = {
         'test_sample_size':10
@@ -139,32 +141,30 @@ class import_data_file(osv.osv):
         if context is None:
             context = {}
         for wiz_rec in self.browse(cr, uid, ids, context=context):
-            for attach in wiz_rec.attachment:
-                data_file = attach.datas
-                continue
+            
             try:
-                table_data = DBF(data_file)
-            except:
-                raise osv.except_osv('Warning', 'Make sure you are using a DBF format File!')
-            
-            if not table_data:
-                raise osv.except_osv('Warning', 'The file contains no data')
-            
+                table_data = DBF(wiz_rec.dbf_path)
+           
+                if not table_data:
+                    raise osv.except_osv('No Data in DBF Import  %s:'  % (wiz_rec.dbf_path, ))            
+                
                 header_obj = self.pool.get('import.data.header')
-                header_ids=header_obj.search(cr, uid,[('data_id','=',ids[0])])
+                header_ids=header_obj.search(cr, uid,[('import_data_file_id','=',ids[0])])
                     
                 if header_ids:
                     header_obj.unlink(cr,uid,header_ids,context=None)
-                    
-
-                
-                for record in table_data:
+               
+                for rec in table_data:
                     n=0
-                    for header, data in record:
+                    for field  in rec:
+                        
                         n += 1
-                        field_ids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', wiz_rec.model_id.id)])
-                        header_id = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': n , 'data_id':wiz_rec.id, 'model_field':field_ids and field_ids[0] or False, 'model':wiz_rec.model_id.id},context=context)
-                    continue    
+                        fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',field), ('model_id', '=', wiz_rec.model_id.id)])
+                        header_id = self.pool.get('import.data.header').create(cr,uid,{'name':field,'index': n , 'import_data_file_id':wiz_rec.id,  'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id},context=context)
+                    continue 
+                
+            except osv.except_osv, e:
+                raise osv.except_osv('Warning', "DBF import  %s: %s\n%s" % (wiz_rec.dbf_path, e.name, e.value))   
 #             model_obj = self.pool[wiz_rec.model_id.model]
 #             fields_got = model_obj.fields_get(cr, uid, context=context)
 #             blacklist = orm.MAGIC_COLUMNS + [model_obj.CONCURRENCY_CHECK_FIELD]
@@ -191,7 +191,7 @@ class import_data_file(osv.osv):
                 raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
             
             header_csv_obj = self.pool.get('import.data.header')
-            header_csv_ids=header_csv_obj.search(cr, uid,[('data_id','=',ids[0])])
+            header_csv_ids=header_csv_obj.search(cr, uid,[('import_data_file_id','=',ids[0])])
             
             if header_csv_ids:
                 header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)

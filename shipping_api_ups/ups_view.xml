@@ -18,11 +18,11 @@
 <!--	                    <field name="ship_account_id"/>-->
 					  </group>
 					 <notebook>
-						<page string="UPS Account"  attrs="{'invisible':[('ship_company_code','!=','ups')]}">
+  						<page string="UPS Account"  attrs="{'invisible':[('ship_company_code','!=','ups')]}">
 						    <group>
 							<field name="ups_shipping_account_ids" nolabel='1' colspan="4"/>
 							</group>
-						</page>
+						</page> 
 						<page string="UPS URLs" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
 							<group>	
 							<field name='ship_req_web'/>
@@ -126,10 +126,10 @@
 								<field name="tax_id_no"/>
 								<field name="active" select="1"/>
 							</group>
-							<group>
+<!--  						<group>
 							<field name="ups_shipping_service_ids" colspan="4"/>
 							
-							</group>
+							</group>-->	
 						<newline/>
 						<separator string="Trade Mark" colspan="8"/>
 						<newline/>

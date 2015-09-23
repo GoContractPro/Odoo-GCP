@@ -22,12 +22,12 @@
 
 				<xpath expr="//field[@name='shipcharge']" position="after">
 				    <field name="is_intnl" invisible="1"/>
-				    <field name='shipper' on_change="onchange_ups_shipper_id(shipper)"/>
+				    <field name='shipper' /> <!--  on_change="onchange_ups_shipper_id(shipper)"/> -->
 				    <field name="ups_pickup_type"/>
 				    <field name="ups_packaging_type" widget="selection"/>
 					<field name='ups_service' string="Shipping Service" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]"/>
 					<field name='label_format_id' string="Label Format Code"/>
-					<button name="get_rate" string="Get Rate" type="object" icon="gtk-execute"  />
+					
 					<field name="status_message" colspan="4" attrs="{'invisible': [('status_message','=', False)]}" />
 					<group colspan="4" col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
 						<field name="bill_shipping" on_change="onchange_bill_shipping(bill_shipping, ups_use_cc, ups_cc_address_id, ups_bill_receiver_address_id, partner_id, shipper)"/>
@@ -36,6 +36,16 @@
 				</xpath>
 
 				<xpath expr="//page[@string='BlanketPeriod']" position="after">
+					<page string="UPS Rates" attrs="{'invisible':['|',('bill_shipping','!=', 'shipper'),('ups_use_cc','!=',True)]}" >
+					<button name="get_rate" string="Get Rate" type="object" icon="gtk-execute"  />
+					<field name='shipping_rates' widget="one2many_list" nolabel='1'>
+						<tree string="Shipping Rates">
+							<field name="service"/>
+							<field name="ratedshipmentwarning"/>
+							<field name="daystodelivery"/>
+							<field name="totalcharges"/>
+						</tree>
+					</field>
 					<page string="Credit Card Information" attrs="{'invisible':['|',('bill_shipping','!=', 'shipper'),('ups_use_cc','!=',True)]}" >
 					    <group>
 							<field name="ups_cc_type" attrs="{'required' : [('ups_use_cc','=',True)]}"/>

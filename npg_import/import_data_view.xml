@@ -10,6 +10,7 @@
                     <group col="4">
                     	<field name="name"/>
                         <field name="attachment" widget="many2many_binary" />
+                        <field name="dbf_path"/>
                         <field name="start_time"/>
                     	<field name="end_time"/>
                     	<field name="model_id"/>
@@ -32,8 +33,8 @@
 	                    		<field name="name"/>
 	                    		<field name="is_unique"/>
 	                    		<field name="create"/>
-	                    	 	<field name="model" required="1" readonly="1"/>
-	                    		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
+	                    	 	<!-- <field name="model" required="1" readonly="1"/>
+	                    		<field name="model_field" required="0" domain="[('model_id','=',model)]"/> -->
 	                    		<field name="search_domain"/>
 	                    		<field name="descr"/>
 	                    	</tree> 
@@ -67,6 +68,7 @@
                 <tree string="Import Data Files" version="7.0">
                     	<field name="name"/>
                         <field name="attachment" />
+                        <field name="dbf_path" />
                  </tree>
             </field>
         </record>

@@ -111,6 +111,7 @@ class stock_picking(osv.osv):
         'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
         'shipper': fields.many2one('ups.account.shipping', 'Shipper', help='The specific user ID and shipper. Setup in the company configuration.'),
         'shipment_digest': fields.text('ShipmentDigest'),
+        'shipping_rates': fields.one2many('shipping.rates', 'sales_id', 'Rate Quotes'),
         'negotiated_rates': fields.float('NegotiatedRates'),
         'shipment_identific_no': fields.char('ShipmentIdentificationNumber', size=64,),
         'tracking_no': fields.char('TrackingNumber', size=64,),
@@ -184,31 +185,17 @@ class stock_picking(osv.osv):
 
         return res
     
-    def onchage_service(self, cr, uid, ids, ups_shipper_id=False, context=None):
-         vals = {}
-         service_type_ids = []
-         if ups_shipper_id:
-             shipper_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id)
-             for shipper in shipper_obj.ups_shipping_service_ids:
-                 service_type_ids.append(shipper.id)
-         domain = [('id', 'in', service_type_ids)]
-         return {'domain': {'ups_service_id': domain}}
     
     def onchange_ups_shipper_id(self, cr, uid, ids, ups_shipper_id = False, context=None):
 
         res = {}
         
-        service_type_ids = []
-        if ups_shipper_id:
-            shipper_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id)
-            for shipper in shipper_obj.ups_shipping_service_ids:
-                service_type_ids.append(shipper.id)
-        domain = [('id', 'in', service_type_ids)]
+
         
         if ups_shipper_id:
             partner_id = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context).partner_id.id
             res = {'value': {'transport_id' : partner_id},
-                   'domain': {'ups_service_id': domain}}
+                   }
         return res
     
     
@@ -1336,7 +1323,7 @@ class stock_picking(osv.osv):
     
     def get_rate(self, cr, uid, ids, context=None):
         
-        pick_obj = self.pool.get('sale.order')
+        pick_obj = self.pool.get('stock.picking')
         
         data = self.browse(cr, uid, ids[0], context=context)
 #        sale_obj.write(cr,uid,context.get('active_ids'),{'ups_shipper_id':data.ups_shipper_id.id,
@@ -1444,9 +1431,9 @@ class stock_picking(osv.osv):
                                                 ups_info_shipper_no,receipient_zip, receipient_country_code, shipper_zip, shipper_country_code, 
                                                 service_type_ups, packaging_type_ups, weight)
          
-        rates_obj = self.pool.get('shipping.rates.sales')
-        so = data.id
-        rids = rates_obj.search(cr,uid,[('sales_id','=', so )])
+        rates_obj = self.pool.get('shipping.rates')
+        picking_id = data.id
+        rids = rates_obj.search(cr,uid,[('picking_id','=', picking_id )])
         rates_obj.unlink(cr, uid, rids, context)
         serv_obj = self.pool.get('ups.shipping.service.type')
     
@@ -1502,9 +1489,9 @@ class stock_picking(osv.osv):
                             status_mesage = warning 
                             
                         vals['ratedshipmentwarning'] = warning
-                        vals['sales_id'] = so
+                        vals['picking_id'] = picking_id
                         rates_obj.create(cr,uid,vals,context)
-                pick_obj.write(cr,uid,so,{'shipcharge':amount or 0.00,'ups_service_id':ups_service_id,'status_message':warning},context=context)
+                pick_obj.write(cr,uid,picking_id,{'shipcharge':amount or 0.00,'ups_service_id':ups_service_id,'status_message':warning},context=context)
         
                 return True
                 rates_obj.write(cr, uid, context.get('active_ids'), { 'status_message': 'Success!'},context=context)

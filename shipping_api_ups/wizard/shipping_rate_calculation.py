@@ -215,7 +215,7 @@ class shipping_rate_wizard(orm.TransientModel):
                                                    ups_info_shipper_no,receipient_zip, receipient_country_code, shipper_zip, shipper_country_code, 
                                                    service_type_ups, packaging_type_ups, weight)
             
-            rates_obj = self.pool.get('shipping.rates.sales')
+            rates_obj = self.pool.get('shipping.rates')
             so = context.get('active_id')
             rids = rates_obj.search(cr,uid,[('sales_id','=', so )])
             rates_obj.unlink(cr, uid, rids, context)

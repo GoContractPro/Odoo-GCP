@@ -43,7 +43,7 @@ class ups_account_shipping(osv.osv):
         'logistic_company_id': fields.many2one('logistic.company', 'Parent Logistic Company'),
         'delivery_mthd_id': fields.many2one('delivery.method', 'Parent Delivery Method'),
 #         'ups_shipping_service_ids': fields.one2many('ups.shipping.service.type', 'ups_account_id', 'Shipping Service'),
-        'ups_shipping_service_ids':fields.many2many('ups.shipping.service.type', 'shipping_service_rel', 'ups_account_id', 'service_id', 'Shipping Service'),
+#        'ups_shipping_service_ids':fields.many2many('ups.shipping.service.type', 'shipping_service_rel', 'ups_account_id', 'service_id', 'Shipping Service'),
         'address': fields.property(
            type='many2one',
            relation='res.partner',
@@ -485,5 +485,47 @@ class ups_account(osv.osv):
             return []
 
 ups_account()
+
+class shipping_rates(osv.osv):
+    
+    _name = "shipping.rates"
+    _description = "Shipping Rate Estimate Charges"
+    _columns = {    
+        'totalcharges': fields.float('Total Charges'),
+        'ratedshipmentwarning': fields.char('Shipment Warning', size=512),
+        'sales_id': fields.many2one('sale.order', 'Sales Order', required=False, ondelete='cascade',),
+        'picking_id': fields.many2one('stock.picking', 'Delivery Order', required=False, ondelete='cascade',),
+        'package_id': fields.many2one('stock.packages' , 'Shipping Package', required=False, ondelete='cascade',),
+        'daystodelivery': fields.integer('Days to Delivery'),
+        'service': fields.many2one('ups.shipping.service.type', 'Shipping Service' ),
+        }
+    
+    def select_ship_service(self,cr,uid,ids,context=None):
+        sale_obj = self.pool.get('sale.order')
+        vals = {}
+        for service in self.browse(cr, uid, ids, context=context):
+            self.pool.get('sale.order')
+            vals['ups_service_id']  = service.service.id
+            vals['shipcharge'] = service.totalcharges
+            vals['ship_service'] = service.service.description
+            sale_obj.write(cr,uid,[service.sales_id.id],vals,context)
+        mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')
+        return {
+            'name':_("Sale Order"),
+            'view_mode': 'form',
+            'view_id': modid,
+            'view_type': 'form',
+            'res_model': 'sale.order',
+            'type': 'ir.actions.act_window',
+        #    'target':'new',
+         #   'nodestroy': True,
+            'domain': '[]',
+            'res_id': service.sales_id.id,
+            'context':context,
+        }
+                      
+        return True
+    
+shipping_rates()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

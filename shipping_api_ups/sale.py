@@ -66,6 +66,8 @@ class sale_order(osv.osv):
                                                     })]
                             }
                         pick_obj.write(cr, uid, pick_ids, vals)
+                    
+
                 else:
                     pick_ids = pick_obj.search(cr, uid, [('sale_id', '=', sale.id), ('picking_type_code', '=', 'outgoing')])
                     if pick_ids:
@@ -77,31 +79,17 @@ class sale_order(osv.osv):
         res.append(('ups', 'UPS'))
         return res
     
-    def onchage_service(self, cr, uid, ids, ups_shipper_id=False, context=None):
-         vals = {}
-         service_type_ids = []
-         if ups_shipper_id:
-             shipper_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id)
-             for shipper in shipper_obj.ups_shipping_service_ids:
-                 service_type_ids.append(shipper.id)
-         domain = [('id', 'in', service_type_ids)]
-         return {'domain': {'ups_service_id': domain}}
      
     def onchange_ups_shipper_id(self, cr, uid, ids, ups_shipper_id = False, context=None):
 
         res = {}
         
-        service_type_ids = []
-        if ups_shipper_id:
-            shipper_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id)
-            for shipper in shipper_obj.ups_shipping_service_ids:
-                service_type_ids.append(shipper.id)
-        domain = [('id', 'in', service_type_ids)]
+  
         
         if ups_shipper_id:
             partner_id = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context).partner_id.id
             res = {'value': {'transport_id' : partner_id},
-                   'domain': {'ups_service_id': domain}}
+                   }
         return res 
     
     def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
@@ -150,7 +138,7 @@ class sale_order(osv.osv):
             ('20', 'Air Service Center'),
             ], 'Pickup Type'),
         'ups_packaging_type': fields.many2one('shipping.package.type', 'Packaging Type'),
-        'shipping_rates': fields.one2many('shipping.rates.sales', 'sales_id', 'Rate Quotes'),
+        'shipping_rates': fields.one2many('shipping.rates', 'sales_id', 'Rate Quotes'),
         'status_message': fields.char('Status', size=128, readonly=True),
         # From partner address validation
         'address_validation_method': fields.selection(_method_get, 'Address Validation Method', size=32),
@@ -281,7 +269,7 @@ class sale_order(osv.osv):
                                                 ups_info_shipper_no,receipient_zip, receipient_country_code, shipper_zip, shipper_country_code, 
                                                 service_type_ups, packaging_type_ups, weight)
          
-        rates_obj = self.pool.get('shipping.rates.sales')
+        rates_obj = self.pool.get('shipping.rates')
         so = data.id
         rids = rates_obj.search(cr,uid,[('sales_id','=', so )])
         rates_obj.unlink(cr, uid, rids, context)
@@ -358,44 +346,6 @@ class sale_order(osv.osv):
 
 sale_order()
 
-class shipping_rates_sales(osv.osv):
-    
-    _name = "shipping.rates.sales"
-    _description = "Shipping Rate Estimate Charges"
-    _columns = {    
-        'totalcharges': fields.float('Total Charges'),
-        'ratedshipmentwarning': fields.char('Shipment Warning', size=512),
-        'sales_id': fields.many2one('sale.order', 'Sales Order', required=True, ondelete='cascade',),
-        'daystodelivery': fields.integer('Days to Delivery'),
-        'service': fields.many2one('ups.shipping.service.type', 'Shipping Service' ),
-        }
-    
-    def select_ship_service(self,cr,uid,ids,context=None):
-        sale_obj = self.pool.get('sale.order')
-        vals = {}
-        for service in self.browse(cr, uid, ids, context=context):
-            self.pool.get('sale.order')
-            vals['ups_service_id']  = service.service.id
-            vals['shipcharge'] = service.totalcharges
-            vals['ship_service'] = service.service.description
-            sale_obj.write(cr,uid,[service.sales_id.id],vals,context)
-        mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')
-        return {
-            'name':_("Sale Order"),
-            'view_mode': 'form',
-            'view_id': modid,
-            'view_type': 'form',
-            'res_model': 'sale.order',
-            'type': 'ir.actions.act_window',
-        #    'target':'new',
-         #   'nodestroy': True,
-            'domain': '[]',
-            'res_id': service.sales_id.id,
-            'context':context,
-        }
-                      
-        return True
-    
-shipping_rates_sales()
+
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

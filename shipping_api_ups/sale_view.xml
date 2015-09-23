@@ -13,7 +13,7 @@
 					<group colspan="4" col="6" attrs="{'invisible':['|',('ship_company_code','!=','ups')]}">
 						<separator colspan="2" string="UPS" />
 						<newline/>
-						<field name="ups_shipper_id" on_change="onchange_ups_shipper_id(ups_shipper_id)"/>
+						<field name="ups_shipper_id" /> <!--  on_change="onchange_ups_shipper_id(ups_shipper_id)"/> -->
 						<field name="ups_pickup_type"/>
 						<field name="ups_packaging_type" widget="selection"/>
 						<button name="get_rate" string="Get Rate" type="object" icon="gtk-execute"  />
@@ -36,8 +36,8 @@
 		
 		<record id="tree_view_for_ups_shipping_rates" model="ir.ui.view">
 			<field name="name">tree_view_for_ups_shipping_rates</field>
-			<field name="res_model">shipping.rates.sales</field>
-			<field name="model">shipping.rates.sales</field>
+			<field name="res_model">shipping.rates</field>
+			<field name="model">shipping.rates</field>
 			<field name="arch" type="xml">
 				<tree string="Shipping Rates">
 					<field name="service"/>
