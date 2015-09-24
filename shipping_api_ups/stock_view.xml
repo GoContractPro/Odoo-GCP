@@ -46,6 +46,7 @@
 							<field name="totalcharges"/>
 						</tree>
 					</field>
+					</page>
 					<page string="Credit Card Information" attrs="{'invisible':['|',('bill_shipping','!=', 'shipper'),('ups_use_cc','!=',True)]}" >
 					    <group>
 							<field name="ups_cc_type" attrs="{'required' : [('ups_use_cc','=',True)]}"/>

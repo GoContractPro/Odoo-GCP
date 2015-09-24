@@ -46,16 +46,7 @@ class stock_packages(osv.osv):
                 result[package.id] = False
         return result
 
-    def _get_decl_val(self, cr, uid, ids, field_name, arg, context=None):
-        res = {}
-        if context is None:
-            context = {}
-        for rec in self.browse(cr, uid, ids, context=context):
-            sum = 0
-            for item in rec.stock_move_ids:
-                sum += item.cost or 0.0
-            res[rec.id] = sum
-        return res
+
     
     _columns = {
         'packge_no': fields.char('Package Number', size=64, help='The number of the package associated with the delivery.\
@@ -127,8 +118,8 @@ class stock_packages(osv.osv):
         'package_type_id': fields.many2one('logistic.company.package.type', 'Package Type'),
         'show_button': fields.function(_button_visibility, method=True, type='boolean', string='Show'),
         #'package_item_ids' : fields.one2many('shipment.package.item','package_id','Package Items'),
-        'stock_move_ids' : fields.one2many('stock.move','package_id','Package Items'),
-        'decl_val': fields.function(_get_decl_val, method=True, string='Declared Value', type='float', help='The declared value of the package.')
+        #'stock_move_ids' : fields.one2many('stock.move','package_id','Package Items'),
+        'decl_val': fields.float('Declared Value', help='The declared value of the package.'),
     }
 
     _defaults = {
