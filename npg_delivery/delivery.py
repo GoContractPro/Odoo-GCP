@@ -41,7 +41,7 @@ class delivery_method(osv.osv):
                  help="If the active field is set to False, it will allow you to hide the delivery method without removing it."),
         'delivery_carriers': fields.many2many('delivery.carrier', 'delivery_method_delivery_carrier', 'del_id', 'carier_id', 'Delivery Carrier'),
         'ship_income_account_id': fields.property(type='many2one',relation='account.account', string="Shipping Income GL Account",view_load=True,
-                                help='This account represents the g/l account for booking shipping income.'),
+                                required=True, help='This account represents the g/l account for booking shipping income.'),
         'invoice_ship_act_cost': fields.boolean('Invoice on Actual Costs', help = 'Invoice using actual shipping costs from packages not using quoted ship charges as quoted on Sales Order')
      }
        
@@ -55,7 +55,7 @@ class delivery_method(osv.osv):
             
             carrier_ids = (delivery_obj.delivery_carriers and delivery_obj.delivery_carriers.ids) or []
             account = delivery_obj.ship_income_account_id and delivery_obj.ship_income_account_id.id
-            res = {'values': {'carrier_id':False,
+            res = {'value': {'carrier_id':False,
                          'carrier_contact':False,
                          'ship_service':False,
                          'ship_income_account_id':account},
@@ -63,7 +63,7 @@ class delivery_method(osv.osv):
                    }
                
         else: 
-            res = {'values':{'ship_income_account_id':False,
+            res = {'value':{'ship_income_account_id':False,
                              'carrier_id':False,
                              'carrier_contact':False,
                              'ship_service':False,},

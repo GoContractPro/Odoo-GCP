@@ -74,7 +74,7 @@ class stock_picking(osv.osv):
         'carrier_id':fields.many2one("delivery.carrier","Delivery Service"),
         'delivery_method': fields.many2one("delivery.method","Delivery Type", help=" The Type of Delivery Carrier or Logistics Company"),
         'carrier_contact':fields.many2one("res.partner", "Carrier Contact", help="Contact Info for Carrier  responsible for Shipping"),
-        'ship_income_account_id': fields.many2one('account.account', 'Cost Account',
+        'ship_income_account_id': fields.many2one('account.account', 'Ship Income GL Account',
                                            help='This account represents the g/l account for booking shipping income.'),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'volume': fields.float('Volume'),

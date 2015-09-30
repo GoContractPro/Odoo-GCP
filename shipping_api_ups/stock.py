@@ -394,6 +394,7 @@ class stock_picking(osv.osv):
 # 
     def process_ship_accept(self, cr, uid, do, packages, context=None):
         shipment_accept_request_xml = self.create_ship_accept_request_new(cr, uid, do, context=context)
+        print shipment_accept_request_xml
         if do.delivery_method.test_mode:
             acce_web = do.delivery_method.ship_accpt_test_web or ''
             acce_port = do.delivery_method.ship_accpt_test_port
@@ -412,7 +413,10 @@ class stock_picking(osv.osv):
         res = conn.getresponse()
         result = res.read()
  
+        
         response_dic = xml2dic.main(result)
+        print result
+        print response_dic
         NegotiatedRates = ''
         ShipmentIdentificationNumber = ''
         TrackingNumber = ''
@@ -1099,6 +1103,8 @@ class stock_picking(osv.osv):
             </Package>
             </Shipment>
             </ShipmentConfirmRequest>"""
+            
+        print xml_ship_confirm_request
         return xml_ship_confirm_request
 
     def process_ship(self, cr, uid, ids, context=None):
@@ -1442,12 +1448,26 @@ class stock(osv.osv_memory):
         invoice_pool = self.pool.get('account.invoice')
         active_picking = picking_pool.browse(cr, uid, context.get('active_id', False), context=context)
         if active_picking:
+            package_note = ''
+#            package_note = get_invoice_shipping_note(cr,uid,active_picking, context)
+            
             vals = {'shipcharge':active_picking.shipcharge or 0.0,
                     'shipcost':active_picking.shipcost or 0.0,
-                    'delivery_method':active_picking.delivery_method or False
+                    'delivery_method':active_picking.delivery_method or False,               
+                    'ship_income_account_id': active_picking.ship_income_account_id.id or False,
+                    'comment':package_note,
                     }
             invoice_pool.write(cr, uid, invoice_ids, { }, context=context)
         return res
+    
+    def get_invoice_shipping_note(self,cr, uid, active_picking = None, context=None):
+        
+        packages = self.pool('stock.packages').browse(cr,uid, active_picking.package_ids.ids, context=context)
+        pack_note = 'There are %s packages being Shiped for this order with the following tracking nos-' % (len(packages.ids),)
+        for package in packages:
+            
+            pack_note += 'Package %s of Weight %s  --Tracking No %s'%(package.packge_no,package.weight, package.tracking_no) 
+        
 stock()
 
 class stock_move(osv.osv):

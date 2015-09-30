@@ -48,7 +48,7 @@
 						    <field name="delivery_method" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" on_change="onchange_delivery_method(delivery_method)"/>
 						    <field name="ship_income_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
 		                    <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />
-		                    <field name="carrier_contact" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" readonly='1'/>
+		                    <field name="carrier_contact" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" readonly='0'/>
 		                    <field name="carrier_tracking_ref" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
 		                    <field name="number_of_packages" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
 				

@@ -39,7 +39,7 @@ class account_invoice(models.Model):
                 self.total_weight_net += line.weight_net or 0.0  
     
     @api.one
-    @api.depends('invoice_line.price_subtotal', 'tax_line.amount')
+    @api.depends('invoice_line.price_subtotal', 'tax_line.amount','shipcharge')
     def _compute_amount(self):
 
         
