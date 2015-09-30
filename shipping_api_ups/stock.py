@@ -1449,7 +1449,7 @@ class stock(osv.osv_memory):
         active_picking = picking_pool.browse(cr, uid, context.get('active_id', False), context=context)
         if active_picking:
             package_note = ''
-#            package_note = get_invoice_shipping_note(cr,uid,active_picking, context)
+            package_note = self.get_invoice_shipping_note(cr,uid,active_picking, context)
             
             vals = {'shipcharge':active_picking.shipcharge or 0.0,
                     'shipcost':active_picking.shipcost or 0.0,
@@ -1462,12 +1462,13 @@ class stock(osv.osv_memory):
     
     def get_invoice_shipping_note(self,cr, uid, active_picking = None, context=None):
         
-        packages = self.pool('stock.packages').browse(cr,uid, active_picking.package_ids.ids, context=context)
-        pack_note = 'There are %s packages being Shiped for this order with the following tracking nos-' % (len(packages.ids),)
+        packages = self.pool('stock.packages').browse(cr,uid, active_picking.packages_ids.ids, context=context)
+        pack_note = 'There are %s packages being Shipped for this order with the following tracking nos-' % (len(packages.ids),)
         for package in packages:
             
             pack_note += 'Package %s of Weight %s  --Tracking No %s'%(package.packge_no,package.weight, package.tracking_no) 
-        
+       
+        return pack_note 
 stock()
 
 class stock_move(osv.osv):
