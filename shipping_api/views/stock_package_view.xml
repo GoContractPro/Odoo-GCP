@@ -67,11 +67,8 @@
 					<field name='width'/>
 					<field name='height'/>
 					<field name='decl_val' />
-<!-- 					<field name='ref2'/> -->
-<!-- 					<field name='ref2_number'/> -->
-					<field name='show_button' invisible="1"/>
-					<field name='negotiated_rates' readonly="1"/>
-<!--					<field name='shipment_identific_no' readonly="1"/-->
+					<field name='show_button' invisible="1"/>		
+					<field name='negotiated_rates' readonly="1" invisible="1"/>
 					<field name='tracking_no' readonly="1"/>
 
 					<button string="Print Label" name="print_label" icon='STOCK_PRINT' type="object" attrs="{'invisible':[('show_button','=', False)]}"
@@ -94,7 +91,9 @@
 					<field name='width'/>
 					<field name='height'/>
 					<field name='decl_val' invisible="1"/>
-					<field name='ref2'/>
+					<field name='ref1_code'/>
+					<field name='ref1_number'/>
+					<field name='ref2_code'/>
 					<field name='ref2_number'/>
 				</search>
 			</field>
@@ -122,7 +121,9 @@
 							<group colspan="2" col="2">
 								<field name='description'/>
 								<field name='decl_val' invisible="0"/>
-								<field name='ref2'/>
+								<field name='ref1_code'/>
+								<field name='ref1_number'/>
+								<field name='ref2_code'/>
 								<field name='ref2_number'/>
 								<group colspan="4" col="6">
 								<button string="Weight" name='' help='Click this button to weigh the package from the scale.' colspan="1"/>

@@ -6,8 +6,6 @@
             <field name="arch" type="xml">
 	            <field name="fiscal_position" position="after">
 	            	<field name= "origin" groups="base.group_user"/>
-	           	 	<field name="delivery_method"/>
-	           	 	<field name="transport_id"/>
 	           	 	<field name="carrier_id"/>
 	           </field>
 	           <xpath expr="//field[@name='amount_untaxed']" position="before">
@@ -35,12 +33,11 @@
             <field name="inherit_id" ref="account.invoice_supplier_form"/>
             <field name="arch" type="xml">
 	            <field name="origin" position="after">
-	           	 	<field name="delivery_method"/>
-	           	 	<field name="transport_id"/>
 	           	 	<field name="carrier_id"/>
 	            </field>
 	           <xpath expr="//field[@name='amount_untaxed']" position="after">
 					<field name="total_weight_net"/>
+					<field name="shipcharge"/>
 					<field name="shipcharge" />
 					<field name="ship_service"/>
 				</xpath>

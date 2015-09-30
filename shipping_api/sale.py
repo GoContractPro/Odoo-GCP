@@ -25,33 +25,15 @@ from openerp.osv import fields, osv
 class sale_order(osv.osv):
     _inherit = 'sale.order'
     
-    def _get_company_code(self, cr, user, context=None):
-        return super(sale_order, self)._get_company_code(cr, user, context=context)
-    
-    def onchange_logis_company(self, cr, uid, ids, logistic_company_id, context=None):
-        res = {}
-        if logistic_company_id:
-            logistic_company = self.pool.get('logistic.company').browse(cr, uid, logistic_company_id, context=context)
-            res =  {'value': {'ship_company_code': logistic_company.ship_company_code,'sale_account_id':logistic_company.ship_account_id.id}}
-        return res
-    
-    def _get_logis_company(self, cr, uid, context=None):
-        if context is None:
-            context = {}
-        user_rec = self.pool.get('res.users').browse(cr ,uid, uid, context)
-        logis_company = self.pool.get('logistic.company').search(cr, uid, [])
-        return logis_company and logis_company[0] or False
+
 
     _columns= {
-        'logis_company': fields.many2one('logistic.company', 'Logistic Company', help='Name of the Logistics company providing the shipper services.'),
-        'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
-        'rate_selection': fields.selection([('rate_card', 'Rate Card'), ('rate_request', 'Rate Request')], 'Ship Rate Method'),
+        
         'partner_order_id': fields.many2one('res.partner', 'Ordering Contact', readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, help="The name and address of the contact who requested the order or quotation."),
     }
 
     _defaults = {
         'partner_order_id': lambda self, cr, uid, context: context.get('partner_id', False) and self.pool.get('res.partner').address_get(cr, uid, [context['partner_id']], ['order_contact'])['order_contact'],
-        'logis_company': _get_logis_company,
     }
 
     def onchange_partner_id(self, cr, uid, ids, part, context=None):

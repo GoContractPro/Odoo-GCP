@@ -2,17 +2,6 @@
 <openerp>
 	<data>
 
-		<!-- sale_id used as function type field,you need to change.
-		  <record id="stock_form_inherit_from_sale" model="ir.ui.view">
-            <field name="name">stock_form_inherit_from_sale</field>
-            <field name="model">stock.picking</field>
-            <field name="inherit_id" ref="stock.view_picking_form"/>
-            <field name="arch" type="xml">
-                <field name="move_type" position="before">
-                    <field name="sale_id" on_change="on_change_sale_id(sale_id,state)" />
-                </field>
-            </field>
-          </record>-->
 		
 		<record id="view_picking_shipping_sale_inherit_again" model="ir.ui.view">
 			<field name="name">shipping_api_stock_form_inherit</field>
@@ -25,8 +14,8 @@
 				    <field name='shipper' /> <!--  on_change="onchange_ups_shipper_id(shipper)"/> -->
 				    <field name="ups_pickup_type"/>
 				    <field name="ups_packaging_type" widget="selection"/>
-					<field name='ups_service' string="Shipping Service" domain="['|',('common','=',True),('is_intnl','=',is_intnl)]"/>
-					<field name='label_format_id' string="Label Format Code"/>
+					<field name='ups_service' on_change="onchange_ups_service(ups_service)"/>
+					<field name='label_format_id' string="Label Format Code" invisible='1'/>
 					
 					<field name="status_message" colspan="4" attrs="{'invisible': [('status_message','=', False)]}" />
 					<group colspan="4" col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}">

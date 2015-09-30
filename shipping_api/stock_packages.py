@@ -56,7 +56,7 @@ class stock_packages(osv.osv):
         'length': fields.float('Length', help='Indicates the longest length of the box in inches.'),
         'width': fields.float('Width', help='Indicates the width of the package in inches.'),
         'height': fields.float('Height', help='Indicates the height of the package inches.'),
-        'ref1': fields.selection([
+        'ref1_code': fields.selection([
             ('AJ', 'Accounts Receivable Customer Account'),
             ('AT', 'Appropriation Number'),
             ('BM', 'Bill of Lading Number'),
@@ -79,8 +79,8 @@ class stock_packages(osv.osv):
             ('EI', 'Employee ID Number'),
             ('TJ', 'Federal Taxpayer ID No.'),
             ('SY', 'Social Security Number'),
-            ], 'Reference Number 1', help='Indicates the type of 1st reference no'),
-        'ref2': fields.char('Reference Number 1', size=64, help='A reference number 1 associated with the package.'),
+            ], 'Ref Code 1', help='Indicates the type of 1st reference no'),
+        'ref1_number': fields.char('Ref Number 1', size=64, help='A reference number 1 associated with the package.'),
         'ref2_code': fields.selection([
             ('AJ', 'Accounts Receivable Customer Account'),
             ('AT', 'Appropriation Number'),
@@ -104,8 +104,8 @@ class stock_packages(osv.osv):
             ('EI', 'Employee ID Number'),
             ('TJ', 'Federal Taxpayer ID No.'),
             ('SY', 'Social Security Number'),
-            ], 'Reference Number', help='Indicates the type of 2nd reference no'),
-        'ref2_number': fields.char('Reference Number 2', size=64, help='A reference number 2 associated with the package.'),
+            ], 'Ref Code 2', help='Indicates the type of 2nd reference no'),
+        'ref2_number': fields.char('Ref Number 2', size=64, help='A reference number 2 associated with the package.'),
         'pick_id': fields.many2one('stock.picking', 'Delivery Order'),
         'ship_move_id': fields.many2one('shipping.move', 'Delivery Order'),
         'description': fields.text('Description'),
@@ -115,7 +115,6 @@ class stock_packages(osv.osv):
          'tracking_no': fields.char('TrackingNumber', size=64),
         'ship_message': fields.text('Status Message'),
         'tracking_url': fields.char('Tracking URL', size=512),
-        'package_type_id': fields.many2one('logistic.company.package.type', 'Package Type'),
         'show_button': fields.function(_button_visibility, method=True, type='boolean', string='Show'),
         #'package_item_ids' : fields.one2many('shipment.package.item','package_id','Package Items'),
         #'stock_move_ids' : fields.one2many('stock.move','package_id','Package Items'),

@@ -1,17 +1,39 @@
  <openerp>
     <data>
+    
+    
+    	<record id="action_delivery_carrier_form" model="ir.actions.act_window">
+            <field name="name">Delivery Shipping Service</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">delivery.carrier</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="help" type="html">
+              <p class="oe_view_nocontent_create">
+                Click to define a new deliver method. 
+              </p><p>
+                Each carrier (e.g. UPS) can have several delivery shipping methods (e.g.
+                UPS Express, UPS Standard) with a set of pricing rules attached
+                to each method.
+              </p><p>
+                These methods allow to automatically compute the delivery price
+                according to your settings; on the sales order (based on the
+                quotation) or the invoice (based on the delivery orders).
+              </p>
+            </field>
+        </record>
  
 		<menuitem id="menu_delivery" name="Delivery" 
-		        parent="stock.menu_stock_root" groups="base.group_no_one" sequence="50"/>
+		        parent="stock.menu_stock_configuration" groups="base.group_no_one" sequence="50"/>
 		        
-		<menuitem action="action_delivery_grid_form" id="menu_action_delivery_grid_form" 
-		 			parent="menu_delivery" sequence="10"/>
+		<menuitem action="delivery.action_delivery_grid_form" id="delivery.menu_action_delivery_grid_form" 
+		 			parent="menu_delivery" sequence="30" name="Carriers Pricelist"/>
 		 
-		<menuitem action="action_delivery_carrier_form" id="menu_action_delivery_carrier_form" 
-		        	parent="menu_delivery" sequence="20"/>
+		<menuitem action="delivery.action_delivery_carrier_form" id="delivery.menu_action_delivery_carrier_form" 
+		        	parent="menu_delivery" sequence="20" name="Carriers"/>
 		        	
     	<menuitem action="action_delivery_method_form" id="menu_action_delivery_method_form" 
-		        	parent="menu_delivery" sequence="30"/>
+		        	parent="menu_delivery" sequence="10" name="Delivery Method"/>
     </data>
 </openerp>		        	
         

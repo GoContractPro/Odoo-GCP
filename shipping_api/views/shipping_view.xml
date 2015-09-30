@@ -24,7 +24,6 @@
 						<filter string="Customer/Reseller" icon="terp-partner" domain="[]" context="{'group_by':'partner_id'}"/>
 						<filter string="Shipping Date" icon="terp-personal" domain="[]"  context="{'group_by':'ship_date'}"/>
 						<filter string="Shipping Status" icon="terp-personal" domain="[]"  context="{'group_by':'state'}"/>
-						<filter string="Logistics Company" icon="terp-personal" domain="[]"  context="{'group_by':'logis_company'}"/>
 					</group>
 				</search>
 			</field>
@@ -38,7 +37,6 @@
 					<field name='partner_id'/>
 					<field name='pick_id'/>
 					<field name='sale_id'/>
-					<field name='logis_company'/>
 					<field name='with_ret_service'/> <!-- change:service  -->
 					<field name='pic_date'/>
 					<field name='ship_date'/>

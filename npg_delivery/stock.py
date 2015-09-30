@@ -72,9 +72,9 @@ class stock_picking(osv.osv):
 
     _columns = {
         'carrier_id':fields.many2one("delivery.carrier","Delivery Service"),
-        'delivery_method': fields.many2one("delivery.method","Delivery Method", help=" The Delivery Method or Category"),
-        'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping"),
-        'sale_account_id': fields.many2one('account.account', 'Cost Account',
+        'delivery_method': fields.many2one("delivery.method","Delivery Type", help=" The Type of Delivery Carrier or Logistics Company"),
+        'carrier_contact':fields.many2one("res.partner", "Carrier Contact", help="Contact Info for Carrier  responsible for Shipping"),
+        'ship_income_account_id': fields.many2one('account.account', 'Cost Account',
                                            help='This account represents the g/l account for booking shipping income.'),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
         'volume': fields.float('Volume'),
@@ -91,8 +91,9 @@ class stock_picking(osv.osv):
         'carrier_tracking_ref': fields.char('Carrier Tracking Ref', size=32),
         'number_of_packages': fields.integer('Number of Packages'),
         'weight_uom_id': fields.many2one('product.uom', 'Unit of Measure', required=True,readonly="1",help="Unit of measurement for Weight",),
-        'ship_service': fields.related('sale_id', 'ship_service', string='Ship Service', type='char', size=128,
-            store = {'sale.order': (_get_sale_order, ['ship_service'], -10)})
+        'ship_service': fields.char('Ship Service', size=128, readonly=True),
+        'shipcharge': fields.float('Shipping Charge', readonly=True),
+        'shipcost': fields.float('Shipping Cost', readonly=True),
         }
 
     def _prepare_shipping_invoice_line(self, cr, uid, picking, invoice, context=None):
@@ -147,7 +148,7 @@ class stock_picking(osv.osv):
     def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
         
         res = {'value': {'carrier_id':False,
-                         'transport_id':False,
+                         'carrier_contact':False,
                          'ship_service':False,},
                }
         return res
@@ -156,28 +157,63 @@ class stock_picking(osv.osv):
         res = {}
         if carrier:
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier, context=context)
-            res = {'value': {'transport_id' : carrier_obj.partner_id.id,
+            res = {'value': {'carrier_contact' : carrier_obj.partner_id.id,
                             'ship_service' : carrier_obj.name }}
         return res
 
-    #===========================================================================
-    # def action_invoice_create(self, cr, uid, ids, journal_id=False,
-    #         group=False, type='out_invoice', context=None):
-    #     invoice_obj = self.pool.get('account.invoice')
-    #     picking_obj = self.pool.get('stock.picking')
-    #     invoice_line_obj = self.pool.get('account.invoice.line')
-    #     result = super(stock_picking, self).action_invoice_create(cr, uid,
-    #             ids, journal_id=journal_id, group=group, type=type,
-    #             context=context)
-    #     for picking in picking_obj.browse(cr, uid, result.keys(), context=context):
-    #         invoice = invoice_obj.browse(cr, uid, result[picking.id], context=context)
-    #         invoice_line = self._prepare_shipping_invoice_line(cr, uid, picking, invoice, context=context)
-    #         if invoice_line:
-    #             invoice_line_obj.create(cr, uid, invoice_line)
-    #             invoice_obj.button_compute(cr, uid, [invoice.id], context=context)
-    #     return result
-    #===========================================================================
-    
+    def do_partial(self, cr, uid, ids, partial_datas, context=None):
+        res = self._get_journal_id(cr, uid, ids, context=context)
+        result_partial = super(stock_picking, self).do_partial(cr, uid, ids, partial_datas, context=context)
+        if res and res[0]:
+            journal_id = res[0][0]
+            result = result_partial
+            for picking_obj in self.browse(cr, uid, ids, context=context):
+                sale = picking_obj.sale_id
+                if sale and sale.order_policy == 'picking':
+                    pick_id = result_partial[picking_obj.id]['delivered_picking']
+                    result = self.action_invoice_create(cr, uid, [pick_id], journal_id, type=None, context=context)
+                    inv_obj = self.pool.get('account.invoice')
+                    if result:
+                        inv_obj.write(cr, uid, result.values, {
+                           'ship_service': sale.ship_service,
+                           'shipcharge': sale.shipcharge,
+                           'ship_income_account_id': sale.ship_method_id and sale.ship_method_id.account_id and \
+                                              sale.ship_method_id.account_id.id or False,
+#                           'ship_method_id': sale.ship_method_id and sale.ship_method_id.id
+                           })
+                        inv_obj.button_reset_taxes(cr, uid, result.values(), context=context)
+        return result_partial
+
+    def action_invoice_create(self, cr, uid, ids, journal_id=False,
+             group=False, type='out_invoice', context=None):
+        
+
+        result = super(stock_picking, self).action_invoice_create(cr, uid,
+                ids, journal_id=journal_id, group=group, type=type,
+                context=context)
+        
+        picking_obj = self.pool.get('stock.picking').browse(cr,uid,ids[0],context)
+        invoice_obj = self.pool.get('account.invoice')
+        
+        if picking_obj.delivery_method and picking_obj.delivery_method.invoice_ship_act_cost:
+            shipcharge = picking_obj.shipcost
+        else:
+            shipcharge = picking_obj.shipcharge
+            
+        
+        vals = {
+            'ship_service':picking_obj.ship_service,
+            'carrier_contact': picking_obj.carrier_contact.id,
+            'shipcost':picking_obj.shipcost,
+            'shipcharge': shipcharge,
+            'delivery_method':picking_obj.delivery_method.id,
+            'sale_id':picking_obj.sale_id.id,
+            'total_weight_net':picking_obj.weight_net,
+            }
+           
+        invoice_obj.write(cr, uid, result , vals, context)  
+        return result
+  
     def _invoice_create_line(self, cr, uid, moves, journal_id, inv_type='out_invoice', context=None):
         invoice_obj = self.pool.get('account.invoice')
         move_obj = self.pool.get('stock.move')

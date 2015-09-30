@@ -26,6 +26,6 @@ import res_company
 import sale
 import stock
 import purchase
-import invoice
+import invoice_compute
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
 

@@ -29,12 +29,6 @@ class res_partner(osv.osv):
         return list
     
     _columns = {
-        'property_delivery_carrier': fields.property(
-          type='many2one',
-          relation='delivery.carrier',
-          string="Delivery Method",
-          view_load=True,
-          help="This delivery method will be used when invoicing from picking."),
         'last_address_validation': fields.date('Last Address Validation', readonly=True),
         'address_validation_method': fields.selection(_method_get, 'Address Validation Method', size=32),
         'classification': fields.selection([('',''),('0','Unknown'),('1','Commercial'),('2','Residential')], 'Classification'), 

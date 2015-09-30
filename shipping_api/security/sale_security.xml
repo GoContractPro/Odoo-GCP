@@ -9,12 +9,5 @@
 	        <field name="name">Shipping / User</field>
 	    </record>
 	</data>
-	<data noupdate="1">
-		<record id="logistic_company_multicomp_rule" model="ir.rule">
-			<field name="name">Logistic Company</field>
-			<field name="model_id" ref="model_logistic_company"/>
-			<field name="global" eval="True"/>
-			<field name="domain_force">['|',('company_id','=',False),('company_id','child_of',[user.company_id.id])]</field>
-		</record>
-	</data>
+
 </openerp>

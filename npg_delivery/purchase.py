@@ -30,8 +30,6 @@ class purchase_order(osv.osv):
     _inherit = 'purchase.order'
     _columns = {
         'carrier_id':fields.many2one("delivery.carrier", "Delivery Service", help="The Delivery service Choices defined for Transport or Logistics Company"),
-        'delivery_method': fields.many2one("delivery.method","Delivery Method", help=" The Delivery Method or Category"),
-        'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping"),
         'warehouse_id': fields.many2one('stock.warehouse', 'Destination Warehouse'), 
     }
 
@@ -79,7 +77,7 @@ class purchase_order(osv.osv):
     def action_invoice_create(self, cr, uid, ids, context=None):
         inv_id = super(purchase_order, self).action_invoice_create(cr, uid, ids, context)
         for po in self.browse(cr,uid,ids,context):
-            vars = {'transport_id':po.transport_id.id or False,
+            vars = {
                   'carrier_id':po.carrier_id.id or False,
                   'delivery_method':po.delivery_method.id or False,
                   }

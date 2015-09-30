@@ -21,8 +21,6 @@
 ##############################################################################
 
 
-import res_company
-import logistic_company
 import shipping
 import stock_packages
 import stock

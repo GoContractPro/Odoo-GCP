@@ -8,10 +8,8 @@
 				<xpath expr="//form[@string='Purchase Order']/sheet/notebook" position="before">
 				<group >
 					<group >
-	  			 		 <field name="delivery_method" domain="[('active','=',True)]"/> 
-						 <field name="transport_id" context="{'search_transport_company': True}" />
 	                     <field name="carrier_id" context="{'purchase_order_id':active_id or False}" 
-	                     			domain="[('partner_id','=',transport_id)]" class="oe_inline"/>
+	                     			/>
 	                     
                      </group>
                      <group>

@@ -51,19 +51,20 @@ class sale_order(osv.osv):
                     if pick_ids:
                         vals = {
                             'ship_company_code': 'ups',
-                            'logis_company': sale.logis_company and sale.logis_company.id or False,
                             'shipper': sale.ups_shipper_id and sale.ups_shipper_id.id or False,
                             'ups_service': sale.ups_service_id and sale.ups_service_id.id or False,
                             'ups_pickup_type': sale.ups_pickup_type,
                             'ups_packaging_type': sale.ups_packaging_type and sale.ups_packaging_type.id or False,
                             'ship_from_address':sale.ups_shipper_id and sale.ups_shipper_id.address and sale.ups_shipper_id.address.id or False,
-                            'shipcharge':sale.shipcharge or False,
                             'packages_ids': [(0,0, {
+                                                    'packge_no':1,
                                                     'package_type':sale.ups_packaging_type and sale.ups_packaging_type.id or False,
                                                     'weight':sale.total_weight_net or False,
-                                                    
-                                                    
-                                                    })]
+                                                    'ref1_code':'TN',
+                                                    'ref1_number':sale.name,
+                                                    'ref2_code':'PO',
+                                                    'ref2_number':sale.client_order_ref,
+                                                   })]
                             }
                         pick_obj.write(cr, uid, pick_ids, vals)
                     
@@ -88,7 +89,7 @@ class sale_order(osv.osv):
         
         if ups_shipper_id:
             partner_id = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context).partner_id.id
-            res = {'value': {'transport_id' : partner_id},
+            res = {'value': {'carrier_contact' : partner_id},
                    }
         return res 
     
@@ -107,7 +108,7 @@ class sale_order(osv.osv):
                     ups_shipper_id=ups_shipper_ids[0]
             
             res['value']['ship_company_code'] = deliver_method_obj.ship_company_code
-            res['value']['sale_account_id'] = deliver_method_obj.ship_account_id.id
+            res['value']['ship_income_account_id'] = deliver_method_obj.ship_income_account_id.id
             res['value']['ups_shipper_id'] = ups_shipper_id  
 
         return res
@@ -117,8 +118,8 @@ class sale_order(osv.osv):
         res.append(('ups.account', 'UPS'))
         return res
     
-    _columns = {
-        'payment_method':fields.selection([
+    _columns = {        
+            'payment_method':fields.selection([
             ('cc_pre_auth', 'Credit Card – PreAuthorized'),
             ('invoice', 'Invoice'),
             ('cod', 'COD'),
@@ -142,22 +143,10 @@ class sale_order(osv.osv):
         'status_message': fields.char('Status', size=128, readonly=True),
         # From partner address validation
         'address_validation_method': fields.selection(_method_get, 'Address Validation Method', size=32),
-        
-    }
-
-    def _get_sale_account(self, cr, uid, context=None):
-        if context is None:
-            context = {}
-        logsitic_obj = self.pool.get('logistic.company')
-        user_rec = self.pool.get('res.users').browse(cr , uid, uid, context)
-        logis_company = logsitic_obj.search(cr, uid, [])
-        if not logis_company:
-            return False
-        return logsitic_obj.browse(cr, uid, logis_company[0], context).ship_account_id.id
-
-    _defaults = {
-        'sale_account_id': _get_sale_account,
         }
+
+
+
     
     def get_rate(self, cr, uid, ids, context=None):
         
@@ -194,21 +183,16 @@ class sale_order(osv.osv):
         
         if test_mode:
             url = unicode(data.delivery_method.ship_rate_test_web)
-        #                port = data.logis_company.ship_rate_test_port
+
         else:
             url = unicode(data.delivery_method.ship_rate_web)
-#                port = data.logis_company.ship_rate_port
+
     
-#         if data.ups_service_id:
-#            request_action ="rate"
-#            request_option ="rate"
-#            service_type_ups = data.ups_service_id and data.ups_service_id.shipping_service_code or ''            
-#         else:
+
         request_action = "shop"
         request_option = "shop"
         service_type_ups = ''
 
-#            url = 'https://wwwcie.ups.com/ups.app/xml/Rate' or 'https://onlinetools.ups.com/ups.app/xml/Rate'
 
         rate_request = """<?xml version=\"1.0\"?>
          <AccessRequest xml:lang=\"en-US\">
@@ -329,7 +313,7 @@ class sale_order(osv.osv):
                         vals['ratedshipmentwarning'] = warning
                         vals['sales_id'] = so
                         rates_obj.create(cr,uid,vals,context)
-                sale_obj.write(cr,uid,so,{'shipcharge':amount or 0.00,'ups_service_id':ups_service_id,'status_message':warning},context=context)
+                sale_obj.write(cr,uid,so,{'shipcharge': 0.00,'ups_service_id':False,'status_message':warning, 'ship_service':''},context=context,)
         
                 return True
                 rates_obj.write(cr, uid, context.get('active_ids'), { 'status_message': 'Success!'},context=context)
@@ -345,7 +329,46 @@ class sale_order(osv.osv):
         return True
 
 sale_order()
-
-
+    
+class shipping_rates_sales(osv.osv):
+    
+    _name = "shipping.rates.sales"
+    _description = "Shipping Rate Estimate Charges"
+    _columns = {    
+        'totalcharges': fields.float('Total Charges'),
+        'ratedshipmentwarning': fields.char('Shipment Warning', size=512),
+        'sales_id': fields.many2one('sale.order', 'Sales Order', required=False, ondelete='cascade',),
+        'picking_id': fields.many2one('stock.picking', 'Delivery Order', required=False, ondelete='cascade',),
+        'package_id': fields.many2one('stock.packages' , 'Shipping Package', required=False, ondelete='cascade',),
+        'daystodelivery': fields.integer('Days to Delivery'),
+        'service': fields.many2one('ups.shipping.service.type', 'Shipping Service' ),
+        }
+    
+    def select_ship_service(self,cr,uid,ids,context=None):
+        sale_obj = self.pool.get('sale.order')
+        vals = {}
+        for service in self.browse(cr, uid, ids, context=context):
+            self.pool.get('sale.order')
+            vals['ups_service_id']  = service.service.id
+            vals['shipcharge'] = service.totalcharges
+            vals['ship_service'] = service.service.description
+            sale_obj.write(cr,uid,[service.sales_id.id],vals,context)
+        mod, modid = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'sale', 'view_order_form')
+        return {
+            'name':_("Sale Order"),
+            'view_mode': 'form',
+            'view_id': modid,
+            'view_type': 'form',
+            'res_model': 'sale.order',
+            'type': 'ir.actions.act_window',
+        #    'target':'new',
+         #   'nodestroy': True,
+            'domain': '[]',
+            'res_id': service.sales_id.id,
+            'context':context,
+        }
+                      
+        return True
+    
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

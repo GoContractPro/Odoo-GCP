@@ -31,7 +31,7 @@ class res_company(osv.osv):
         return res
     
     _columns = {
-        'logistic_company_ids': fields.one2many('logistic.company', 'company_id', 'Logistic Companies'),
+       
         'address_validation_method': fields.selection(_method_get, 'Address Validation Method', size=32, required=True),
         }
 

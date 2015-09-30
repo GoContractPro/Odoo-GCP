@@ -28,16 +28,19 @@ import openerp.addons.decimal_precision as dp
 class sale_order(osv.osv):
     _inherit = 'sale.order'
     
+    def _get_company_code(self, cr, user, context=None):
+        return [('grid', 'Price Grid')]
+    
     def _make_invoice(self, cr, uid, order, lines, context=None):
         inv_id = super(sale_order, self)._make_invoice(cr, uid, order, lines, context=None)
         if inv_id:
-            if order.sale_account_id:
+            if order.ship_income_account_id:
                 inv_obj = self.pool.get('account.invoice')
                 inv_obj.write(cr, uid, inv_id, {
                     'shipcharge': order.shipcharge,
                     'ship_service': order.ship_service,
-#                    'ship_method_id': order.ship_method_id.id,
-                    'sale_account_id': order.sale_account_id.id,
+                    'delivery_method': order.delivery_method.id,
+                    'ship_income_account_id': order.ship_income_account_id.id,
                     'sale_order': order.id ,
                     })
                 inv_obj.button_reset_taxes(cr, uid, [inv_id], context=context)
@@ -55,6 +58,7 @@ class sale_order(osv.osv):
             val += c.get('amount', 0.0)
         return val
 
+#TODO Taxes currently not calculated for Shipping, Tax ids have not been defined and would need to be added to the Delivery Carrier shipping methods    
     def _amount_all(self, cr, uid, ids, field_name, arg, context=None):
         cur_obj = self.pool.get('res.currency')
         res = super(sale_order, self)._amount_all(cr, uid, ids, field_name, arg, context=context)
@@ -69,8 +73,7 @@ class sale_order(osv.osv):
                 res[order.id]['amount_total'] = res[order.id]['amount_untaxed'] + res[order.id]['amount_tax'] + order.shipcharge
         return res
     
-    def _get_company_code(self, cr, user, context=None):
-        return [('grid', 'Price Grid')]
+
     
     def _get_address_validation_method(self, cr, uid, context=None):
         if context is None: context = {}
@@ -92,15 +95,21 @@ class sale_order(osv.osv):
 
     
     _columns = {
-        'carrier_id':fields.many2one("delivery.carrier", "Delivery Service", help="The Delivery service Choices defined for Transport or Logistics Company"),
-        'delivery_method': fields.many2one("delivery.method","Delivery Method", help=" The Delivery Method or Category"),
-        'transport_id':fields.many2one("res.partner", "Transport Company", help="The partner company responsible for Shipping"),
-        'shipcharge': fields.float('Shipping Cost'),
+        'carrier_id':fields.many2one("delivery.carrier", "Carrier", help="The Delivery service Choices defined for Transport or Logistics Company"),
+        'delivery_method': fields.many2one("delivery.method","Delivery Type", help=" The Type of Delivery Carrier or Logistics Company"),
+        'carrier_contact':fields.many2one("res.partner", "Carrier Contact", help="Contact Info for Carrier  responsible for Shipping"),
+        'transport_id':fields.many2one("res.partner", "Transport N/A", help="Contact Info for Carrier  responsible for Shipping"),
+
+        'shipcharge': fields.float('Shipping Charges'),
+        'shipcost': fields.float('Shipping Charges'),
         'ship_service': fields.char('Ship Service', size=128, readonly=True),
         'ship_company_code': fields.selection(_get_company_code, 'Ship Company', method=True, size=64),
-#        'ship_method_id': fields.many2one('shipping.rate.config', 'Shipping Method', readonly=True),
-        'sale_account_id': fields.many2one('account.account', 'Cost Account',
+        'sale_account_id': fields.many2one('account.account', 'Ship Income Account',
                                            help='This account represents the g/l account for booking shipping income.'),
+        
+        'ship_income_account_id': fields.many2one('account.account', 'Ship Income Account',
+                                           help='This account represents the g/l account for booking shipping income.'),
+        
         'amount_untaxed': fields.function(_amount_all, method=True, digits_compute= dp.get_precision('Sale Price'), string='Untaxed Amount',
             store = {
                'sale.order': (lambda self, cr, uid, ids, c={}: ids, ['order_line', 'shipcharge'], 10),
@@ -137,24 +146,24 @@ class sale_order(osv.osv):
         if vals.has_key('carrier_id') and vals['carrier_id']:
             carrier_id =vals['carrier_id']
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier_id, context=context)
-            vals['transport_id']=carrier_obj.partner_id.id
+            vals['carrier_contact']=carrier_obj.partner_id.id
             vals['ship_service']=carrier_obj.name
         if vals.has_key('ups_shipper_id') and vals['ups_shipper_id']:
             ups_shipper_id =vals['ups_shipper_id']
             ups_shipper_id_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context)
-            vals['transport_id']=ups_shipper_id_obj.partner_id.id
+            vals['carrier_contact']=ups_shipper_id_obj.partner_id.id
         return super(sale_order, self).create(cr, uid, vals, context=context)
     
     def write(self, cr, uid,ids, vals, context=None):
         if vals.has_key('carrier_id') and vals['carrier_id']:
             carrier_id =vals['carrier_id']
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier_id, context=context)
-            vals['transport_id']=carrier_obj.partner_id.id
+            vals['carrier_contact']=carrier_obj.partner_id.id
             vals['ship_service']=carrier_obj.name
         if vals.has_key('ups_shipper_id') and vals['ups_shipper_id']:
             ups_shipper_id =vals['ups_shipper_id']
             ups_shipper_id_obj = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context)
-            vals['transport_id']=ups_shipper_id_obj.partner_id.id
+            vals['carrier_contact']=ups_shipper_id_obj.partner_id.id
         return super(sale_order, self).write(cr, uid,ids, vals, context=context)
 
 
@@ -171,16 +180,17 @@ class sale_order(osv.osv):
         res = {}
         if carrier:
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier, context=context)
-            res = {'value': {'transport_id' : carrier_obj.partner_id.id,
+            res = {'value': {'carrier_contact' : carrier_obj.partner_id.id,
                             'ship_service' : carrier_obj.name }}
         return res
     
     def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
         
-        res = {'value': {'carrier_id':False,
-                         'transport_id':False,
-                         'ship_service':False,},
-               }
+        res = {}
+        
+        delivery_method_obj = self.pool('delivery.method')
+        res = delivery_method_obj.onchange_delivery_method(cr,uid,delivery_method,delivery_method, context = context)
+        
         return res
             
 #     def _prepare_order_picking(self, cr, uid, order, context=None):
@@ -194,8 +204,10 @@ class sale_order(osv.osv):
         for sale_obj in self.browse(cr, uid, ids, context=context):
             pick_obj.write(cr, uid, [x.id for x in sale_obj.picking_ids], {'carrier_id': sale_obj.carrier_id and sale_obj.carrier_id.id or False,
                                                                             'delivery_method': sale_obj.delivery_method and sale_obj.delivery_method.id or False,
-                                                                            'sale_account_id':sale_obj.sale_account_id and sale_obj.sale_account_id.id or False,
-                                                                            'transport_id':sale_obj.transport_id and sale_obj.transport_id.id or False,
+                                                                            'ship_income_account_id':sale_obj.ship_income_account_id and sale_obj.ship_income_account_id.id or False,
+                                                                            'carrier_contact':sale_obj.carrier_contact and sale_obj.carrier_contact.id or False,
+                                                                            'shipcharge':sale_obj.shipcharge or False,
+                                                                            'ship_service':sale_obj.ship_service or False,
                                                                             },
                                                                              context=context)
                     
@@ -238,12 +250,13 @@ class sale_order(osv.osv):
     def action_invoice_create(self, cr, uid, ids, context=None):
         inv_id = super(sale_order, self).action_invoice_create(cr, uid, ids, context)
         for so in self.browse(cr,uid,ids,context):
-            vars = {'transport_id':so.transport_id.id or False,
+            vals = {'carrier_contact':so.carrier_contact.id or False,
                   'carrier_id':so.carrier_id.id or False,
-                  'delivery_method':so.delivery_method.id or False
+                  'delivery_method':so.delivery_method.id or False,
+                  'ship_service': so.ship_service or False,
                   }
                 
-            self.pool.get('account.invoice').write(cr,uid,inv_id,vars)
+            self.pool.get('account.invoice').write(cr,uid,inv_id,vals)
         return inv_id
         #return {'type': 'ir.actions.act_window_close'} action reload?
 

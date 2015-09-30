@@ -46,8 +46,8 @@ class shipping_move(osv.osv):
         'shipment_identific_no': fields.char('ShipmentIdentificationNumber', size=64,),
         'logo': fields.binary('Logo'),
         'tracking_url': fields.char('Tracking URL', size=512,),
-        'service': fields.many2one('ups.shipping.service.type', 'Shipping Service'),
-        'shipper': fields.many2one('ups.account.shipping', 'Shipper', help='The specific user ID and shipper. Setup in the company configuration.'),
+        'service': fields.many2one('ups.shipping.service.type', 'UPS Service'),
+        'shipper': fields.many2one('ups.account.shipping', 'UPS Account', help='The specific user ID and shipper. Setup in the company configuration.'),
         }
     
     def print_label(self, cr, uid, ids, context=None):
@@ -108,8 +108,8 @@ class stock_picking(osv.osv):
 
     
     _columns = {
-        'ups_service': fields.many2one('ups.shipping.service.type', 'Service', help='The specific shipping service offered'),
-        'shipper': fields.many2one('ups.account.shipping', 'Shipper', help='The specific user ID and shipper. Setup in the company configuration.'),
+        'ups_service': fields.many2one('ups.shipping.service.type', 'UPS Service', help='The specific shipping service offered'),
+        'shipper': fields.many2one('ups.account.shipping', 'UPS Account', help='The specific UPS Account user ID and API Info .'),
         'shipment_digest': fields.text('ShipmentDigest'),
         'shipping_rates': fields.one2many('shipping.rates', 'sales_id', 'Rate Quotes'),
         'negotiated_rates': fields.float('NegotiatedRates'),
@@ -180,7 +180,7 @@ class stock_picking(osv.osv):
                 if ups_shipper_ids :
                     ups_shipper_id=ups_shipper_ids[0]
             res['value']['ship_company_code'] = deliver_method_obj.ship_company_code
-            res['value']['sale_account_id'] = deliver_method_obj.ship_account_id.id
+            res['value']['ship_income_account_id'] = deliver_method_obj.ship_income_account_id.id
             res['value']['shipper'] = ups_shipper_id  
 
         return res
@@ -194,73 +194,19 @@ class stock_picking(osv.osv):
         
         if ups_shipper_id:
             partner_id = self.pool.get('ups.account.shipping').browse(cr, uid, ups_shipper_id, context=context).partner_id.id
-            res = {'value': {'transport_id' : partner_id},
+            res = {'value': {'carrier_contact' : partner_id},
                    }
         return res
     
-    
-    
+    def onchange_ups_service(self, cr, uid, ids, ups_service = False, context=None):
+        
+        res = {}
+        if ups_service:
+            service_name = self.pool.get('ups.shipping.service.type').browse(cr, uid, ups_service, context=context).description
+            res = {'value': {'ship_service' : service_name},
+                   }
+        return res
 
-#     def action_process(self, cr, uid, ids, context=None):
-#         sale_order_line = []
-#         deliv_order = self.browse(cr, uid, ids, context=context)
-#         if isinstance(deliv_order, list):
-#             deliv_order = deliv_order[0]
-#         do_transaction = True
-#         sale = deliv_order.sale_id
-#         if sale and sale.payment_method == 'cc_pre_auth' and not sale.invoiced:
-#             rel_voucher = sale.rel_account_voucher_id
-#             rel_voucher_id = rel_voucher and rel_voucher.id or False
-#             if rel_voucher_id and rel_voucher.state != 'posted' and rel_voucher.cc_auth_code:
-#                 do_transaction = False
-#                 vals_vouch = {'cc_p_authorize': False, 'cc_charge': True}
-#                 if 'trans_type' in rel_voucher._columns.keys():
-#                     vals_vouch.update({'trans_type': 'AuthCapture'})
-#                 self.pool.get('account.voucher').write(cr, uid, [rel_voucher_id], vals_vouch, context=context)
-#                 do_transaction = self.pool.get('account.voucher').authorize(cr, uid, [rel_voucher_id], context=context)
-#         if not do_transaction:
-#             self.write(cr, uid, ids, {'ship_state': 'hold', 'ship_message': 'Unable to process creditcard payment.'})
-#             cr.commit()
-#             raise osv.except_osv(_('Final credit card charge cannot be completed!'), _("Please hold shipment and contact customer service.."))
-#         return super(stock_picking_out, self).action_process(cr, uid, ids, context=context)
-   
-
-
-    def action_done(self, cr, uid, ids, context=None):
-        res = super(stock_picking, self).action_done(cr, uid, ids, context=context)
-
-        for picking in self.browse(cr, uid, ids, context=context):
-            vals = {}
-            service_type_obj = self.pool.get('ups.shipping.service.type')
-            ship_service = picking.sale_id and picking.sale_id.ship_service
-            if ship_service:
-                service_type_ids = service_type_obj.search(cr, uid, [('description', 'like', ship_service)], context=context)
-                if service_type_ids:
-                  vals['ups_service'] = service_type_ids[0]
-                  service_type = service_type_obj.browse(cr, uid, service_type_ids[0], context=context)
-                  if service_type.ups_account_id:
-                    vals['shipper'] = service_type.ups_account_id.id
-                    if service_type.ups_account_id.logistic_company_id:
-                        vals['logis_company'] = service_type_obj.ups_account_id.logistic_company_id.id
-        return True
-    
-    def on_change_sale_id(self, cr, uid, ids, sale_id=False, state=False, context=None):
-        vals = {}
-        if sale_id:
-            sale_obj = self.pool.get('sale.order').browse(cr, uid, sale_id)
-            service_type_obj = self.pool.get('ups.shipping.service.type')
-            ups_shipping_service_ids = service_type_obj.search(cr, uid, [('description', '=', sale_obj.ship_service)], context=context)
-            if ups_shipping_service_ids:
-                vals['ups_service'] = ups_shipping_service_ids[0]
-                shipping_obj = self.pool.get('ups.account.shipping')
-                ups_shipping_ids = shipping_obj.search(cr, uid, [('ups_shipping_service_ids', 'in', ups_shipping_service_ids[0])], context=context)
-                if ups_shipping_ids:
-                    vals['shipper'] = ups_shipping_ids[0]
-                    log_company_obj = self.pool.get('logistic.company')
-                    logistic_company_ids = log_company_obj.search(cr, uid, [('ups_shipping_account_ids', 'in', ups_shipping_ids[0])], context=context)
-                    if logistic_company_ids:
-                        vals['logis_company'] = logistic_company_ids[0]
-        return {'value': vals}
 
     def process_void(self, cr, uid, ids, context=None):
         picking_obj = self.pool.get('stock.picking')
@@ -282,9 +228,9 @@ class stock_picking(osv.osv):
                         'RequestAction': "1",
                         'TransactionReference': {'CustomerContext': ""},
                         },
-                    'ShipmentIdentificationNumber': do.logis_company.test_mode and '1Z12345E0193081456' or do.shipment_identific_no or '',
+                    'ShipmentIdentificationNumber': do.delivery_method.test_mode and '1Z12345E0193081456' or do.shipment_identific_no or '',
                     'ExpandedVoidShipment': {
-                        'ShipmentIdentificationNumber': do.logis_company.test_mode and  '1ZISDE016691676846' or do.shipment_identific_no or '',
+                        'ShipmentIdentificationNumber': do.delivery_method.test_mode and  '1ZISDE016691676846' or do.shipment_identific_no or '',
                         'TrackingNumber': ''
                         }
                     }
@@ -347,12 +293,12 @@ class stock_picking(osv.osv):
             Request_string1 = doc1.toprettyxml()
             Request_string = Request_string1 + Request_string2
 
-            if do.logis_company.test_mode:
-                void_web = do.logis_company.ship_void_test_web or ''
-                void_port = do.logis_company.ship_void_test_port
+            if do.delivery_method.test_mode:
+                void_web = do.delivery_method.ship_void_test_web or ''
+                void_port = do.delivery_method.ship_void_test_port
             else:
-                void_web = do.logis_company.ship_void_web or ''
-                void_port = do.logis_company.ship_void_port
+                void_web = do.delivery_method.ship_void_web or ''
+                void_port = do.delivery_method.ship_void_port
             if void_web:
                 parse_url = urlparse(void_web)
                 serv = parse_url.netloc
@@ -493,7 +439,7 @@ class stock_picking(osv.osv):
         packages_ids = [package.id for package in do.packages_ids]
          
         if status:
-            shipment_identific_number, tracking_number_notes, ship_charge = '', '', 0.0
+            shipment_identific_number, tracking_number_notes, ship_cost = '', '', 0.0
             for shipmentresult in response_dic['ShipmentAcceptResponse']:
                 if shipmentresult.get('ShipmentResults'):
                     package_obj = self.pool.get('stock.packages')
@@ -501,12 +447,13 @@ class stock_picking(osv.osv):
                         if package.get('ShipmentIdentificationNumber'):
                             shipment_identific_number = package['ShipmentIdentificationNumber']
                             continue
-                        ship_charge += package.get('ShipmentCharges') and float(package['ShipmentCharges'][2]['TotalCharges'][1]['MonetaryValue']) or 0.0
+                        ship_cost += package.get('ShipmentCharges') and float(package['ShipmentCharges'][2]['TotalCharges'][1]['MonetaryValue']) or 0.0
+  
                         if package.get('PackageResults'):
                             label_image = ''
                             tracking_number = ''
                             label_code = ''
-                            tracking_url = do.logis_company.ship_tracking_url or ''
+                            tracking_url = do.delivery_method.ship_tracking_url or ''
                             for tracks in package['PackageResults']:
                                 if tracks.get('TrackingNumber'):
                                     tracking_number = tracks['TrackingNumber']
@@ -555,7 +502,7 @@ class stock_picking(osv.osv):
                                                     'logo': label_image,
                                                     'ship_state': 'in_process',
                                                     'tracking_url': tracking_url,
-                                                    'att_file_name': fileName
+                                                    'att_file_name': fileName,
                                                     
                                                     }, context=context)
                                             else:
@@ -564,7 +511,7 @@ class stock_picking(osv.osv):
                                                     'shipment_identific_no': shipment_identific_number,
                                                     'ship_state': 'in_process',
                                                     'tracking_url': tracking_url,
-                                                    'att_file_name': fileName
+                                                    'att_file_name': fileName,
                                                     }, context=context)
                                                  
                                             if int(time.strftime("%w")) in range(1, 6) or (time.strftime("%w") == '6' and do.sat_delivery):
@@ -627,7 +574,8 @@ class stock_picking(osv.osv):
                                     control_log_image = base64.encodestring(label_from_file.read())
                                     label_from_file.close()
                                     package_obj.write(cr, uid, packages_ids, {'control_log_receipt': control_log_image, }, context=context)
-            do.write({'ship_state': 'ready_pick', 'shipcharge': ship_charge, 'internal_note': tracking_number_notes}, context=context)
+                                    
+            do.write({'ship_state': 'ready_pick', 'shipcost': ship_cost, 'internal_note': tracking_number_notes}, context=context)
         return status, label_code
 
     def add_product(self, cr, uid, package_obj):
@@ -1141,8 +1089,8 @@ class stock_picking(osv.osv):
                 </ReferenceNumber>
            
             """ % {
-            'package_reference_code1': lines.ref1 or '',
-            'package_reference_value1': lines.ref2 or '',
+            'package_reference_code1': lines.ref1_code or '',
+            'package_reference_value1': lines.ref1_number or '',
             'package_reference_code2': lines.ref2_code or '',
             'package_reference_value2': lines.ref2_number or '',
          }
@@ -1297,28 +1245,7 @@ class stock_picking(osv.osv):
                     vals.append(t1)
         return vals
 
-    def do_partial(self, cr, uid, ids, partial_datas, context=None):
-        res = self._get_journal_id(cr, uid, ids, context=context)
-        result_partial = super(stock_picking, self).do_partial(cr, uid, ids, partial_datas, context=context)
-        if res and res[0]:
-            journal_id = res[0][0]
-            result = result_partial
-            for picking_obj in self.browse(cr, uid, ids, context=context):
-                sale = picking_obj.sale_id
-                if sale and sale.order_policy == 'picking':
-                    pick_id = result_partial[picking_obj.id]['delivered_picking']
-                    result = self.action_invoice_create(cr, uid, [pick_id], journal_id, type=None, context=context)
-                    inv_obj = self.pool.get('account.invoice')
-                    if result:
-                        inv_obj.write(cr, uid, result.values(), {
-                           'ship_service': sale.ship_service,
-                           'shipcharge': sale.shipcharge,
-                           'sale_account_id': sale.ship_method_id and sale.ship_method_id.account_id and \
-                                              sale.ship_method_id.account_id.id or False,
-#                           'ship_method_id': sale.ship_method_id and sale.ship_method_id.id
-                           })
-                        inv_obj.button_reset_taxes(cr, uid, result.values(), context=context)
-        return result_partial
+
     
     
     def get_rate(self, cr, uid, ids, context=None):
@@ -1356,21 +1283,14 @@ class stock_picking(osv.osv):
         
         if test_mode:
             url = unicode(data.delivery_method.ship_rate_test_web)
-        #                port = data.logis_company.ship_rate_test_port
         else:
             url = unicode(data.delivery_method.ship_rate_web)
-#                port = data.logis_company.ship_rate_port
-    
-#         if data.ups_service_id:
-#            request_action ="rate"
-#            request_option ="rate"
-#            service_type_ups = data.ups_service_id and data.ups_service_id.shipping_service_code or ''            
-#         else:
+
         request_action = "shop"
         request_option = "shop"
         service_type_ups = ''
 
-#            url = 'https://wwwcie.ups.com/ups.app/xml/Rate' or 'https://onlinetools.ups.com/ups.app/xml/Rate'
+
 
         rate_request = """<?xml version=\"1.0\"?>
          <AccessRequest xml:lang=\"en-US\">
@@ -1522,7 +1442,11 @@ class stock(osv.osv_memory):
         invoice_pool = self.pool.get('account.invoice')
         active_picking = picking_pool.browse(cr, uid, context.get('active_id', False), context=context)
         if active_picking:
-            invoice_pool.write(cr, uid, invoice_ids, {'shipcharge':active_picking.shipcharge }, context=context)
+            vals = {'shipcharge':active_picking.shipcharge or 0.0,
+                    'shipcost':active_picking.shipcost or 0.0,
+                    'delivery_method':active_picking.delivery_method or False
+                    }
+            invoice_pool.write(cr, uid, invoice_ids, { }, context=context)
         return res
 stock()
 

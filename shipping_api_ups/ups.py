@@ -40,7 +40,7 @@ class ups_account_shipping(osv.osv):
         'acc_no': fields.related('ups_account_id', 'acc_no', type='char', size=64, string='Account Number', required=True),
         'atten_name': fields.char('AttentionName', size=64, required=True, select=1),
         'tax_id_no': fields.char('Tax Identification Number', size=64 , select=1, help="Shipper's Tax Identification Number."),
-        'logistic_company_id': fields.many2one('logistic.company', 'Parent Logistic Company'),
+
         'delivery_mthd_id': fields.many2one('delivery.method', 'Parent Delivery Method'),
 #         'ups_shipping_service_ids': fields.one2many('ups.shipping.service.type', 'ups_account_id', 'Shipping Service'),
 #        'ups_shipping_service_ids':fields.many2many('ups.shipping.service.type', 'shipping_service_rel', 'ups_account_id', 'service_id', 'Shipping Service'),
@@ -51,7 +51,7 @@ class ups_account_shipping(osv.osv):
            view_load=True),
         'trademark': fields.char('Trademark', size=1024, select=1),
         'company_id': fields.many2one('res.company', 'Company'),
-        'partner_id': fields.many2one('res.partner', 'Transport Company', required=True, help="The UPS account contact information and and address"),
+        'partner_id': fields.many2one('res.partner', 'Carrier Contact', required=False, help="The UPS account contact information and and address"),
 
     }
     _defaults = {
@@ -129,7 +129,7 @@ class delivery_method(osv.osv):
                'test_mode': fields.boolean('Test Mode'),
                'url': fields.char('Website',size=256 , select=1),
                'company_id': fields.many2one('res.company', 'Company'),
-#               'ship_account_id': fields.property(
+#               'ship_income_account_id': fields.property(
 #               'account.account',
 #               type='many2one',
 #               relation='account.account',

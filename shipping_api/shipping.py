@@ -29,7 +29,6 @@ class shipping_move(osv.osv):
         'pick_id': fields.many2one("stock.picking", 'Delivery Order'),
         'pic_date': fields.datetime('Pickup Date'),
         'ship_date': fields.datetime('Shipping Date'),
-        'logis_company': fields.many2one('res.company', 'Logistics Company', help='Name of the Logistics company providing the shipper services.'),
         'package_weight': fields.float('Package Weight'),
         'state': fields.selection([
             ('draft', 'Draft'),
