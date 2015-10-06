@@ -19,7 +19,7 @@
 	             	<h1>
 	             		<span style="color:#D3D3D3; font-weight: 900">
 		                <span t-if="o.state not in ['draft','sent']">Invoice</span>
-		                <span t-if="o.state in ['draft','sent']">Draft Inovice</span>
+		                <span t-if="o.state in ['draft','sent']">Draft Invoice</span>
 		                </span>
 	            	</h1>
 	            	
@@ -110,15 +110,15 @@
                 	<span t-if="o.type == 'out_invoice'" >Sales Rep</span>
                 	<span t-if="o.type == 'in_invoice'">Purchase Rep</span>
                 </th> 
-                <th colspan="2"  style="border: 1px solid black">Shipping Method</th>
+                <th colspan="2"  style="border: 1px solid black">Shipping Service</th>
                 <th style="border: 1px solid black">Ship Date</th>
                 <th style="border: 1px solid black">Due Date</th>
               </tr>
 
             
               <tr>
-              	<td colspan="2" style="border: 1px solid black"><span t-field="o.sale_id.partner_shipping_id.name"/></td>
-              	<td colspan="2" style="border: 1px solid black"><span t-field="o.delivery_method.name"/></td>
+              	<td colspan="2" style="border: 1px solid black"><span t-field="o.sale_id.user_id.name"/></td>
+              	<td colspan="2" style="border: 1px solid black"><span t-field="o.ship_service"/></td>
               	<td style="border: 1px solid black"><span t-field="o.picking_id.date_done"/></td>
               	<td style="border: 1px solid black"><span t-field="o.date_due"/></td>
               </tr>
@@ -171,6 +171,13 @@
                             <td><strong>Total Without Taxes</strong></td>
                             <td class="text-right">
                                 <span t-field="o.amount_untaxed"
+                                    t-field-options='{"widget": "monetary", "display_currency": "o.currency_id"}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Shipping</strong></td>
+                            <td class="text-right">
+                                <span t-field="o.shipcharge"
                                     t-field-options='{"widget": "monetary", "display_currency": "o.currency_id"}'/>
                             </td>
                         </tr>
