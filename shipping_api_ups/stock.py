@@ -1453,11 +1453,11 @@ class stock(osv.osv_memory):
             
             vals = {'shipcharge':active_picking.shipcharge or 0.0,
                     'shipcost':active_picking.shipcost or 0.0,
-                    'delivery_method':active_picking.delivery_method or False,               
+                    'delivery_method':active_picking.delivery_method.id or False,               
                     'ship_income_account_id': active_picking.ship_income_account_id.id or False,
                     'comment':package_note,
                     }
-            invoice_pool.write(cr, uid, invoice_ids, { }, context=context)
+            invoice_pool.write(cr, uid, invoice_ids, vals, context=context)
         return res
     
     def get_invoice_shipping_note(self,cr, uid, active_picking = None, context=None):
