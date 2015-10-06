@@ -46,18 +46,5 @@ class sale_order(osv.osv):
 sale_order()
 
 
-class res_partner(osv.osv):
-    _inherit = 'res.partner'
 
-    def name_get(self, cr, uid, ids, context=None):
-        res = []
-        if type(ids) is not list:
-            ids = [ids]
-        partners = self.browse(cr, uid, ids, context=context)
-        for partner in partners:
-            pname = partner.name
-            res.append((partner.id,pname))
-        return res
-
-res_partner()
 
