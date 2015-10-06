@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+         <record model="ir.ui.view" id="view_expenses_form_inherit_npg">
+            <field name="name">Employee Expenses CreditCard</field>
+            <field name="model">hr.expense.expense</field>
+            <field name="inherit_id" ref="hr_expense.view_expenses_form"/>
+            <field name="arch" type="xml">
+                <data>
+                	<field name="journal_id" position="replace"/>
+                	<xpath expr="//field[@name='name']" position="after">
+                		<field name="company_paid"/>
+                		<field name="journal_id" widget="selection" attrs="{'required':[('company_paid','=',True)]}" domain="[('type', '=', 'purchase')]"/>
+                	</xpath>
+                	
+                </data>
+            </field>
+        </record>
+        
+        <!-- Journal -->
+		<record id="account_journal_hr_expenses_credit_card" model="ir.ui.view">
+			<field name="name">account_journal_changes_for_credit_card_01</field>
+			<field name="model">account.journal</field>
+			<field name="inherit_id" ref="account.view_account_journal_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//field[@name='default_credit_account_id']" position="after">
+						<field name="credit_card_company_id" context="{'default_supplier':1,'default_customer':1}"/>
+				</xpath>
+			</field>
+		</record>
+		
+    </data>
+</openerp>
