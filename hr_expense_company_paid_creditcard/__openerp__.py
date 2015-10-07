@@ -29,8 +29,12 @@
     'description': """
 Employee expenses paid using Corporate Credit Cards.
 ====================================================
-This module adds additional functionality to address the expenses paid by the Company using Corporate Credit Cards.
-Companies provide their employees with credit cards to make purchases for in-house projects or for customer project on-site visits.
+This module adds additional functionality to address the expenses paid by the Company using Corporate Credit Cards. 
+Companies provide their employees with credit cards to make purchases for in-house projects or for customer project on-site visits. 
+Since these expenses are being paid by the Company, the employees shouldn't be reimbursed for those expenses 
+and instead the Credit Card companies should be paid when the statements arrive. 
+This module will help in differentiating between the two types of the expenses - paid by the company or paid by the employee. 
+Depending on the type, it will increase the outstanding AP balance for either the Credit Card company or the employee and ease the process of payment. 
     """,
     'author': 'NovaPoint Group Inc.',
     'website': 'www.novapointgroup.com',

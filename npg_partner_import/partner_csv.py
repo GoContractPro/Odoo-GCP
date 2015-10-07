@@ -213,6 +213,17 @@ class partner_csv(osv.osv):
             error_log = ''
             n = 1 # Start Counter at One for to Account for Column Headers
             
+            if (headers_dict.get('company_name') > -1) and data[headers_dict['company_name']]:
+                    search = [('name','=',data[headers_dict['company_name']]),('is_company','=',True)]
+                    parent_id = partner_obj.search(cr,uid,search)
+                    if not parent_id:
+                        vals = {'name':data[headers_dict['company_name']],
+                                'is_company': True,
+                                }
+                        parent_id = partner_obj.create(cr,uid,vals,context)
+                    else: parent_id = parent_id[0]   
+            
+            
             time_start = datetime.now()
             list_size = len(partner_data)- 1
             for data in partner_data[1:]:
