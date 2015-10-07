@@ -103,13 +103,13 @@
               
               <tr style= "background-color: lightgrey; font-weight: bold" >
                 <td style="border: 1px solid black">Customer Contact</td>
-                <td style="border: 1px solid black">Shipping Method</td>
+                <td style="border: 1px solid black">Shipping Service</td>
                 <td style="border: 1px solid black">Payment Terms</td>
               </tr>
             
               <tr>
-              	<td style="border: 1px solid black"><span t-field="o.partner_shipping_id.name"/></td>
-              	<td style="border: 1px solid black"><span t-field="o.delivery_method.name"/></td>
+              	<td style="border: 1px solid black"><span t-field="o.partner_id.name"/></td>
+              	<td style="border: 1px solid black"><span t-field="o.ship_service"/></td>
               	<td style="border: 1px solid black"><span t-field="o.payment_term.name"/></td>
               </tr>
               
@@ -162,6 +162,13 @@
                             <td class="text-right">
                                 <span t-field="o.amount_untaxed"
                                     t-field-options='{"widget": "monetary", "display_currency": "o.pricelist_id.currency_id"}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Shipping</strong></td>
+                            <td class="text-right">
+                                <span t-field="o.shipcharge"
+                                    t-field-options='{"widget": "monetary", "display_currency": "o.currency_id"}'/>
                             </td>
                         </tr>
                         <tr>
