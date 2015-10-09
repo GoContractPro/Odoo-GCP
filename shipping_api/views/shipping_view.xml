@@ -37,13 +37,14 @@
 					<field name='partner_id'/>
 					<field name='pick_id'/>
 					<field name='sale_id'/>
-					<field name='with_ret_service'/> <!-- change:service  -->
-					<field name='pic_date'/>
+					<field name='logistic_company'/>
+<!--					<field name='with_ret_service'/ --> <!-- change:service  -->
+					<field name='pic_date' invisible="1"/>
 					<field name='ship_date'/>
 					<field name='package_weight'/>
 					<field name='tracking_no'/>
 					<field name='ship_to'/>
-					<field name='ship_cost'/>
+					<field name='ship_cost' invisible="1"/>
 					<field name='state'/>
 				</tree>
 			</field>
@@ -59,7 +60,7 @@
 						<group colspan="4" col="4" string="">
 							<field name='partner_id' readonly="1"/>
 							<field name='pic_date' readonly="1" />
-							<field name='with_ret_service' readonly="1"/>
+<!--							<field name='with_ret_service' readonly="1"/-->
 							<field name='package_weight' readonly="1"/>
 							<field name='tracking_no' readonly="1" />
 							<field name='ship_to' readonly="1"/>

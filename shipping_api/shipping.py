@@ -58,6 +58,7 @@ class shipping_move(osv.osv):
         'packages_ids': fields.one2many("stock.packages", 'ship_move_id', 'Packages Table'),
         'partner_id': fields.many2one("res.partner", 'Customer/Reseller'),
         'sale_id': fields.many2one('sale.order', 'Sale Order'),
+        'logistic_company': fields.char('Logistics Company', size=128,),
     }
     _defaults = {
         'bill_shipping': 'shipper'
