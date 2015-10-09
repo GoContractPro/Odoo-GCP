@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="wiz_load_dbf_from_directory">
+            <field name="name">wiz.load.load.dbf.from.directory</field>
+            <field name="model">import.dbf.directory</field>
+            <field name="arch" type="xml">
+                <form string="Load DBF from Directory">
+                	<field name="dir_path" />
+                	<button name='action_load_dbf_files_headers' 
+                		type ="object"
+                		class="oe_highlight"
+                		string ="Load Header Maps" /> 
+                </form>
+           </field>
+       </record>
+       
+      <act_window name="Load DBF from Directory"
+            res_model="import.dbf.directory"
+            src_model="import.data.file"
+            view_mode="form"
+            target="new"
+            id="action_import_dbf_directory"
+            />
+
+       
+   </data>
+</openerp>        

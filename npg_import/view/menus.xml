@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="action_import_data" model="ir.actions.act_window">
+            <field name="name">Import Data</field>
+            <field name="res_model">import.data.file</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_import_data_tree" />
+        </record> 
+
+        <menuitem action="action_import_data" id="menu_import_data" parent="base.menu_config"/>
+
+ 
+
+        <menuitem action="action_import_dbf_directory" id="menu_dbf_directory" parent="base.menu_config"/>
+ 
+
+   </data>
+ </openerp>       
+        
+        
