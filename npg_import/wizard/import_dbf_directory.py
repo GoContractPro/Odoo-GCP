@@ -27,6 +27,9 @@ from openerp import models, fields, api,exceptions, _
 import csv
 import glob
 import os
+import sys
+import dbf
+
 
 from datetime import datetime
 import time
@@ -35,6 +38,7 @@ import time
 import logging 
 import sys          
 
+_logger = logging.getLogger(__name__)
 
 class import_dbf_directory(models.TransientModel): 
     
@@ -61,6 +65,10 @@ class import_dbf_directory(models.TransientModel):
             
             files = self.get_files_dbf(self.dir_path) or None
             for dbf_file in files:
+                
+                # test if file can be open and has data
+
+                
                 vals = {'name':os.path.basename(dbf_file),
                         'dbf_path': dbf_file,
                         }

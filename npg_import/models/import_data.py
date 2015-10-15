@@ -36,7 +36,8 @@ import dbf
 
 import logging 
 import sys
-from dbfread import field_parser
+#from dbfread import field_parser
+import contextlib
 
 _logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class import_data_header(osv.osv):
     _name = "import.data.header"
     _description = "Map Odoo Fields to Import Fields"
     
-    _columns = { 'name':fields.char('Import Field Name', size=64, required = True),
+    _columns = { 'name':fields.char('Import Field Name', size=64),
                 'import_data_id':fields.many2one('import.data.file','Import Data',required=True, ondelete='cascade',),
                 'is_unique':fields.boolean('Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated '),
                 'model':fields.many2one('ir.model','Model'),
@@ -60,7 +61,8 @@ class import_data_header(osv.osv):
                 'search_domain':fields.char('Domian Search  ', size=256,
                      help="Define search domains for related records subsitute Values from CSV columns in search using ${'Column Name'} example: [('odoo_field_name', '=', ${'Column Name'}] "),           
                 'create_related':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
-                'descr':fields.char('Description', size=64,)
+                'descr':fields.char('Description', size=64,),
+                'field_val':fields.char('Record Value', size=128)
                 }
     
     def _get_model(self,cr,uid,context={}):
@@ -133,10 +135,13 @@ class import_data_file(osv.osv):
             'header_ids': fields.one2many('import.data.header','import_data_id','Fields Map'),
             'index':fields.integer("Index"),
             'dbf_path':fields.char('DBF Path',size=256),
+            'record_num':fields.integer('Record Number'),
+            'has_errors':fields.boolean('Has Errors')
             }
     
     _defaults = {
-        'test_sample_size':10
+        'test_sample_size':10,
+        'record_num':1,
         }
     def _match_header(self, header, fields, options):
         """ Attempts to match a given header to a field of the
@@ -179,7 +184,7 @@ class import_data_file(osv.osv):
         if context is None:
             context = {}
         for wiz_rec in self.browse(cr, uid, ids, context=context):
-            
+            wiz_rec.record_num = 1
             try:
 #                table_data = DBF(wiz_rec.dbf_path)
                 fldlabel_path = os.path.dirname(wiz_rec.dbf_path) + '/FLDLABEL.DBF'
@@ -190,7 +195,8 @@ class import_data_file(osv.osv):
                     
                     e = 'No Labels in DBF Import  %s:'  % (fldlabel_path, )
                     _logger.error(_('Error %s' % (e,)))
-                    vals = {'error_log': e}
+                    vals = {'error_log': e,
+                            'has_errors':True}
                     self.write(cr,uid,ids[0],vals)           
                 
                 header_obj = self.pool.get('import.data.header')
@@ -205,12 +211,21 @@ class import_data_file(osv.osv):
                     e = 'Error opening DBF Import  %s:'  % (wiz_rec.dbf_path, )
                     _logger.error(_('Error %s' % (e,)))
                     vals = {'error_log': e}
-                    self.write(cr,uid,ids[0],vals)   
+                    self.write(cr,uid,ids[0],vals) 
+                    
+                if len(tbl)==0:
+                    e = 'Table has no data to Import  %s:'  % (wiz_rec.dbf_path, )
+                    _logger.error(_('Error %s' % (e,)))
+                    vals = {'error_log': e}
+                    self.write(cr,uid,ids[0],vals)
+                    return
+                    
                 table_name = os.path.basename(wiz_rec.dbf_path)
                 table_name  =  table_name.split('.')[0]
                 fldlabel_tbl.open()
                 index = fldlabel_tbl.create_index(lambda rec: rec.table)
-                match = index.search(match=table_name.ljust(10)) 
+                match = index.search(match=table_name.ljust(10))
+                tbl.open() 
                 for field in tbl.field_names:
                     descr = ''
                     for rec in match:
@@ -219,14 +234,21 @@ class import_data_file(osv.osv):
                         if rec.fldname.lower() == field.ljust(20):
                             descr = rec.fldlabel
                             break
-                    
+                    tbl_rec = tbl[0]
                     fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',field), ('model_id', '=', wiz_rec.model_id.id)])
-                    vals = {'name':field, 'import_data_id':wiz_rec.id,  'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id, 'descr': descr or False}
+                    vals = {'name':field, 'import_data_id':wiz_rec.id,  'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id, 'descr': descr or False,'field_val':tbl_rec[field]}
                     header_id = self.pool.get('import.data.header').create(cr,uid,vals,context=context)
                 
                 
-            except osv.except_osv, e:
-                raise osv.except_osv('Warning', "DBF import  %s: %s\n%s" % (wiz_rec.dbf_path, e.name, e.value))   
+#            except osv.except_osv, e:
+#                raise osv.except_osv('Warning', "DBF import  %s: %s\n%s" % (wiz_rec.dbf_path, e.name, e.value)) 
+            except:
+                e = '/nError opening DBF Import  %s:'  % (wiz_rec.dbf_path, ) 
+                print sys.exc_info()[:2]
+                _logger.error(_('Error %s' % (e,)))
+                vals = {'error_log': e,
+                        'has_errors':True}
+                self.write(cr,uid,ids[0],vals)    
 #             model_obj = self.pool[wiz_rec.model_id.model]
 #             fields_got = model_obj.fields_get(cr, uid, context=context)
 #             blacklist = orm.MAGIC_COLUMNS + [model_obj.CONCURRENCY_CHECK_FIELD]
@@ -518,6 +540,54 @@ class import_data_file(osv.osv):
     
         else:
             return {}
+    def record_forward(self,cr,uid,ids,context=None):
+        
+        rec= self.browse(cr,uid,ids[0],context)
+        rec.record_num += 1
+        self.onchange_record_num(cr, uid, ids, rec.record_num)
 
+        
+    def record_backward(self,cr,uid,ids,context=None):
+        rec= self.browse(cr,uid,ids[0],context)
+        if rec.record_num >1:
+            rec.record_num -= 1
+            self.onchange_record_num(cr, uid, ids, rec.record_num)
+            return {"value":{"record_num":rec.record_num}}
+        return
+                
+    def onchange_record_num(self,cr,uid,ids,record_num, context=None):
+        
+        if context is None:
+            context = {}
+        
+        if record_num > 0:
 
+            for wiz_rec in self.browse(cr, uid, ids, context=context):
+            
+                tbl = dbf.Table(wiz_rec.dbf_path)
+                if not tbl:
+                    
+                    e = 'Error opening DBF Import  %s:'  % (wiz_rec.dbf_path, )
+                    _logger.error(_('Error %s' % (e,)))
+                    raise osv.except_osv('Warning', e)
+                    
+                tbl.open()
+                tbl_rec = tbl[record_num-1]   
+                
+                header_ids_vals = []
+                header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
+                for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
+                
+                    vals = {  'field_val':tbl_rec and header_rec and tbl_rec[header_rec.name] or False}
+                    header_ids_vals.append((1,header_rec.id, vals))
+                    header_rec.write({"field_val":tbl_rec and header_rec and tbl_rec[header_rec.name] or False})
+                
+                
+
+            return{'value':{"header_ids":header_ids_vals}}
+    
+        else:
+            return {}    
+                    
+            
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
