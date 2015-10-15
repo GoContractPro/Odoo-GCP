@@ -10,7 +10,8 @@
 					<group >
 	                     <field name="carrier_id" context="{'purchase_order_id':active_id or False}" 
 	                     			/>
-	                     
+	                     <field name="delivery_method" context="{'purchase_order_id':active_id or False}" 
+	                     			/>
                      </group>
                      <group>
 	                     <button name="delivery_set" string="Add to Quote" type="object"

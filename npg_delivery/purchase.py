@@ -31,6 +31,7 @@ class purchase_order(osv.osv):
     _columns = {
         'carrier_id':fields.many2one("delivery.carrier", "Delivery Service", help="The Delivery service Choices defined for Transport or Logistics Company"),
         'warehouse_id': fields.many2one('stock.warehouse', 'Destination Warehouse'), 
+        'delivery_method': fields.many2one("delivery.method","Delivery Type", help=" The Type of Delivery Carrier or Logistics Company"),
     }
 
     
@@ -78,8 +79,8 @@ class purchase_order(osv.osv):
         inv_id = super(purchase_order, self).action_invoice_create(cr, uid, ids, context)
         for po in self.browse(cr,uid,ids,context):
             vars = {
-                  'carrier_id':po.carrier_id.id or False,
-                  'delivery_method':po.delivery_method.id or False,
+                  'carrier_id':po.carrier_id and po.carrier_id.id or False,
+                  'delivery_method':po.delivery_method and po.delivery_method.id or False,
                   }
                 
             self.pool.get('account.invoice').write(cr,uid,inv_id,vars)

@@ -544,6 +544,8 @@ class stock_picking(osv.osv):
                                                     'package': package_data['description'] and str(package_data['description'])[:126],
                                                     'pic_date': next_pic_date,
                                                     'sale_id': do.sale_id.id and do.sale_id.id or False,
+                                                    'logistic_company' : "UPS",
+                                                    'ship_date' : do.date_done or False
                                                     }, context=context)
                                             else:
                                                 ship_move_obj.create(cr, uid, {
@@ -561,6 +563,8 @@ class stock_picking(osv.osv):
                                                     'package': package_data['description'] and str(package_data['description'])[:126],
                                                     'pic_date': next_pic_date,
                                                     'sale_id': do.sale_id.id and do.sale_id.id or False,
+                                                    'logistic_company' : "UPS",
+                                                    'ship_date' : do.date_done or False
                                                     }, context=context)
                                             tracking_number_notes += '\n' + tracking_number
                                             
@@ -1463,10 +1467,12 @@ class stock(osv.osv_memory):
     def get_invoice_shipping_note(self,cr, uid, active_picking = None, context=None):
         
         packages = self.pool('stock.packages').browse(cr,uid, active_picking.packages_ids.ids, context=context)
-        pack_note = 'There are %s packages being Shipped for this order with the following tracking nos-' % (len(packages.ids),)
+#         pack_note = 'There are %s packages being Shipped for this order with the following tracking nos-' % (len(packages.ids),)
+        pack_note = 'Package(s) shipped for this order - '
         for package in packages:
             
-            pack_note += 'Package %s of Weight %s  --Tracking No %s'%(package.packge_no,package.weight, package.tracking_no) 
+#             pack_note += 'Package %s of Weight %s  --Tracking No %s'%(package.packge_no,package.weight, package.tracking_no) 
+            pack_note += '\nPackage %s Weight %s (lbs) - Tracking No %s'%(package.packge_no,package.weight, package.tracking_no)
        
         return pack_note 
 stock()
