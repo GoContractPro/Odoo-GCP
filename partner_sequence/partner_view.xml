@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+    <!-- partner sequences -->
+
+    <record id="view_partner_sequence_tree" model="ir.ui.view">
+        <field name="name">res.partner.sequence.tree</field>
+        <field name="model">res.partner.sequence</field>
+        <field name="arch" type="xml">
+            <tree string="Sequences">
+                <field name="sequence_id"/>
+                <field name="name"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_partner_sequence_form" model="ir.ui.view">
+        <field name="name">res.partner.sequence.form</field>
+        <field name="model">res.partner.sequence</field>
+        <field name="arch" type="xml">
+            <form string="Sequence">
+                <group>
+                    <field name="sequence_id"/>
+                </group>
+                <group>
+                    <field name="name"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_partner_sequence" model="ir.actions.act_window">
+        <field name="name">Partner Sequences</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.partner.sequence</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem action="action_partner_sequence" id="menu_partner_sequence_form" name="Partner Sequences" sequence="50" parent="base.menu_config_address_book" />
+   
+    <record id="view_partners_form_sequence" model="ir.ui.view">
+            <field name="name">view.res.partner.form.sequence.inherited1</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field eval="18" name="priority"/>
+            <field name="arch" type="xml">
+			<field name="name" position="replace">
+				
+			    <field name="name" on_change="onchange_name(name)" default_focus="1" placeholder="Name" />
+				<h2><field name="sequence" attrs="{'invisible': [('sequence','=', False)]}" /></h2>
+			</field>
+			<field name="parent_id" position="before">
+				<div class="address_format"  attrs="{'invisible': [('sequence','!=', False)]}" >
+					<field name="ref_seq" invisible="1"/>
+					<label string="Set Id Letter" style="width: 30%" />
+					<field name="seq_alph"  on_change="onchange_seq_alph(seq_alph)" colspan="1" nolabel="1" style="width: 10%" />
+				</div>
+			</field>
+	    </field>
+     </record>
+
+    
+    </data>
+</openerp>

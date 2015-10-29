@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+
+        <!-- Sequences for res.partner -->
+        
+        <record id="seq_type_res_partner_A" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">A</field>
+        </record>
+
+        <record id="seq_res_partner_A" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">A</field>
+            <field name="prefix">A</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+ 	    <record id="seq_type_res_partner_B" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">B</field>
+        </record>
+
+        <record id="seq_res_partner_B" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">B</field>
+            <field name="prefix">B</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	    <record id="seq_type_res_partner_C" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">C</field>
+        </record>
+
+        <record id="seq_res_partner_C" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">C</field>
+            <field name="prefix">C</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	    <record id="seq_type_res_partner_D" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">D</field>
+        </record>
+
+        <record id="seq_res_partner_D" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">D</field>
+            <field name="prefix">D</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	    <record id="seq_type_res_partner_E" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">E</field>
+        </record>
+
+        <record id="seq_res_partner_E" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">E</field>
+            <field name="prefix">E</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	    <record id="seq_type_res_partner_F" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">F</field>
+        </record>
+
+        <record id="seq_res_partner_F" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">F</field>
+            <field name="prefix">F</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	    <record id="seq_type_res_partner_G" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">G</field>
+        </record>
+
+        <record id="seq_res_partner_G" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">G</field>
+            <field name="prefix">G</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	    <record id="seq_type_res_partner_H" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">H</field>
+        </record>
+
+        <record id="seq_res_partner_H" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">H</field>
+            <field name="prefix">H</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	    <record id="seq_type_res_partner_I" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">I</field>
+        </record>
+
+        <record id="seq_res_partner_I" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">I</field>
+            <field name="prefix">I</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+	   <record id="seq_type_res_partner_J" model="ir.sequence.type">
+            <field name="name">J</field>
+            <field name="code">J</field>
+        </record>
+
+        <record id="seq_res_partner_J" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">J</field>
+            <field name="prefix">J</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_K" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">K</field>
+        </record>
+
+        <record id="seq_res_partner_K" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">K</field>
+            <field name="prefix">K</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_L" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">L</field>
+        </record>
+
+        <record id="seq_res_partner_L" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">L</field>
+            <field name="prefix">L</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_M" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">M</field>
+        </record>
+
+        <record id="seq_res_partner_M" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">M</field>
+            <field name="prefix">M</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_N" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">N</field>
+        </record>
+
+        <record id="seq_res_partner_N" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">N</field>
+            <field name="prefix">N</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_O" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">O</field>
+        </record>
+
+        <record id="seq_res_partner_O" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">O</field>
+            <field name="prefix">O</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_P" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">P</field>
+        </record>
+
+        <record id="seq_res_partner_P" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">P</field>
+            <field name="prefix">P</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_Q" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">Q</field>
+        </record>
+
+        <record id="seq_res_partner_Q" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">Q</field>
+            <field name="prefix">Q</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_R" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">R</field>
+        </record>
+
+        <record id="seq_res_partner_R" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">R</field>
+            <field name="prefix">R</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_S" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">S</field>
+        </record>
+
+        <record id="seq_res_partner_S" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">S</field>
+            <field name="prefix">S</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_T" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">T</field>
+        </record>
+
+        <record id="seq_res_partner_T" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">T</field>
+            <field name="prefix">T</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_U" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">U</field>
+        </record>
+
+        <record id="seq_res_partner_U" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">U</field>
+            <field name="prefix">U</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_V" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">V</field>
+        </record>
+
+        <record id="seq_res_partner_V" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">V</field>
+            <field name="prefix">V</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_W" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">W</field>
+        </record>
+
+        <record id="seq_res_partner_W" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">W</field>
+            <field name="prefix">W</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <record id="seq_type_res_partner_X" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">X</field>
+        </record>
+		
+        <record id="seq_res_partner_X" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">X</field>
+            <field name="prefix">X</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_Y" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">Y</field>
+        </record>
+
+        <record id="seq_res_partner_Y" model="ir.sequence">
+            <field name="name">Y</field>
+            <field name="code">Y</field>
+            <field name="prefix">Y</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+		<record id="seq_type_res_partner_Z" model="ir.sequence.type">
+            <field name="name">res.partner</field>
+            <field name="code">Z</field>
+        </record>
+
+        <record id="seq_res_partner_Z" model="ir.sequence">
+            <field name="name">res.partner</field>
+            <field name="code">Z</field>
+            <field name="prefix">Z</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+    </data>
+</openerp>
