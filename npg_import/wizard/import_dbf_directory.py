@@ -46,6 +46,7 @@ class import_dbf_directory(models.TransientModel):
     _description = 'Create Import header maps for  all DBF files in Directory'
      
     dir_path = fields.Char('Source Directory',size=256) 
+    upper = fields.Boolean('Search Upper Case')
     
     @api.multi 
     def get_files_dbf(self, path):
@@ -62,20 +63,23 @@ class import_dbf_directory(models.TransientModel):
            
             import_data_file = self.env['import.data.file'] 
             
+            DBF_paths = self.get_files_dbf(self.dir_path) or None
             
-            files = self.get_files_dbf(self.dir_path) or None
-            for dbf_file in files:
+            for DBF_path in DBF_paths:
                 
-                # test if file can be open and has data
-
+                # test if file uppercase
+                file_name  = os.path.basename( DBF_path)
                 
-                vals = {'name':os.path.basename(dbf_file),
-                        'dbf_path': dbf_file,
-                        }
-                import_data_file = import_data_file.create(vals)           
-                print dbf_file
-                import_data_file.action_get_headers_dbf()
-                self.env.cr.commit()
+                if self.upper and file_name != file_name.upper() :
+                    continue
+                else:
+                    vals = {'name':file_name,
+                            'dbf_path':  DBF_path,
+                            }
+                    import_data_file = import_data_file.create(vals)           
+                    
+                    import_data_file.action_get_headers_dbf()
+                    self.env.cr.commit()
         else: 
             raise exceptions.Warning('Please Enter Direcrtory Path ')
 

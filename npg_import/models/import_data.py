@@ -30,14 +30,17 @@ import os
 import cStringIO
 import base64
 from datetime import datetime
+import dateutil.parser
 import time
 #from  dbfread import DBF
+#from dbfread import field_parser
 import dbf
 
 import logging 
-import sys
-#from dbfread import field_parser
+import sys, traceback
+
 import contextlib
+from string import strip
 
 _logger = logging.getLogger(__name__)
 
@@ -54,15 +57,22 @@ class import_data_header(osv.osv):
     _columns = { 'name':fields.char('Import Field Name', size=64),
                 'import_data_id':fields.many2one('import.data.file','Import Data',required=True, ondelete='cascade',),
                 'is_unique':fields.boolean('Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated '),
+                'external_id_fld': fields.boolean('External_Id', help = 'Field Used to create External Id'),
                 'model':fields.many2one('ir.model','Model'),
-                'model_field':fields.many2one('ir.model.fields','Odoo Model Field'),
-                'relation_model': fields.many2one('ir.model', 'Relation Model',
-                    help="The  model this field is related to"),
+                'model_field':fields.many2one('ir.model.fields','Odoo Field'),
+                'model_field_type':fields.char('Odoo Data Type', size = 128),
+                'model_field_name':fields.char('Odoo Field Name', size = 128),
+                'relation': fields.char('Odoo Relation', size = 128,
+                    help="The  Model this field is related to"),
+                'relation_field': fields.char('Odoo Relation Field', size = 128,
+                    help="The  Field this field is related to"),
                 'search_domain':fields.char('Domian Search  ', size=256,
                      help="Define search domains for related records subsitute Values from CSV columns in search using ${'Column Name'} example: [('odoo_field_name', '=', ${'Column Name'}] "),           
                 'create_related':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
-                'descr':fields.char('Description', size=64,),
-                'field_val':fields.char('Record Value', size=128)
+                'field_label':fields.char('Description', size=32,),
+                'field_type':fields.char('Data Type', size=8,),
+                'field_val':fields.char('Record Value', size=128),
+                'default_val':fields.char('Default Import Val', size = 256, help = 'The Default if no values for field in imported file'),
                 }
     
     def _get_model(self,cr,uid,context={}):
@@ -72,48 +82,24 @@ class import_data_header(osv.osv):
                  'model':_get_model,
                  }
     
-    def onchange_name(self, cr, uid, ids, name, context=None):
-        # TODO set model_field value to Search  if Name matches the models Field Name,
-        # TODo set relation_model if the model_field is found and is a Relation Feild
-        return
+    
+    def onchange_model_field(self, cr, uid, ids, model_field, context=None):
         
-    def _match_header(self, header, fields, options):
-        """ Attempts to match a given header to a field of the
-        imported model.
-
-        :param str header: header name from the data file
-        :param fields:
-        :param dict options:
-        :returns: an empty list if the header couldn't be matched, or
-                  all the fields to traverse
-        :rtype: list(Field)
-        """
-        for field in fields:
-            # FIXME: should match all translations & original
-            # TODO: use string distance (levenshtein? hamming?)
-            if header == field['name'] \
-              or header.lower() == field['string'].lower():
-                return [field]
-
-        if '/' not in header:
-            return []
-
-        # relational field path
-        traversal = []
-        subfields = fields
-        # Iteratively dive into fields tree
-        for section in header.split('/'):
-            # Strip section in case spaces are added around '/' for
-            # readability of paths
-            match = self._match_header(section.strip(), subfields, options)
-            # Any match failure, exit
-            if not match: return []
-            # prep subfields for next iteration within match[0]
-            field = match[0]
-            subfields = field['fields']
-            traversal.append(field)
-        return traversal
-
+        fld = self.pool.get('ir.model.fields').browse(cr,uid,model_field)
+        if fld:
+            vals = {'model_field_type': fld.ttype,
+                    'model_field_name': fld.name,
+                    'relation_field': fld.relation_field,
+                    'relation': fld.relation,
+                    }
+            
+        else:
+            vals =  {'model_field_type': False,
+                    'model_field_name': False,
+                    'relation_field': False,
+                    'relation': False,}
+          
+        return {'value':vals}
 class import_data_file(osv.osv):
     
     _name = "import.data.file"
@@ -121,6 +107,7 @@ class import_data_file(osv.osv):
     
     _columns = {
             'name':fields.char('Name',size=32,required = True ), 
+            'description':fields.text('Description',), 
             'model_id': fields.many2one('ir.model', 'Model', ondelete='cascade', required= False,
                 help="The model to import"),
             'start_time': fields.datetime('Start',  readonly=True),
@@ -135,7 +122,9 @@ class import_data_file(osv.osv):
             'header_ids': fields.one2many('import.data.header','import_data_id','Fields Map'),
             'index':fields.integer("Index"),
             'dbf_path':fields.char('DBF Path',size=256),
-            'record_num':fields.integer('Record Number'),
+            'record_num':fields.integer('Current Record'),
+            'tot_record_num':fields.integer("Total Records"),
+            'record_external':fields.boolean('Use External ID' , help = 'record number and File name to be used for External ID'),
             'has_errors':fields.boolean('Has Errors')
             }
     
@@ -143,126 +132,127 @@ class import_data_file(osv.osv):
         'test_sample_size':10,
         'record_num':1,
         }
-    def _match_header(self, header, fields, options):
-        """ Attempts to match a given header to a field of the
-        imported model.
 
-        :param str header: header name from the data file
-        :param fields:
-        :param dict options:
-        :returns: an empty list if the header couldn't be matched, or
-                  all the fields to traverse
-        :rtype: list(Field)
-        """
-        for field in fields:
-            # FIXME: should match all translations & original
-            # TODO: use string distance (levenshtein? hamming?)
-            if header == field['name'] \
-              or header.lower() == field['string'].lower():
-                return [field]
+    def action_get_headers(self, cr, uid, ids, context=None):
+        
+        for rec in self.browse(cr, uid, ids, context=context):
+            if rec.dbf_path:
+                self.action_get_headers_dbf(cr, uid, ids, context)
+                return
+            if rec.rec.attachment:
+                self.action_get_headers_csv(cr, uid, ids, context)
+                return
+            
+        raise osv.except_osv('Warning', 'No Data files to Import')
+    
+    def get_label_match_index(self, cr, uid, dbf_table ):
+        
+        
+        dbf_path = dbf_table.filename
+        dbf_directory = os.path.dirname(dbf_path)
+        table_name = os.path.basename(dbf_path).split('.')[0]
 
-        if '/' not in header:
-            return []
-
-        # relational field path
-        traversal = []
-        subfields = fields
-        # Iteratively dive into fields tree
-        for section in header.split('/'):
-            # Strip section in case spaces are added around '/' for
-            # readability of paths
-            match = self._match_header(section.strip(), subfields, options)
-            # Any match failure, exit
-            if not match: return []
-            # prep subfields for next iteration within match[0]
-            field = match[0]
-            subfields = field['fields']
-            traversal.append(field)
-        return traversal
+        fldlabel_dbf_table = dbf.Table(dbf_directory + '/FLDLABEL.DBF')
+        fldlabel_dbf_table.open()
+        
+        if not fldlabel_dbf_table:
+            
+            e = 'No Labels in DBF Import  %s:'  % (fldlabel_path, )
+            _logger.error(_('Error %s' % (e,)))
+              
+        index = fldlabel_dbf_table.create_index(lambda rec: rec.table)
+        
+        return index.search(match=table_name.ljust(10))
+                
+ 
     
     def action_get_headers_dbf(self, cr, uid, ids, context=None):
         if context is None:
             context = {}
-        for wiz_rec in self.browse(cr, uid, ids, context=context):
-            wiz_rec.record_num = 1
+        tot_records = 0
+        for rec in self.browse(cr, uid, ids, context=context):
+            rec.record_num = 1
             try:
-#                table_data = DBF(wiz_rec.dbf_path)
-                fldlabel_path = os.path.dirname(wiz_rec.dbf_path) + '/FLDLABEL.DBF'
-                
-                fldlabel_tbl = dbf.Table(fldlabel_path)
-                
-                if not fldlabel_tbl:
-                    
-                    e = 'No Labels in DBF Import  %s:'  % (fldlabel_path, )
-                    _logger.error(_('Error %s' % (e,)))
-                    vals = {'error_log': e,
-                            'has_errors':True}
-                    self.write(cr,uid,ids[0],vals)           
-                
+         
                 header_obj = self.pool.get('import.data.header')
                 header_ids=header_obj.search(cr, uid,[('import_data_id','=',ids[0])])
                     
                 if header_ids:
                     header_obj.unlink(cr,uid,header_ids,context=None)
                
-                tbl = dbf.Table(wiz_rec.dbf_path)
-                if not tbl:
+                dbf_table = dbf.Table(rec.dbf_path)
+                dbf_table.open()
+                info = dbf.info(rec.dbf_path)
+                
+                structure = dbf.structure(rec.dbf_path)
+
+
+                if not dbf_table:
                     
-                    e = 'Error opening DBF Import  %s:'  % (wiz_rec.dbf_path, )
+                    e = 'Error opening DBF Import  %s:'  % (rec.dbf_path, )
                     _logger.error(_('Error %s' % (e,)))
-                    vals = {'error_log': e}
+                    vals = {'error_log': e,
+                            'has_errors':True}
                     self.write(cr,uid,ids[0],vals) 
-                    
-                if len(tbl)==0:
-                    e = 'Table has no data to Import  %s:'  % (wiz_rec.dbf_path, )
+                 
+                tot_records = len(dbf_table)    
+                if tot_records == 0:
+                    e = 'Table has no data to Import  %s:'  % (rec.dbf_path, )
                     _logger.error(_('Error %s' % (e,)))
-                    vals = {'error_log': e}
+                    vals = {'error_log': e,
+                            'has_errors':True}
                     self.write(cr,uid,ids[0],vals)
                     return
                     
-                table_name = os.path.basename(wiz_rec.dbf_path)
-                table_name  =  table_name.split('.')[0]
-                fldlabel_tbl.open()
-                index = fldlabel_tbl.create_index(lambda rec: rec.table)
-                match = index.search(match=table_name.ljust(10))
-                tbl.open() 
-                for field in tbl.field_names:
-                    descr = ''
-                    for rec in match:
+                dbf_label_index = self.get_label_match_index(cr, uid, dbf_table)
+                
+
+                for field in structure:
+           
+                    field = field.split()
+
+                    field_label =  self.vision_match_field_label(cr, uid, field[0], index = dbf_label_index)
+        
+                    fld_obj = self._match_import_header(cr, uid, rec.model_id.id, field[0], field_label)    
                         
-                        print rec.fldname.lower() + '--'+ field.ljust(20)
-                        if rec.fldname.lower() == field.ljust(20):
-                            descr = rec.fldlabel
-                            break
-                    tbl_rec = tbl[0]
-                    fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',field), ('model_id', '=', wiz_rec.model_id.id)])
-                    vals = {'name':field, 'import_data_id':wiz_rec.id,  'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id, 'descr': descr or False,'field_val':tbl_rec[field]}
+                    vals = {'name':field[0], 'import_data_id':rec.id,
+                            'model_field':fld_obj and fld_obj.id or False,
+                            'model_field_name' :fld_obj and fld_obj.name or False,
+                            'model_field_type' : fld_obj and fld_obj.ttype or False,
+                            'model':rec.model_id and rec.model_id.id,
+                            'relation': fld_obj and fld_obj.relation or False,
+                            'relation_field' : fld_obj and fld_obj.relation_field or False,
+                            'field_label': field_label or False,
+                            'field_val':dbf_table[0][field[0]],
+                            'field_type':field[1]
+                            
+                            
+                            }
                     header_id = self.pool.get('import.data.header').create(cr,uid,vals,context=context)
                 
-                
-#            except osv.except_osv, e:
-#                raise osv.except_osv('Warning', "DBF import  %s: %s\n%s" % (wiz_rec.dbf_path, e.name, e.value)) 
             except:
-                e = '/nError opening DBF Import  %s:'  % (wiz_rec.dbf_path, ) 
-                print sys.exc_info()[:2]
-                _logger.error(_('Error %s' % (e,)))
+                sys_info = sys.exc_info()
+                e = 'Error opening DBF Import  %s: \n%s \n%s'  % (rec.dbf_path, sys_info[1],sys_info[2]) 
+                print e
+                _logger.error(_('Error:  %s ' % (e,)))
                 vals = {'error_log': e,
                         'has_errors':True}
                 self.write(cr,uid,ids[0],vals)    
-#             model_obj = self.pool[wiz_rec.model_id.model]
-#             fields_got = model_obj.fields_get(cr, uid, context=context)
-#             blacklist = orm.MAGIC_COLUMNS + [model_obj.CONCURRENCY_CHECK_FIELD]
-#             for name, field in fields_got.iteritems():
-#                 if name in blacklist:
-#                     continue
-        return 
+        vals = {'error_log':'Successful Header Import',
+                'has_errors':False,
+                'tot_record_num':tot_records, 
+                'description':info
+                }
+        self.write(cr,uid,ids[0],vals)
+
+        return {'value': vals}
     
     def action_get_headers_csv(self, cr, uid, ids, context=None):
         if context is None:
             context = {}
-        for wiz_rec in self.browse(cr, uid, ids, context=context):
+        for rec in self.browse(cr, uid, ids, context=context):
 
-            for attach in wiz_rec.attachment:
+            for attach in rec.attachment:
                 data_file = attach.datas
                 continue
             str_data = base64.decodestring(data_file)
@@ -286,29 +276,62 @@ class import_data_file(osv.osv):
             n=0
             for header in headers_list:
                 n += 1
-                fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', wiz_rec.model_id.id)])
-                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': n , 'csv_id':wiz_rec.id, 'model_field':fids and fids[0] or False, 'model':wiz_rec.model_id.id},context=context)
+                fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', rec.model_id.id)])
+                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': n , 'csv_id':rec.id, 'model_field':fids and fids[0] or False, 'model':rec.model_id.id},context=context)
                 
-#             model_obj = self.pool[wiz_rec.model_id.model]
-#             fields_got = model_obj.fields_get(cr, uid, context=context)
-#             blacklist = orm.MAGIC_COLUMNS + [model_obj.CONCURRENCY_CHECK_FIELD]
-#             for name, field in fields_got.iteritems():
-#                 if name in blacklist:
-#                     continue
         return True
+ 
+    def vision_match_field_label(self, cr ,uid,field_name, index ):         
+        
+        for fld_label in index:
+            
+            label_fld_name = fld_label.fldname.lower().strip()
+                        
+            if  label_fld_name == field_name:
+                return fld_label.fldlabel.lower().strip()
+        return None                                  
+ 
+    def _match_import_header(self, cr,uid, model_id, field, field_label):
+        """ Attempts to match a given header to a field of the
+        imported model.
+
+        :param str header: header name from the data file
+        :param fields:
+        :returns: False if the header couldn't be matched, or
+                  the fields object
+        :rtype: field object
+        """
+        #print field or '*' + '-' + field_label or '*'
+        field = (field and field.strip().lower()) or '' 
+        field_label = ( field_label and field_label.strip().lower()) or ''
+        #print field + '-' + field_label
+        
+        search_domain =[('name','!=','display_name'), '&', ('model_id', '=', model_id),'|','|',('field_description','ilike',field),('field_description','ilike',field_label ),
+                                                               '|',('name','ilike',field),('name','ilike',field_label)]
     
-    def search_header_exists(self, cr, uid, ids, model_id, header_dict, context = None): 
-        ir_model_obj = self.pool.get('ir.model')
-        ir_model_fields_obj = self.pool.get('ir.model.fields')
-#         model=ir_model_obj.browse(cr,uid,model_id)
-#         model_name=model.model
-#         model_ids = ir_model_obj.search(cr, uid, [('model', '=',model_name)], context=context)
-        if model_id:
-            field_ids = ir_model_fields_obj.search(cr, uid, [('field_description','=',header_dict['name']), ('model_id', '=', model_id)], context=context)
-            if field_ids:
-                field_id = field_ids[0]
-    
-    def search_record_exists(self, cr, uid, wiz_rec, data,header_dict, unique_fields=[]):
+        #print search_domain   
+        model_fields = self.pool.get('ir.model.fields')
+        fields_odoo = model_fields.search(cr,uid,search_domain)
+        fields_odoo = model_fields.browse(cr,uid,fields_odoo)
+        if len(fields_odoo) == 1:
+            return fields_odoo[0]
+        
+        for field_odoo in fields_odoo:
+            
+            field = field.strip().lower()
+            odoo_description = field_odoo['field_description']
+            odoo_description = (odoo_description and odoo_description.strip().lower()) or ''
+            odoo_name =  field_odoo['name']
+            odoo_name = (odoo_name and odoo_name.strip().lower()) or ''
+        #    print field + ' == ' + odoo_name + ' or ' + odoo_description
+            if field == odoo_description or field == odoo_name \
+                    or field_label == odoo_description or field_label == odoo_name:
+                return field_odoo
+
+        return None    
+        
+
+    def search_record_exists(self, cr, uid, rec, data,header_dict, unique_fields=[]):
         if not unique_fields: return False
         ir_model_obj = self.pool.get('ir.model')
         ir_model_fields_obj = self.pool.get('ir.model.fields')
@@ -317,7 +340,7 @@ class import_data_file(osv.osv):
         for col in unique_fields:
             dom.append((col, '=', data[header_dict[col]]))
             
-        obj = self.pool[wiz_rec.model_id.model]
+        obj = self.pool[rec.model_id.model]
         return obj.search(cr,uid,dom)
         
         #Todo Add Code here to  search on fields in header_dict which are flaged as Unique Record
@@ -328,21 +351,187 @@ class import_data_file(osv.osv):
         
         return False  
     
-    def make_domain_search(self,cr,uid,data,header_dict,field):
+    def action_import(self, cr, uid, ids, context=None):
         
-        search_string = ''
+        for rec in self.browse(cr, uid, ids, context=context):
+            if rec.dbf_path:
+                self.action_import_dbf(cr, uid, ids, context)
+                return
+            if rec.rec.attachment:
+                self.action_import_csv(cr, uid, ids, context)
+                return
+            
+        raise osv.except_osv('Warning', 'No Data files to Import')
+            
+    def action_import_dbf(self, cr, uid, ids, context=None):
         
-        #TODO Add code here to Create Domain Search 
-        # Parse field.search and replace column Identifier with Values from CSV Data
-        # For Example
-        # 
-        # If Header_dict Search  for field is  '[('name','=',${'Name'})]
-        # Where 'Name' is The Column Header on CSV and 'name' is field named in Odoo
-        # Substitute in the value from CSV data for ${'Name'} for this data row and return modified String, 
-        # Similar in how Email Template will do Substitution
-    
-        return search_string
-    
+        if context is None:
+            context = {}
+        
+        time_start = datetime.now()
+        list_size =0 
+        for rec in self.browse(cr, uid, ids, context=context):
+
+            model_data_obj = self.pool.get('ir.model.data')
+            model_model = rec.model_id.model
+            model =  self.pool.get(model_model)
+            
+            dbf_table = dbf.Table(rec.dbf_path)
+            dbf_table.open()
+            list_size = len(dbf_table)
+            n = 0
+            error_log = ""
+            for import_record in dbf_table:
+                n += 1
+                vals = {}
+                search_unique =[]
+                external_id_ids = None
+                
+                if n == rec.test_sample_size  and context.get('test',False):
+
+                    t2 = datetime.now()
+                    time_delta = (t2 - time_start)
+                    time_each = time_delta / rec.test_sample_size                   
+                      
+                    estimate_time = (time_each * list_size)
+                     
+                    print "time_end,time_delta,estimate_time",t2,time_delta,estimate_time
+                    msg = _('Time for %s records  is %s (hrs:min:sec) \n %s') % (list_size, estimate_time ,error_log)
+                    cr.rollback()
+                    vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
+                            'end_time': time.strftime('%Y-%m-%d %H:%M:%S' ),
+                            'error_log':error_log}
+                
+                    self.write(cr,uid,ids[0],vals)
+                    return self.show_warning(cr, uid, msg , context = context)
+                
+                
+                try:
+
+                    for field in rec.header_ids:
+
+                        if not field.model_field: continue # Skip Feilds with no Odoo Field Set
+                                
+                        field_val =  import_record[field.name] or field.default_val
+                       
+                        if field.model_field_type == 'many2one' and field_val:
+                            
+                            field_val = field_val.strip()
+                            relation_id = self.pool.get(field.relation).name_search(cr,uid,name= field_val )
+                            if relation_id :
+                                field_val = relation_id[0][0]
+                            else:
+                                e = _('Value \'%s\' not found for the relation field \'%s\'') % (field_val,field.model_field.name )
+                                error_log += '\n'+ e
+                                field_val = False
+                                _logger.info( e)
+                                
+                        elif field.model_field_type == 'date' and field_val :
+                            
+                            field_val = field_val.strftime("%Y-%m-%d")
+                            
+                        elif field.model_field_type == 'datetime' and field_val :
+                            
+                            field_val = field_val.strftime('%Y-%m-%d %H:%M:%S')
+                            
+                        elif field.model_field_type == 'boolean' and  field_val:
+                            field_val = field.model_field.name
+                            
+                        elif field.model_field_type == 'float' and  field_val:
+                            field_val = field.model_field.name
+                            
+                        elif field.model_field_type == 'integer' and  field_val:
+                            field_val = int(field.model_field.name)
+                          
+                        elif field.model_field_type == 'many2many' and  field_val:
+                            #TODO: Add Functionality to handle Many2Many
+                            field_val = False
+                             
+                        elif field.model_field_type == 'char' and  field_val:
+                            field_val = str(field_val).strip()
+                            
+                        elif field_val: # Default Assumes is String
+                            
+                            field_val = str(field_val).strip()
+                                
+                        else :
+                            # NO data field is False
+                            pass
+                            
+                        vals[field.model_field.name] = field_val
+                        
+                        if field.is_unique:
+                            search_unique.append((field.model_field.name,"=", field_val))
+                            
+                    if len(search_unique) > 0:      
+                        search_ids = model.search(cr,uid,search_unique)
+                    else:
+                        search_ids = False
+                        
+                         
+                    if search_ids and not rec.do_update:
+                        e = ('Error Duplicate on Uniquie %s  Found at line %s record skipped') % (search_unique,n,)
+                        _logger.info(_(e))
+                        error_log += '\n'+ _(e)
+                        continue
+                                     
+                    if rec.record_external:
+                                
+                        external_id_name = ('%s-%s' % ( rec.name.split('.')[0], n ,))
+                        
+                        search = [('name','=',external_id_name),('model','=', model_model)]                     
+                        external_id_ids =  model_data_obj.search(cr,uid,search) or None
+                     
+                    if rec.do_update and rec.record_external and search_ids and external_id_ids and  external_id_ids.res_id != search_ids[0]:
+                        e = ('Error External Id and Unique not matching %s %s  Found at line %s record skipped') % (search_unique,external_id_name,n,)
+                        _logger.info(_(e))
+                        error_log += '\n'+ _(e)
+                        continue
+                     
+                    if external_id_ids and rec.do_update:
+                        external = model_data_obj.browse(cr,uid,external_id_ids[0])
+                        model.write(cr,uid,external.res_id,vals,context=context)
+                    elif not external_id_ids:
+                        
+                        res_id = model.create(cr,uid,vals, context=context) 
+                        external_vals = {'name':external_id_name,
+                                         'model':model_model,
+                                         'res_id':res_id,
+                                         'module':''
+                                         }
+                        model_data_obj.create(cr,uid,external_vals, context=context)
+                        _logger.info(_('Created record %s values %s external %s') % (n,vals,external_id_name))
+                                     
+                    elif external_id_ids and not rec.do_update:
+                        e = ('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,n,)
+                        _logger.info(_(e))
+                        error_log += '\n'+  _(e)
+                        continue
+                 
+                    else:
+                        model.create(cr,uid,vals, context=context)       
+
+                        _logger.info(_('Created record %s values %s') % (n,vals,))
+                        
+
+                    
+                    
+                except:
+                    e = traceback.format_exc()
+                    _logger.error(_('Error %s' % (e,)))
+                    vals = {'error_log': e}
+                    self.write(cr,uid,ids[0],vals)
+                    return False 
+        vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
+                'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'error_log':error_log}
+        if context.get('test',False):
+            cr.rollback()
+        self.write(cr,uid,ids[0],vals)
+        result = {} 
+        result['value'] = vals   
+        return result        
+     
 
     
     def action_import_csv(self, cr, uid, ids, context=None):
@@ -350,13 +539,13 @@ class import_data_file(osv.osv):
         start = time.strftime('%Y-%m-%d %H:%M:%S')       
         if context is None:
             context = {}
-        for wiz_rec in self.browse(cr, uid, ids, context=context):
+        for rec in self.browse(cr, uid, ids, context=context):
             
-            if not wiz_rec.header_ids:
+            if not rec.header_ids:
                 raise osv.except_osv('Warning', 'No Header selected in Header list')
             
             
-            for attach in wiz_rec.attachment:
+            for attach in rec.attachment:
                 data_file = attach.datas
                 continue
             str_data = base64.decodestring(data_file)
@@ -379,7 +568,7 @@ class import_data_file(osv.osv):
             
             header_map = {}
             unique_fields = []
-            for hd in wiz_rec.header_ids:
+            for hd in rec.header_ids:
                 if hd.model_field:
                     label = hd.model_field.field_description or ''
                     header_map.update({hd.model_field.name : hd.name})
@@ -398,9 +587,9 @@ class import_data_file(osv.osv):
                 # TODO add Code here to Search on Uniques
                 n += 1
                 
-                record_ids = self.search_record_exists(cr,uid,wiz_rec,data,headers_dict,unique_fields)
+                record_ids = self.search_record_exists(cr,uid,rec,data,headers_dict,unique_fields)
                 print record_ids 
-                if record_ids and not wiz_rec.do_update: 
+                if record_ids and not rec.do_update: 
                     
                     #TODO  need to add the Unique Record Field and Value Found to this Log
                     
@@ -411,7 +600,7 @@ class import_data_file(osv.osv):
                     
                 # Create Vals Dict    
                 vals ={}
-                for hd in wiz_rec.header_ids:
+                for hd in rec.header_ids:
                     model_field = hd.model_field
                     if not model_field or not headers_dict.has_key(model_field.name): continue
                     field_text = data[headers_dict[model_field.name]]
@@ -437,38 +626,17 @@ class import_data_file(osv.osv):
                     else:
                         vals.update({model_field.name : field_text})
                         
-                        # Search on Related Model using Search Domain and Get ID
-                        # TODO: update code Search must be created from search defined on import.header.csv and substitute
-                        # values from data based on column name in csv and Data in CSV
-                        #
-                    
-#                         search = self.make_domain_search(field.search, data ,header_dict)
-#                         id = self.pool.get(field.relation_model).search(cr,uid,search)
-#                         vals[field.name] = id
-                        
-                        # if related record not Found then to posible routes
-                        #
-                        #      if the  flag to create is set for this field  then  attempt to Create a record with Default values, Log this create in Error log and line  number 
-                        #
-                        #      Else If Related Record missing  then Skip import line IN CSV and Log in Error log record Skipped reason and line  number 
-                        #  
-                        # 
-                            
-#                     else:
-#                         vals[field.name] = data(field.index) 
-                
-                # Update or Create Import Records  
                 try:
                     if record_ids:
-                        self.pool.get(wiz_rec.model_id.model).write(cr, uid, record_ids, vals )
+                        self.pool.get(rec.model_id.model).write(cr, uid, record_ids, vals )
                         _logger.info('Update  Line Number %s  ' % n)
 
                     else:
-                        self.pool.get(wiz_rec.model_id.model).create(cr, uid, vals, context=context)
+                        self.pool.get(rec.model_id.model).create(cr, uid, vals, context=context)
                         _logger.info('Imported Line Number%s  ' % n)
                  
                 except:
-                    e = sys.exc_info()
+                    e = sys.exc_info() + '\n' + traceback.format_exc()
                     _logger.info(_('Error  %s record not created for line Number %s') % (e,n,))
                     error_log += _('Error  %s at Record %s --\n') % (e,n, ) 
                   
@@ -476,11 +644,11 @@ class import_data_file(osv.osv):
                 # This is only a Test Roll Back Records exit loop and create POP UP With Info statistic about Import 
                                        
                 
-                if n == wiz_rec.test_sample_size  and context.get('test',False):
+                if n == rec.test_sample_size  and context.get('test',False):
                     try:
                         t2 = datetime.now()
                         time_delta = (t2 - time_start)
-                        time_each = time_delta / wiz_rec.test_sample_size
+                        time_each = time_delta / rec.test_sample_size
                         list_size = len(csv_data)
                           
                         estimate_time = (time_each * list_size)
@@ -501,10 +669,8 @@ class import_data_file(osv.osv):
                         self.write(cr,uid,ids[0],vals)
                         return False
 
-                        
-
                     
-        vals = {'name':start,
+        vals = {'start_time':start,
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
                 'error_log':error_log}
         if context.get('test',False):
@@ -529,13 +695,13 @@ class import_data_file(osv.osv):
             header_ids_vals = []
             header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
             for rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
-                
-                fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',rec.name), ('model_id', '=', model_id)])
-                vals = {  'model_field':fids and fids[0] or False, 'model':model_id}
+                  
+                odoo_field_id = self._match_import_header(cr, uid, model_id, rec.name, rec.field_label)
+                vals = { 'model_field':odoo_field_id,
+                        'model': model_id,
+                        }
                 header_ids_vals.append((1,rec.id, vals))
                 
-                
-
             return{'value':{"header_ids":header_ids_vals}}
     
         else:
@@ -560,27 +726,28 @@ class import_data_file(osv.osv):
         if context is None:
             context = {}
         
+        header_ids_vals = []
         if record_num > 0:
 
-            for wiz_rec in self.browse(cr, uid, ids, context=context):
+            for rec in self.browse(cr, uid, ids, context=context):
             
-                tbl = dbf.Table(wiz_rec.dbf_path)
-                if not tbl:
+                dbf_table = dbf.Table(rec.dbf_path)
+                if not dbf_table:
                     
-                    e = 'Error opening DBF Import  %s:'  % (wiz_rec.dbf_path, )
+                    e = 'Error opening DBF Import  %s:'  % (rec.dbf_path, )
                     _logger.error(_('Error %s' % (e,)))
                     raise osv.except_osv('Warning', e)
                     
-                tbl.open()
-                tbl_rec = tbl[record_num-1]   
+                dbf_table.open()
+                dbf_table_rec = dbf_table[record_num-1]   
                 
                 header_ids_vals = []
                 header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
                 for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
                 
-                    vals = {  'field_val':tbl_rec and header_rec and tbl_rec[header_rec.name] or False}
+                    vals = {  'field_val':dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False}
                     header_ids_vals.append((1,header_rec.id, vals))
-                    header_rec.write({"field_val":tbl_rec and header_rec and tbl_rec[header_rec.name] or False})
+                    header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})
                 
                 
 
@@ -588,6 +755,13 @@ class import_data_file(osv.osv):
     
         else:
             return {}    
-                    
+     
+     
+class ir_model_fields(osv.osv):
+    _inherit = 'ir.model.fields'    
+
+    _defaults = {
+                 'model_id': lambda self,cr,uid,ctx=None: (ctx and ctx.get('default_model_id',False)),  
+                 }        
             
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
