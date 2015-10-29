@@ -229,6 +229,15 @@ class import_data_file(osv.osv):
                             
                             }
                     header_id = self.pool.get('import.data.header').create(cr,uid,vals,context=context)
+                    
+                vals = {'error_log':'Successful Header Import',
+                    'has_errors':False,
+                    'tot_record_num':tot_records, 
+                    'description':info
+                    }
+                self.write(cr,uid,ids[0],vals)    
+                
+                return {'value': vals}
                 
             except:
                 sys_info = sys.exc_info()
@@ -237,13 +246,10 @@ class import_data_file(osv.osv):
                 _logger.error(_('Error:  %s ' % (e,)))
                 vals = {'error_log': e,
                         'has_errors':True}
-                self.write(cr,uid,ids[0],vals)    
-        vals = {'error_log':'Successful Header Import',
-                'has_errors':False,
-                'tot_record_num':tot_records, 
-                'description':info
-                }
-        self.write(cr,uid,ids[0],vals)
+                self.write(cr,uid,ids[0],vals)  
+                
+                  
+
 
         return {'value': vals}
     
