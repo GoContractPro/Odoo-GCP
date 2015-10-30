@@ -25,42 +25,47 @@
                     
                     <newline/>
                     
-                    <group col="4">
-                         <group col="4">
-	                         <button name="record_backward" type="object" icon="gtk-go-back"/>
-	                    	 <button name="record_forward" type="object" icon="gtk-go-forward"/>
-	                    	 <newline/>
-	                    	 <field name="record_num" on_change="onchange_record_num(record_num)"/>
-	                    	  <newline/>
-	                    	 <field name="tot_record_num" />
-	                    	 
-	                   	 </group>
+                    <group col="8">
+
                     
-                    	 <group>
-                    	 	<button name='action_get_headers' string="Load Header Fields" context="{'model':model_id}" type="object" class="oe_highlight"/>
+                    	 <group colspan='2'>
+                    	 	<button name='action_get_headers' string="Load Header Fields" 
+                    	 		context="{'model':model_id}" 
+                    	 		type="object" class="oe_highlight"
+                    	 		confirm="???Are you Sure??? This will overrite any changes made to Field Mappings"/>
                     	 	<newline/>
-                    		<button name="action_import" string="Run Test Data Set" type="object" clase="oe_highlight" context="{'test':True}"/>
+                    		<button name="action_import" string="Run Test" type="object" clase="oe_highlight" context="{'test':True}"/>
+                    		<newline/>
+                    		<button name="action_import" string="Import Data" type="object" clase="oe_highlight" />
 	                        <newline/> 
-	                    	<field name="test_sample_size" />
-	                         
-	                         
-                         </group>
-                         <group col="2" colspan="2">
-                         	
-							<button name="action_import" string="Import Data Set" type="object" clase="oe_highlight" />
-							
+	                    	      
+                         </group >
+                         <group colspan="2">
+					
                          	<newline/>
+                         	<field name="test_sample_size" />
                         	<field name='do_update' />
                           	<field name="record_external"/>
 							
                          </group>
-                         <group>
-                         	<field name='description' />
+                         <group col = "4">
+                         	<label for="description"/>
+                         	<field name='description' nolabel="1" colspan='4' />
+                         	<group col="6" colspan='6' string="Current Record Displayed">
+                         		<newline/>
+		                         <button name="record_backward" type="object" icon="gtk-go-back" colspan="1"/>
+		                    	 <button name="record_forward" type="object" icon="gtk-go-forward" colspan="1"/>
+		           
+		                    	 <field name="record_num" on_change="onchange_record_num(record_num)"/>
+
+		                    	 <field name="tot_record_num" />
+		                    	 
+	                   	 	</group>
                          </group>
                          
 
                     </group>
-                    </group> 
+                    </group>  
                     <group>
                           <field name="header_ids" context="{'model':model_id}" nolabel="1"> 
                           

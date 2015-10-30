@@ -92,14 +92,17 @@ class import_data_header(osv.osv):
                     'relation_field': fld.relation_field,
                     'relation': fld.relation,
                     }
+            self.write(cr,uid,ids[0],vals)
+            return {'value':vals}
             
         else:
             vals =  {'model_field_type': False,
                     'model_field_name': False,
                     'relation_field': False,
                     'relation': False,}
+            self.write(cr,uid,ids[0],vals)
           
-        return {'value':vals}
+            return {'value':vals}
 class import_data_file(osv.osv):
     
     _name = "import.data.file"
@@ -519,23 +522,22 @@ class import_data_file(osv.osv):
 
                         _logger.info(_('Created record %s values %s') % (n,vals,))
                         
-
-                    
-                    
                 except:
                     e = traceback.format_exc()
+                    sys_err = sys.exc_info()
                     _logger.error(_('Error %s' % (e,)))
-                    vals = {'error_log': e}
-                    self.write(cr,uid,ids[0],vals)
-                    return False 
-        vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
+                    log_vals = {'error_log': sys_err,
+                            'has_errors':True}
+                    self.write(cr,uid,ids[0],log_vals)
+                    return vals
+        log_vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
                 'error_log':error_log}
         if context.get('test',False):
             cr.rollback()
-        self.write(cr,uid,ids[0],vals)
+        self.write(cr,uid,ids[0],log_vals)
         result = {} 
-        result['value'] = vals   
+        result['value'] = log_vals   
         return result        
      
 
