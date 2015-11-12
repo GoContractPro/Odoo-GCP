@@ -23,6 +23,7 @@
 
 
 from openerp import models, fields, api,exceptions, _
+import time
 
 class task(models.Model):
     _inherit = "project.task"
