@@ -32,7 +32,7 @@
     """,
     'author': 'NovaPoint Group Inc, Stephen Levenhagen',
     'website': 'www.novapointgroup.com',
-    'depends': ["base",],
+    'depends': ["base","project"],
     'init_xml': [],
     'data': [
         "views/project_view.xml",
