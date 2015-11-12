@@ -9,8 +9,7 @@
             <field name="arch" type="xml">
             	<filter  name="message_unread" position="after">
             		<filter string="Today Tasks" name="task_today"  
-					domain="['|',('user_id','=',False),('date_start','&gt;=',current_date),
-         			('date_start','&lt;=', current_date)]" />
+					domain="['|',('user_id','=',False),('date_start','&gt;=', current_date),('date_start','&lt;=', current_date)]" />
             	
             	</filter>
             
@@ -62,6 +61,7 @@
                     <field name="sequence"/>
                     <field name="kanban_state"/>
                     <field name="remaining_hours" sum="Remaining Time" groups="project.group_time_work_estimation_tasks"/>
+                    <field name="planned_hours" sum="Total Planned hours" groups="project.group_time_work_estimation_tasks"/>
                     <field name="date_deadline"/>
                     <field name="message_summary"/>
                     <field name="categ_ids"/>
@@ -69,8 +69,9 @@
                     <t t-name="kanban-box">
                         <div t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_global_click">
                             <div class="oe_dropdown_toggle oe_dropdown_kanban" groups="base.group_user">
-                                <span class="oe_e">í</span>
-                                <ul class="oe_dropdown_menu">
+                                <span class="oe_e">í</span><br/>
+
+                                    <ul class="oe_dropdown_menu">
                                     <t t-if="widget.view.is_action_enabled('edit')"><li><a type="edit">Edit...</a></li></t>
                                     <t t-if="widget.view.is_action_enabled('delete')"><li><a type="delete">Delete</a></li></t>
                                     <li>
@@ -90,9 +91,9 @@
                                 <div><b><field name="name"/></b></div>
                                 <div>
                                     <field name="project_id"/><br/>
-                                    <t t-if="record.date_deadline.raw_value and record.date_deadline.raw_value lt (new Date())" t-set="red">oe_kanban_text_red</t>
-                                    <span t-attf-class="#{red || ''}"><i><field name="date_deadline"/></i></span>
-                                    <span>Start:<field name="date_start"/></span>
+                                    <span>Deadline</span><t t-if="record.date_deadline.raw_value and record.date_deadline.raw_value lt (new Date())" t-set="red">oe_kanban_text_red</t>
+                                    <span t-attf-class="#{red || ''}"><i><field name="date_deadline"/></i></span><br/>
+                                    <span>Plan Start:<field name="date_start"/></span><br/>
                                     <span>Plan HRs:<field name="planned_hours"/></span>
                                 </div>
                                 <div class="oe_kanban_footer_left">
@@ -121,16 +122,49 @@
             </field>
          </record>
         
-        <record id="view_task_tree2_inherit" model="ir.ui.view">
+         <record id="project.view_task_tree2" model="ir.ui.view">
             <field name="name">project.task.tree</field>
             <field name="model">project.task</field>
-            <field name="inherit_id" ref="project.view_task_tree2"/>
+            <field eval="1" name="priority"/>
             <field name="arch" type="xml">
-       			 <field name="date_deadline" position="attributes">
-       			 	<attribute name="invisible">1</attribute>
-       			 </field>
-       		</field>
-       	</record>
+                <tree fonts="bold:message_unread==True" 
+                		colors="red:date_deadline and (date_deadline&lt;current_date);
+                				blue:date_deadline and (date_start&gt;date_deadline)" 
+                		string="Tasks">
+                    <field name="message_unread" invisible="1"/>
+                    <field name="sequence" invisible="not context.get('seq_visible', False)"/>
+                    <field name="name"/>
+                    <field name="project_id" invisible="context.get('user_invisible', False)"/>
+                    <field name="user_id" invisible="context.get('user_invisible', False)"/>
+                    <field name="delegated_user_id" invisible="context.get('show_delegated', True)"/>
+                    <field name="total_hours" invisible="1"/>
+                    <field name="planned_hours" invisible="context.get('set_visible',False)" groups="project.group_time_work_estimation_tasks"/>
+                    <field name="effective_hours" widget="float_time" sum="Spent Hours" invisible="1"/>
+                    <field name="remaining_hours" widget="float_time" sum="Remaining Hours" on_change="onchange_remaining(remaining_hours,planned_hours)" invisible="context.get('set_visible',False)" groups="project.group_time_work_estimation_tasks"/>
+                    <field name="date_deadline" />
+                    <field name="stage_id" invisible="context.get('set_visible',False)"/>
+                    <field name="date_start" groups="base.group_no_one"/>
+                    <field name="date_end" groups="base.group_no_one"/>
+                    <field name="progress" widget="progressbar" invisible="context.get('set_visible',False)"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="view_task_form2_inherit2" model="ir.ui.view">
+            <field name="name">project.task.form.inherit2</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_form2"/>
+            <field name="arch" type="xml">
+            	 <field name="date_start"  position="replace"/>
+                 <field name="date_end"  position="replace"/>
+                 <field name="planned_hours" position="after">
+                 	
+	                 <field name="date_start" string="Plan Start"/>
+	                 <field name="date_end" string="Plan End"/>
+                 </field>
+			</field>
+			</record>
+
 <!--  Menus -->
 
 <menuitem action="action_view_task_today" id="menu_action_view_task_today" parent="project.menu_project_management" sequence="5"/>       

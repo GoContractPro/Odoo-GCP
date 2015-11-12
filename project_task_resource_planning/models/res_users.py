@@ -28,6 +28,6 @@ class res_users(models.Model):
     @api.multi
     def _cal_available_hours(self):
         
-        self.todays_hours = 0.0
+        self.todays_hours = 8.0
     
     todays_hours = fields.Float(string = "Todays Hours Available",compute="_cal_available_hours",store=False)
