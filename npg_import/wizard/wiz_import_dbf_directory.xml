@@ -18,13 +18,7 @@
            </field>
        </record>
        
-      <act_window name="Load DBF from Directory"
-            res_model="import.dbf.directory"
-            src_model="import.data.file"
-            view_mode="form"
-            target="new"
-            id="action_import_dbf_directory"
-            />
+
 
        
    </data>

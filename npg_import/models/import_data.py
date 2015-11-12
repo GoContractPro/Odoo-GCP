@@ -122,7 +122,7 @@ class import_data_file(osv.osv):
             'test_sample_size': fields.integer('Test Sample Size'),
             'do_update': fields.boolean('Allow Update', 
                     help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
-            'header_ids': fields.one2many('import.data.header','import_data_id','Fields Map'),
+            'header_ids': fields.one2many('import.data.header','import_data_id','Fields Map',limit=300),
             'index':fields.integer("Index"),
             'dbf_path':fields.char('DBF Path',size=256),
             'record_num':fields.integer('Current Record'),
@@ -250,10 +250,7 @@ class import_data_file(osv.osv):
                 vals = {'error_log': e,
                         'has_errors':True}
                 self.write(cr,uid,ids[0],vals)  
-                
-                  
-
-
+ 
         return {'value': vals}
     
     def action_get_headers_csv(self, cr, uid, ids, context=None):
@@ -413,27 +410,39 @@ class import_data_file(osv.osv):
                 
                     self.write(cr,uid,ids[0],vals)
                     return self.show_warning(cr, uid, msg , context = context)
-                
-                
+            
                 try:
 
                     for field in rec.header_ids:
 
-                        if not field.model_field: continue # Skip Feilds with no Odoo Field Set
+                        if not field.model_field: continue # Skip where no Odoo field set
                                 
                         field_val =  import_record[field.name] or field.default_val
                        
                         if field.model_field_type == 'many2one' and field_val:
-                            
+                            related_obj = self.pool.get(field.relation)
                             field_val = field_val.strip()
-                            relation_id = self.pool.get(field.relation).name_search(cr,uid,name= field_val )
+                            relation_id = related_obj.name_search(cr,uid,name= field_val )
                             if relation_id :
                                 field_val = relation_id[0][0]
                             else:
-                                e = _('Value \'%s\' not found for the relation field \'%s\'') % (field_val,field.model_field.name )
-                                error_log += '\n'+ e
-                                field_val = False
-                                _logger.info( e)
+                                
+                                if rec.create_related:
+                                    try:
+                                        field_val = related_obj.create(cr,uid,{name:field_val},context = context)
+                                        e = _(('Value \'%s\' Created for the relation field \'%s\'') % (field_val,field.model_field.name )) 
+                                        error_log += '\n'+ e
+                                        _logger.info( e)
+                                    except:
+                                        e = _(('Value \'%s\' not found for the relation field \'%s\'') % (field_val,field.model_field.name ))
+                                        error_log += '\n'+ e
+                                        field_val = False
+                                        _logger.info( e)
+                                else:    
+                                    e = _(('Value \'%s\' not found for the relation field \'%s\'') % (field_val,field.model_field.name ))
+                                    error_log += '\n'+ e
+                                    field_val = False
+                                    _logger.info( e)
                                 
                         elif field.model_field_type == 'date' and field_val :
                             

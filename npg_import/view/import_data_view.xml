@@ -26,7 +26,6 @@
                     <newline/>
                     
                     <group col="8">
-
                     
                     	 <group colspan='2'>
                     	 	<button name='action_get_headers' string="Load Header Fields" 
@@ -61,15 +60,14 @@
 		                    	 <field name="tot_record_num" />
 		                    	 
 	                   	 	</group>
-                         </group>
-                         
+                         </group>                         
 
                     </group>
                     </group>  
                     <group>
                           <field name="header_ids" context="{'model':model_id}" nolabel="1"> 
                           
-                          	 <form string="Headers">
+                      <!--    	 <form string="Headers">
                           	 	<group>
 	                    		<field name="name"/>	                    	
 	                    		<field name="field_label"/>
@@ -90,7 +88,7 @@
 	                    		</group>	
 	                    	</form> 
                           
-	                    	<tree  >
+	                  	<tree  >
 	                    		<field name="name"/>
 	                    		<field name="field_label"/>
 	                    		<field name="field_type"/>
@@ -98,11 +96,10 @@
 	                    	 	<field name="default_val"/>
 	                    	 	<field name="model" required="0" readonly="1" invisible='1'/>
 	                    		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
-	                    	</tree>
+	                    	</tree> -->   
 	                    </field> 
 					</group>
 	                    
-	        		
 	        		<newline/>
                     <group colspan="1">
                     	<field name="error_log"/>  
@@ -127,7 +124,6 @@
             </field>
         </record>
 
-
         <record id="view_import_data_filter" model="ir.ui.view">
             <field name="name">import.data.filter</field>
             <field name="model">import.data.file</field>
@@ -140,7 +136,72 @@
                 </search>
             </field>
         </record>
-              
+        
+       <record id="npg_view_import_data_header_form" model="ir.ui.view">
+            <field name="name">import.data.header.form</field>
+            <field name="model">import.data.header</field>
+            <field name="arch" type="xml">
+                <form string="Read File" version="7.0">   
+        
+            	 <form string="Headers">
+                     <group>
+                  		<field name="name"/>	                    	
+                  		<field name="field_label"/>
+                  		<field name="field_type"/>
+                  	 	<field name="field_val" />
+                  		<field name="is_unique"/>
+                  		<field name="default_val"/>
+                  		<field name="create_related"/>
+                  	 	<field name="model" required="0" readonly="1" />
+                  		<field name="model_field" required="0" domain="[('model_id','=',model)]"
+                  				context = "{'manual':True, 'default_model_id':model}"
+                  				on_change="onchange_model_field(model_field)"/>
+                  		<field name="model_field_name" />
+                  		<field name="model_field_type" readonly="1" />
+                  		<field name="relation" readonly="1"/>
+                  		<field name="relation_field" readonly="1"/>
+                  		<field name="search_domain"/> 
+                  		</group>	
+                  	</form>
+                </form>
+            </field>
+        </record>   
+        
+        <record id="npg_view_import_data_header_tree" model="ir.ui.view">
+            <field name="name">import.data.header.tree</field>
+            <field name="model">import.data.header</field>
+            <field name="arch" type="xml">  
+              	    <tree string= "Header Mappings" >
+                 		<field name="name"/>
+                 		<field name="field_label"/>
+                 		<field name="field_type"/>
+                 	 	<field name="field_val" />
+                 	 	<field name="default_val"/>
+                 	 	<field name="model" required="0" readonly="1" invisible='1'/>
+                 		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
+                 	</tree> 
+                 	
+            </field>
+        </record> 	
+	    
+	    <record id="npg_view_import_data_header_search" model="ir.ui.view">
+            <field name="name">import.data.header.search</field>
+            <field name="model">import.data.header</field>
+            <field name="arch" type="xml">
+            	<search>
+            		<field name="name"></field>
+            		<field name="model_field"></field>
+            		<field name="import_data_id"/>
+            		<filter string="Odoo Field Not Set" domain="[('model_field','=',False)]" name="no_model_field_filter"/>
+                	<filter string="Odoo Field Set" domain="[('model_field','!=',False)]" name="yes_model_field_filter"/>
+                	<group string="Group By" expand="0">
+                		
+                		<filter string="Model" domain="[]" context="{'group_by':'model'}" name="group_by_model"/>
+                		<filter string="Data Source" domain="[]" context="{'group_by':'import_data_id'}" name="group_by_import_data_id"/>
+                	</group>
+            	</search> 
+           	</field>
+        </record>
 
     </data>
 </openerp>
