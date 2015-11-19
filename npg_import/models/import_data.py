@@ -47,6 +47,17 @@ _logger = logging.getLogger(__name__)
 def index_get(L, i, v=None):
     try: return L.index(i)
     except: return v
+    
+class import_m2o_substitutions(osv.osv): 
+    # The Model Is a map from Odoo Data to CSV Sheet Data
+    _name = "import.m2o.substitutions"
+    _description = "Create new value Substitutions functionality in Fields mapping"
+    
+    _columns = { 
+                'header_map':fields.many2one('import.data.header', 'Header Map', required=True, ondelete='cascade'),
+                'src_value':fields.char('Source field value', size=64,required=True),
+                'odoo_value':fields.char('Corresponding odoo value', size=64,required=True),
+                }
 
 
 class import_data_header(osv.osv): 
@@ -73,6 +84,8 @@ class import_data_header(osv.osv):
                 'field_type':fields.char('Data Type', size=8,),
                 'field_val':fields.char('Record Value', size=128),
                 'default_val':fields.char('Default Import Val', size = 256, help = 'The Default if no values for field in imported file'),
+                
+                'm2o_substituions':fields.one2many('import.m2o.substitutions','header_map', string="Source Value Substitutions"),
                 }
     
     def _get_model(self,cr,uid,context={}):
@@ -103,6 +116,7 @@ class import_data_header(osv.osv):
             self.write(cr,uid,ids[0],vals)
           
             return {'value':vals}
+        
 class import_data_file(osv.osv):
     
     _name = "import.data.file"
@@ -420,6 +434,12 @@ class import_data_file(osv.osv):
                         field_val =  import_record[field.name] or field.default_val
                        
                         if field.model_field_type == 'many2one' and field_val:
+                            substitutes = {}
+                            for sub in field.m2o_substituions:
+#                                 substitutes[str(sub.src_value).strip()] = str(sub.odoo_value).strip()
+                                substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
+                            field_val = str(field_val).strip()
+                            field_val = substitutes.get(field_val, field_val)
                             related_obj = self.pool.get(field.relation)
                             field_val = field_val.strip()
                             relation_id = related_obj.name_search(cr,uid,name= field_val )

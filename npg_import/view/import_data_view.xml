@@ -67,7 +67,7 @@
                     <group>
                           <field name="header_ids" context="{'model':model_id}" nolabel="1"> 
                           
-                      <!--    	 <form string="Headers">
+                         	 <form string="Headers">
                           	 	<group>
 	                    		<field name="name"/>	                    	
 	                    		<field name="field_label"/>
@@ -82,6 +82,12 @@
 	                    				on_change="onchange_model_field(model_field)"/>
 	                    		<field name="model_field_name" />
 	                    		<field name="model_field_type" readonly="1" />
+                      			<field name="m2o_substituions" attrs="{'invisible':[('model_field_type','!=','many2one')]}">
+		                  			<tree editable="bottom">
+		                  				<field name="src_value"/>	                    	
+		                  				<field name="odoo_value"/>
+		                  			</tree>
+		                  		</field>
 	                    		<field name="relation" readonly="1"/>
 	                    		<field name="relation_field" readonly="1"/>
 	                    		<field name="search_domain"/> 
@@ -96,7 +102,7 @@
 	                    	 	<field name="default_val"/>
 	                    	 	<field name="model" required="0" readonly="1" invisible='1'/>
 	                    		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
-	                    	</tree> -->   
+	                    	</tree>  
 	                    </field> 
 					</group>
 	                    
@@ -161,6 +167,12 @@
                   		<field name="relation" readonly="1"/>
                   		<field name="relation_field" readonly="1"/>
                   		<field name="search_domain"/> 
+                  		<field name="m2o_substituions" attrs="{'invisible':[('model_field_type','!=','many2one')]}">
+                  			<tree editable="bottom">
+                  				<field name="src_value"/>	                    	
+                  				<field name="odoo_value"/>
+                  			</tree>
+                  		</field>
                   		</group>	
                   	</form>
                 </form>
