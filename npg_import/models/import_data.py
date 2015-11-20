@@ -488,13 +488,16 @@ class import_data_file(osv.osv):
                             field_val = field_val.strftime('%Y-%m-%d %H:%M:%S')
                             
                         elif field.model_field_type == 'boolean' and  field_val:
-                            field_val = field.model_field.name
+#                             field_val = field.model_field.name
+                            field_val = bool(field_val)
                             
                         elif field.model_field_type == 'float' and  field_val:
-                            field_val = field.model_field.name
+#                             field_val = field.model_field.name
+                            field_val = float(field_val)
                             
                         elif field.model_field_type == 'integer' and  field_val:
-                            field_val = int(field.model_field.name)
+#                             field_val = int(field.model_field.name)
+                            field_val = int(field_val)
                           
                         elif field.model_field_type == 'many2many' and  field_val:
                             #TODO: Add Functionality to handle Many2Many
