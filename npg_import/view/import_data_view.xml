@@ -74,6 +74,7 @@
 	                    		<field name="field_type"/>
 	                    	 	<field name="field_val" />
 	                    		<field name="is_unique"/>
+	                    		<field name="is_unique_external"/>
 	                    		<field name="default_val"/>
 	                    		<field name="create_related"/>
 	                    	 	<field name="model" required="0" readonly="1" />
@@ -156,6 +157,7 @@
                   		<field name="field_type"/>
                   	 	<field name="field_val" />
                   		<field name="is_unique"/>
+                  		<field name="is_unique_external"/>
                   		<field name="default_val"/>
                   		<field name="create_related"/>
                   	 	<field name="model" required="0" readonly="1" />

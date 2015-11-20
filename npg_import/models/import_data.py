@@ -86,7 +86,22 @@ class import_data_header(osv.osv):
                 'default_val':fields.char('Default Import Val', size = 256, help = 'The Default if no values for field in imported file'),
                 
                 'm2o_substituions':fields.one2many('import.m2o.substitutions','header_map', string="Source Value Substitutions"),
+                'is_unique_external':fields.boolean('Is Unique for External ID', help ='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID'),
                 }
+    
+    def _check_is_unique_external(self, cr, uid, ids, context=None):
+        obj_self = self.browse(cr, uid, ids[0], context=context)
+        self_headers = self.search(cr, uid, [('import_data_id','=',obj_self.import_data_id.id)])
+        is_unique_external = 0
+        for self_header in self.browse(cr, uid, self_headers):
+            if self_header.is_unique_external:
+                is_unique_external +=1
+        if is_unique_external < 2:
+            return True
+        return False
+    _constraints = [
+        (_check_is_unique_external, 'Error!\nYou cannot select two columns unique.', ['is_unique_external']),
+    ]
     
     def _get_model(self,cr,uid,context={}):
         return context.get('model',False)
@@ -426,7 +441,7 @@ class import_data_file(osv.osv):
                     return self.show_warning(cr, uid, msg , context = context)
             
                 try:
-
+                    is_unique_external = False
                     for field in rec.header_ids:
 
                         if not field.model_field: continue # Skip where no Odoo field set
@@ -500,6 +515,9 @@ class import_data_file(osv.osv):
                         
                         if field.is_unique:
                             search_unique.append((field.model_field.name,"=", field_val))
+                        
+                        if field.is_unique_external:
+                            is_unique_external = field_val
                             
                     if len(search_unique) > 0:      
                         search_ids = model.search(cr,uid,search_unique)
@@ -515,8 +533,9 @@ class import_data_file(osv.osv):
                                      
                     if rec.record_external:
                                 
-                        external_id_name = ('%s-%s' % ( rec.name.split('.')[0], n ,))
-                        
+                        external_id_name = ('%s_%s' % ( rec.name.split('.')[0], n ,))
+                        if is_unique_external:
+                            external_id_name = str(is_unique_external).replace(" ", "") + '-' + external_id_name
                         search = [('name','=',external_id_name),('model','=', model_model)]                     
                         external_id_ids =  model_data_obj.search(cr,uid,search) or None
                      
@@ -727,7 +746,8 @@ class import_data_file(osv.osv):
         return warn_obj.info(cr, uid, title='Import Information',message = msg)
     
     def onchange_model(self, cr, uid, ids, model_id=False,  context=None):
-        
+        if not ids:
+            return {}
         if model_id:
             header_ids_vals = []
             header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
