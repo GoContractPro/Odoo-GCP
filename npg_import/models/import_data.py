@@ -104,7 +104,8 @@ class import_data_header(osv.osv):
     
     
     def onchange_model_field(self, cr, uid, ids, model_field, context=None):
-        
+        if not ids:
+            return {}
         fld = self.pool.get('ir.model.fields').browse(cr,uid,model_field)
         if fld:
             vals = {'model_field_type': fld.ttype,
