@@ -503,7 +503,7 @@ class import_data_file(osv.osv):
                             related_obj = self.pool.get(field.relation)
                             field_val = field_val.strip()
                             if not field.relation_search_field:
-                                relation_id = related_obj.name_search(cr,uid,name= field_val )
+                                relation_id = related_obj.name_search(cr,uid,name= field_val )[0]
                             elif field.relation_search_field == 'external_id':
                                 search = [('name','=',field_val),('model','=', model_model)]                     
                                 ext_ids =  model_data_obj.search(cr,uid,search) or None
