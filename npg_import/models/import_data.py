@@ -41,6 +41,8 @@ import sys, traceback
 
 import contextlib
 from string import strip
+from types import *
+from mercurial.subrepo import types
 
 _logger = logging.getLogger(__name__)
 
@@ -68,7 +70,6 @@ class import_data_header(osv.osv):
     _columns = { 'name':fields.char('Import Field Name', size=64),
                 'import_data_id':fields.many2one('import.data.file','Import Data',required=True, ondelete='cascade',),
                 'is_unique':fields.boolean('Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated '),
-                'external_id_fld': fields.boolean('External_Id', help = 'Field Used to create External Id'),
                 'model':fields.many2one('ir.model','Model'),
                 'model_field':fields.many2one('ir.model.fields','Odoo Field'),
                 'model_field_type':fields.char('Odoo Data Type', size = 128),
@@ -77,8 +78,10 @@ class import_data_header(osv.osv):
                     help="The  Model this field is related to"),
                 'relation_field': fields.char('Odoo Relation Field', size = 128,
                     help="The  Field this field is related to"),
-                'search_domain':fields.char('Domian Search  ', size=256,
-                     help="Define search domains for related records subsitute Values from CSV columns in search using ${'Column Name'} example: [('odoo_field_name', '=', ${'Column Name'}] "),           
+                'relation_search_field': fields.char('Related Field Searched', size = 128, 
+                    help="Use this if wanting to search in fields other than standard name searched fields or use external_id"),
+                'search_domain':fields.char('Filter Values', size=256,
+                     help="Define Filter List of following Format ['value1','value2','value3'], Records must match values in list or row is skipped on import "),           
                 'create_related':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
                 'field_label':fields.char('Description', size=32,),
                 'field_type':fields.char('Data Type', size=8,),
@@ -86,22 +89,12 @@ class import_data_header(osv.osv):
                 'default_val':fields.char('Default Import Val', size = 256, help = 'The Default if no values for field in imported file'),
                 
                 'm2o_substituions':fields.one2many('import.m2o.substitutions','header_map', string="Source Value Substitutions"),
-                'is_unique_external':fields.boolean('Is Unique for External ID', help ='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID'),
+                'is_unique_external':fields.boolean('Is Unique for External ID', readonly=True ,
+                                help ='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID'),
+                
                 }
     
-    def _check_is_unique_external(self, cr, uid, ids, context=None):
-        obj_self = self.browse(cr, uid, ids[0], context=context)
-        self_headers = self.search(cr, uid, [('import_data_id','=',obj_self.import_data_id.id)])
-        is_unique_external = 0
-        for self_header in self.browse(cr, uid, self_headers):
-            if self_header.is_unique_external:
-                is_unique_external +=1
-        if is_unique_external < 2:
-            return True
-        return False
-    _constraints = [
-        (_check_is_unique_external, 'Error!\nYou cannot select two columns unique.', ['is_unique_external']),
-    ]
+  
     
     def _get_model(self,cr,uid,context={}):
         return context.get('model',False)
@@ -136,7 +129,15 @@ class import_data_file(osv.osv):
     
     _name = "import.data.file"
     _description = "Holds import Data file information"
-    
+   
+    def _get_external_id_field(self, cr, uid, ids, fields, arg, context=None):
+        
+        header_fld_obj = self.pool.get('import.data.header')
+        search = [('is_unique_external','=',True),('import_data_id','=',ids[0])]
+        extern_fld = header_fld_obj.search(cr,uid, search)[0].name or None
+        return extern_fld
+        
+         
     _columns = {
             'name':fields.char('Name',size=32,required = True ), 
             'description':fields.text('Description',), 
@@ -157,13 +158,38 @@ class import_data_file(osv.osv):
             'record_num':fields.integer('Current Record'),
             'tot_record_num':fields.integer("Total Records"),
             'record_external':fields.boolean('Use External ID' , help = 'record number and File name to be used for External ID'),
-            'has_errors':fields.boolean('Has Errors')
+            'has_errors':fields.boolean('Has Errors'),
+            'rollback':fields.boolean('Roll Back Test Records'),
+            'external_id_field':fields.many2one('import.data.header', string='External Id Field', domain="[('import_data_id','=',active_id)]"),
             }
     
     _defaults = {
         'test_sample_size':10,
         'record_num':1,
         }
+
+    def onchange_record_external(self,cr,uid, ids, record_external, context=None):
+        
+        if record_external:
+            return {'value': {'external_id_field': False}}
+        
+    def onchange_external_id_field(self,cr,uid, ids, external_id_field,  context=None):
+       
+         
+        header_ids_vals = []
+        header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
+        for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
+        
+            if header_rec.id == external_id_field:
+                value = True
+            else:
+                value = False
+                
+            vals = {  'is_unique_external': value}
+            header_ids_vals.append((1,header_rec.id, vals))
+            
+        return{'value':{"header_ids":header_ids_vals}}
+
 
     def action_get_headers(self, cr, uid, ids, context=None):
         
@@ -421,6 +447,8 @@ class import_data_file(osv.osv):
                 vals = {}
                 search_unique =[]
                 external_id_ids = None
+                is_field_unique_external = False
+                external_id_name = False
                 
                 if n == rec.test_sample_size  and context.get('test',False):
 
@@ -432,7 +460,7 @@ class import_data_file(osv.osv):
                      
                     print "time_end,time_delta,estimate_time",t2,time_delta,estimate_time
                     msg = _('Time for %s records  is %s (hrs:min:sec) \n %s') % (list_size, estimate_time ,error_log)
-                    cr.rollback()
+                    if rec.rollback: cr.rollback()
                     vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
                             'end_time': time.strftime('%Y-%m-%d %H:%M:%S' ),
                             'error_log':error_log}
@@ -441,12 +469,21 @@ class import_data_file(osv.osv):
                     return self.show_warning(cr, uid, msg , context = context)
             
                 try:
-                    is_unique_external = False
+
+
                     for field in rec.header_ids:
 
                         if not field.model_field: continue # Skip where no Odoo field set
+    
                                 
                         field_val =  import_record[field.name] or field.default_val
+                        field_type = type(field_val)
+                        if field_type in ('unicode', 'str'):
+                            field_val = field_val.strip()
+                        
+                        if field.search_domain and str(field_val) not in field.search_domain:
+                             continue
+                            
                        
                         if field.model_field_type == 'many2one' and field_val:
                             substitutes = {}
@@ -457,24 +494,34 @@ class import_data_file(osv.osv):
                             field_val = substitutes.get(field_val, field_val)
                             related_obj = self.pool.get(field.relation)
                             field_val = field_val.strip()
-                            relation_id = related_obj.name_search(cr,uid,name= field_val )
+                            if not field.relation_search_field:
+                                relation_id = related_obj.name_search(cr,uid,name= field_val )
+                            elif field.relation_search_field == 'external_id':
+                                search = [('name','=',field_val),('model','=', model_model)]                     
+                                relation_id =  model_data_obj.search(cr,uid,search) or None
+                            else:
+                                search = [(field.relation_search_field,'=',field_val)]
+                                relation_id = model_data_obj.search(cr, uid, search)
+                                
                             if relation_id :
                                 field_val = relation_id[0][0]
                             else:
                                 
-                                if rec.create_related:
+                                if field.create_related:
                                     try:
                                         field_val = related_obj.create(cr,uid,{name:field_val},context = context)
-                                        e = _(('Value \'%s\' Created for the relation field \'%s\'') % (field_val,field.model_field.name )) 
-                                        error_log += '\n'+ e
+                                        #e = _(('Value \'%s\' Created for the relation field \'%s\'') % (field_val,field.model_field.name )) 
+                                        #error_log += '\n'+ e
                                         _logger.info( e)
                                     except:
-                                        e = _(('Value \'%s\' not found for the relation field \'%s\'') % (field_val,field.model_field.name ))
+                                        field_val = None
+                                        e = _(('Error  \'%s\' not created for the relation field \'%s\'') % (field_val,field.model_field.name ))
                                         error_log += '\n'+ e
                                         field_val = False
                                         _logger.info( e)
-                                else:    
-                                    e = _(('Value \'%s\' not found for the relation field \'%s\'') % (field_val,field.model_field.name ))
+                                else: 
+                                    field_val =  None   
+                                    e = _(('Value \'%s\' not found for the relation field \'%s\' related not set') % (field_val,field.model_field.name ))
                                     error_log += '\n'+ e
                                     field_val = False
                                     _logger.info( e)
@@ -520,7 +567,7 @@ class import_data_file(osv.osv):
                             search_unique.append((field.model_field.name,"=", field_val))
                         
                         if field.is_unique_external:
-                            is_unique_external = field_val
+                            is_field_unique_external = field_val
                             
                     if len(search_unique) > 0:      
                         search_ids = model.search(cr,uid,search_unique)
@@ -533,16 +580,21 @@ class import_data_file(osv.osv):
                         _logger.info(_(e))
                         error_log += '\n'+ _(e)
                         continue
-                                     
-                    if rec.record_external:
-                                
+                                   
+                    #  When using Record Row External ID
+                    if is_field_unique_external:
+                        external_id_name = is_field_unique_external   
+                                         
+                    #  When Using field for External ID                 
+                    if rec.record_external:         
                         external_id_name = ('%s_%s' % ( rec.name.split('.')[0], n ,))
-                        if is_unique_external:
-                            external_id_name = str(is_unique_external).replace(" ", "") + '-' + external_id_name
+                        
+                    if external_id_name:
+                        
                         search = [('name','=',external_id_name),('model','=', model_model)]                     
                         external_id_ids =  model_data_obj.search(cr,uid,search) or None
                      
-                    if rec.do_update and rec.record_external and search_ids and external_id_ids and  external_id_ids.res_id != search_ids[0]:
+                    if rec.do_update and  search_ids and external_id_ids and external_id_ids.res_id != search_ids[0]:
                         e = ('Error External Id and Unique not matching %s %s  Found at line %s record skipped') % (search_unique,external_id_name,n,)
                         _logger.info(_(e))
                         error_log += '\n'+ _(e)
@@ -551,7 +603,7 @@ class import_data_file(osv.osv):
                     if external_id_ids and rec.do_update:
                         external = model_data_obj.browse(cr,uid,external_id_ids[0])
                         model.write(cr,uid,external.res_id,vals,context=context)
-                    elif not external_id_ids:
+                    elif not external_id_ids and external_id_name:
                         
                         res_id = model.create(cr,uid,vals, context=context) 
                         external_vals = {'name':external_id_name,
@@ -584,7 +636,7 @@ class import_data_file(osv.osv):
         log_vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
                 'error_log':error_log}
-        if context.get('test',False):
+        if context.get('test',False) and rec.rollback:
             cr.rollback()
         self.write(cr,uid,ids[0],log_vals)
         result = {} 

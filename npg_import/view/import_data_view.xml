@@ -33,9 +33,9 @@
                     	 		type="object" class="oe_highlight"
                     	 		confirm="???Are you Sure??? This will overrite any changes made to Field Mappings"/>
                     	 	<newline/>
-                    		<button name="action_import" string="Run Test" type="object" clase="oe_highlight" context="{'test':True}"/>
+                    		<button name="action_import" string="Run Test" type="object" class="oe_highlight" context="{'test':True}"/>
                     		<newline/>
-                    		<button name="action_import" string="Import Data" type="object" clase="oe_highlight" />
+                    		<button name="action_import" string="Import Data" type="object" class="oe_highlight" />
 	                        <newline/> 
 	                    	      
                          </group >
@@ -43,9 +43,12 @@
 					
                          	<newline/>
                          	<field name="test_sample_size" />
-                        	<field name='do_update' />
-                          	<field name="record_external"/>
-							
+                         	<field name="rollback"/>
+                        	<field name="do_update" />
+                          	<field name="record_external" string="External Id from Row #" on_change="onchange_record_external(record_external)"/>
+                          	<field name="external_id_field" string="External Id from Field"
+                          		attrs="{'invisible':[('record_external','=',True)]}" on_change="onchange_external_id_field(external_id_field)"/>
+                          	
                          </group>
                          <group col = "4">
                          	<label for="description"/>
@@ -64,10 +67,12 @@
 
                     </group>
                     </group>  
-                    <group>
+                    
+                    	<notebook>
+                    	<page string="Field Map" name="field_map" >
+                    	
                           <field name="header_ids" context="{'model':model_id}" nolabel="1"> 
-                          
-                         	 <form string="Headers">
+                          	 <form string="Headers">
                           	 	<group>
 	                    		<field name="name"/>	                    	
 	                    		<field name="field_label"/>
@@ -91,6 +96,7 @@
 		                  		</field>
 	                    		<field name="relation" readonly="1"/>
 	                    		<field name="relation_field" readonly="1"/>
+	                    		<field name="relation_search_field"/>
 	                    		<field name="search_domain"/> 
 	                    		</group>	
 	                    	</form> 
@@ -105,13 +111,14 @@
 	                    		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
 	                    	</tree>  
 	                    </field> 
-					</group>
-	                    
-	        		<newline/>
-                    <group colspan="1">
-                    	<field name="error_log"/>  
-                    </group>
- 
+					
+	                </page>   
+	        		<page string="Error Log" name="error_log">
+	                    <group colspan="1">
+	                    	<field name="error_log"/>  
+	                    </group>
+ 					</page>
+ 				</notebook>
                 </form>
             </field>
         </record>
