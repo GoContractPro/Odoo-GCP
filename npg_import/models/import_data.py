@@ -445,7 +445,7 @@ class import_data_file(osv.osv):
             error_log = ""
             for import_record in dbf_table:
                 row+= 1
-                
+                domain_filter_skip = False
                 vals = {}
                 search_unique =[]
                 external_id_ids = None
@@ -587,7 +587,7 @@ class import_data_file(osv.osv):
                         
                          
                     if search_ids and not rec.do_update:
-                        e = ('Error Duplicate on Uniquie %s  Found at line %s record skipped') % (search_unique,n,)
+                        e = ('Error Duplicate on Uniquie %s  Found at line %s record skipped') % (search_unique,row,)
                         _logger.info(_(e))
                         error_log += '\n'+ _(e)
                         continue
@@ -606,7 +606,7 @@ class import_data_file(osv.osv):
                         external_id_ids =  model_data_obj.search(cr,uid,search) or None
                      
                     if rec.do_update and  search_ids and external_id_ids and external_id_ids.res_id != search_ids[0]:
-                        e = ('Error External Id and Unique not matching %s %s  Found at line %s record skipped') % (search_unique,external_id_name,n,)
+                        e = ('Error External Id and Unique not matching %s %s  Found at line %s record skipped') % (search_unique,external_id_name,row,)
                         _logger.info(_(e))
                         error_log += '\n'+ _(e)
                         continue
@@ -626,19 +626,19 @@ class import_data_file(osv.osv):
                         count += 1
                         model_data_obj.create(cr,uid,external_vals, context=context)
                         
-                        _logger.info(_('Created record %s values %s external %s') % (n,vals,external_id_name))
+                        _logger.info(_('Created record %s values %s external %s') % (row,vals,external_id_name))
                                      
                     elif external_id_ids and not rec.do_update:
-                        e = ('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,n,)
+                        e = ('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
                         _logger.info(_(e))
                         error_log += '\n'+  _(e)
                         continue
                  
                     else:
-                        count += 1
+                        count += 1 
                         model.create(cr,uid,vals, context=context)       
                         
-                        _logger.info(_('Created record %s values %s') % (n,vals,))
+                        _logger.info(_('Created record %s values %s') % (row,vals,))
                         
                         
                 except:
