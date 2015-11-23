@@ -590,7 +590,7 @@ class import_data_file(osv.osv):
                         
                          
                     if search_ids and not rec.do_update:
-                        e = ('Error Duplicate on Uniquie %s  Found at line %s record skipped') % (search_unique,n,)
+                        e = ('Error Duplicate on Uniquie %s  Found at line %s record skipped') % (search_unique,row,)
                         _logger.info(_(e))
                         error_log += '\n'+ _(e)
                         continue
