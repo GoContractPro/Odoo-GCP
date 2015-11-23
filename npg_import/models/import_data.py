@@ -174,21 +174,22 @@ class import_data_file(osv.osv):
         
     def onchange_external_id_field(self,cr,uid, ids, external_id_field,  context=None):
        
-         
-        header_ids_vals = []
-        header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
-        for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
-        
-            if header_rec.id == external_id_field:
-                value = True
-            else:
-                value = False
-                
-            vals = {  'is_unique_external': value}
-            header_ids_vals.append((1,header_rec.id, vals))
+        if ids: 
+            header_ids_vals = []
+            header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
+            for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
             
-        return{'value':{"header_ids":header_ids_vals}}
-
+                if header_rec.id == external_id_field:
+                    value = True
+                else:
+                    value = False
+                    
+                vals = {  'is_unique_external': value}
+                header_ids_vals.append((1,header_rec.id, vals))
+                
+            return{'value':{"header_ids":header_ids_vals}}
+        else:
+            return {}
 
     def action_get_headers(self, cr, uid, ids, context=None):
         
@@ -335,9 +336,9 @@ class import_data_file(osv.osv):
                 headers_list.append(header.strip())
             n=0
             for header in headers_list:
-                n += 1
+                row+= 1
                 fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', rec.model_id.id)])
-                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': n , 'csv_id':rec.id, 'model_field':fids and fids[0] or False, 'model':rec.model_id.id},context=context)
+                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': row, 'csv_id':rec.id, 'model_field':fids and fids[0] or False, 'model':rec.model_id.id},context=context)
                 
         return True
  
@@ -439,17 +440,19 @@ class import_data_file(osv.osv):
             dbf_table = dbf.Table(rec.dbf_path)
             dbf_table.open()
             list_size = len(dbf_table)
-            n = 0
+            row = 0
+            count = 0
             error_log = ""
             for import_record in dbf_table:
-                n += 1
+                row+= 1
+                
                 vals = {}
                 search_unique =[]
                 external_id_ids = None
                 is_field_unique_external = False
                 external_id_name = False
                 
-                if n == rec.test_sample_size  and context.get('test',False):
+                if  count >= rec.test_sample_size  and context.get('test',False):
 
                     t2 = datetime.now()
                     time_delta = (t2 - time_start)
@@ -483,8 +486,11 @@ class import_data_file(osv.osv):
                         if (not field_val or field_val == 0 or field_val == 0.0) and field.default_val:
                             field_val = field.default_val
                         
+                        
                         if field.search_domain and str(field_val) not in field.search_domain:
-                            continue
+                            row-= 1 # this Record does not match filter skip to record in import Source
+                            domain_filter_skip = True
+                            break
                      
                         if field.model_field_type == 'many2one' and field_val:
                             substitutes = {}
@@ -510,7 +516,7 @@ class import_data_file(osv.osv):
                                 
                                 if field.create_related:
                                     try:
-                                        field_val = related_obj.create(cr,uid,{name:field_val},context = context)
+                                        field_val = related_obj.create(cr,uid,{'name':field_val},context = context)
                                         #e = _(('Value \'%s\' Created for the relation field \'%s\'') % (field_val,field.model_field.name )) 
                                         #error_log += '\n'+ e
                                         _logger.info( e)
@@ -569,7 +575,11 @@ class import_data_file(osv.osv):
                         
                         if field.is_unique_external:
                             is_field_unique_external = field_val
-                            
+                    
+                    
+                    if domain_filter_skip : # this Record does not match filter skip to next Record in import Source
+                        continue 
+                    
                     if len(search_unique) > 0:      
                         search_ids = model.search(cr,uid,search_unique)
                     else:
@@ -588,7 +598,7 @@ class import_data_file(osv.osv):
                                          
                     #  When Using field for External ID                 
                     if rec.record_external:         
-                        external_id_name = ('%s_%s' % ( rec.name.split('.')[0], n ,))
+                        external_id_name = ('%s_%s' % ( rec.name.split('.')[0], row,))
                         
                     if external_id_name:
                         
@@ -603,6 +613,7 @@ class import_data_file(osv.osv):
                      
                     if external_id_ids and rec.do_update:
                         external = model_data_obj.browse(cr,uid,external_id_ids[0])
+                        count += 1
                         model.write(cr,uid,external.res_id,vals,context=context)
                     elif not external_id_ids and external_id_name:
                         
@@ -612,7 +623,9 @@ class import_data_file(osv.osv):
                                          'res_id':res_id,
                                          'module':''
                                          }
+                        count += 1
                         model_data_obj.create(cr,uid,external_vals, context=context)
+                        
                         _logger.info(_('Created record %s values %s external %s') % (n,vals,external_id_name))
                                      
                     elif external_id_ids and not rec.do_update:
@@ -622,9 +635,11 @@ class import_data_file(osv.osv):
                         continue
                  
                     else:
+                        count += 1
                         model.create(cr,uid,vals, context=context)       
-
+                        
                         _logger.info(_('Created record %s values %s') % (n,vals,))
+                        
                         
                 except:
                     e = traceback.format_exc()
@@ -697,7 +712,7 @@ class import_data_file(osv.osv):
             for data in csv_data[1:]:
 #               Check if Uniques already exist in Data if so then if Do update is True then write Records else Skip
                 # TODO add Code here to Search on Uniques
-                n += 1
+                n+= 1
                 
                 record_ids = self.search_record_exists(cr,uid,rec,data,headers_dict,unique_fields)
                 print record_ids 
@@ -756,7 +771,7 @@ class import_data_file(osv.osv):
                 # This is only a Test Roll Back Records exit loop and create POP UP With Info statistic about Import 
                                        
                 
-                if n == rec.test_sample_size  and context.get('test',False):
+                if n== rec.test_sample_size  and context.get('test',False):
                     try:
                         t2 = datetime.now()
                         time_delta = (t2 - time_start)
