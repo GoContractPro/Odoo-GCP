@@ -472,7 +472,7 @@ class import_data_file(osv.osv):
             
                 try:
 
-
+                    domain_filter_skip = False
                     for field in rec.header_ids:
 
                         if not field.model_field: continue # Skip where no Odoo field set
