@@ -505,13 +505,15 @@ class import_data_file(osv.osv):
                                 relation_id = related_obj.name_search(cr,uid,name= field_val )
                             elif field.relation_search_field == 'external_id':
                                 search = [('name','=',field_val),('model','=', model_model)]                     
-                                relation_id =  model_data_obj.search(cr,uid,search) or None
+                                ext_ids =  model_data_obj.search(cr,uid,search) or None
+                                if ext_ids:
+                                    relation_id = model_data_obj.browse(cr, uid, ext_ids[0]).res_id
                             else:
                                 search = [(field.relation_search_field,'=',field_val)]
-                                relation_id = model_data_obj.search(cr, uid, search)
+                                relation_id = related_obj.search(cr, uid, search)
                                 
                             if relation_id :
-                                field_val = relation_id[0][0]
+                                field_val = relation_id[0]
                             else:
                                 
                                 if field.create_related:
@@ -614,7 +616,7 @@ class import_data_file(osv.osv):
                     if external_id_ids and rec.do_update:
                         external = model_data_obj.browse(cr,uid,external_id_ids[0])
                         count += 1
-                        model.write(cr,uid,external.res_id,vals,context=context)
+                        model.write(cr,uid,external.res_id.id,vals,context=context)
                     elif not external_id_ids and external_id_name:
                         
                         res_id = model.create(cr,uid,vals, context=context) 
