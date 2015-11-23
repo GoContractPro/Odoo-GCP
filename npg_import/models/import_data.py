@@ -650,6 +650,7 @@ class import_data_file(osv.osv):
                     _logger.error(_('Error %s' % (e,)))
                     log_vals = {'error_log': sys_err,
                             'has_errors':True}
+                    cr.rollback()
                     self.write(cr,uid,ids[0],log_vals)
                     return vals
         log_vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
