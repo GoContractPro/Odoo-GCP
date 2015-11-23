@@ -41,8 +41,7 @@ import sys, traceback
 
 import contextlib
 from string import strip
-from types import *
-from mercurial.subrepo import types
+from  types import *
 
 _logger = logging.getLogger(__name__)
 
@@ -476,15 +475,17 @@ class import_data_file(osv.osv):
                         if not field.model_field: continue # Skip where no Odoo field set
     
                                 
-                        field_val =  import_record[field.name] or field.default_val
+                        field_val =  import_record[field.name] 
                         field_type = type(field_val)
-                        if field_type in ('unicode', 'str'):
+                        if field_type in (StringType, UnicodeType):
                             field_val = field_val.strip()
+                            
+                        if (not field_val or field_val == 0 or field_val == 0.0) and field.default_val:
+                            field_val = field.default_val
                         
                         if field.search_domain and str(field_val) not in field.search_domain:
-                             continue
-                            
-                       
+                            continue
+                     
                         if field.model_field_type == 'many2one' and field_val:
                             substitutes = {}
                             for sub in field.m2o_substituions:
