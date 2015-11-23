@@ -104,7 +104,8 @@ class import_data_header(osv.osv):
     
     
     def onchange_model_field(self, cr, uid, ids, model_field, context=None):
-        
+        if not ids:
+            return {}
         fld = self.pool.get('ir.model.fields').browse(cr,uid,model_field)
         if fld:
             vals = {'model_field_type': fld.ttype,
@@ -472,7 +473,7 @@ class import_data_file(osv.osv):
             
                 try:
 
-
+                    domain_filter_skip = False
                     for field in rec.header_ids:
 
                         if not field.model_field: continue # Skip where no Odoo field set
@@ -502,16 +503,18 @@ class import_data_file(osv.osv):
                             related_obj = self.pool.get(field.relation)
                             field_val = field_val.strip()
                             if not field.relation_search_field:
-                                relation_id = related_obj.name_search(cr,uid,name= field_val )
+                                relation_id = related_obj.name_search(cr,uid,name= field_val )[0]
                             elif field.relation_search_field == 'external_id':
                                 search = [('name','=',field_val),('model','=', model_model)]                     
-                                relation_id =  model_data_obj.search(cr,uid,search) or None
+                                ext_ids =  model_data_obj.search(cr,uid,search) or None
+                                if ext_ids:
+                                    relation_id = model_data_obj.browse(cr, uid, ext_ids[0]).res_id
                             else:
                                 search = [(field.relation_search_field,'=',field_val)]
-                                relation_id = model_data_obj.search(cr, uid, search)
+                                relation_id = related_obj.search(cr, uid, search)
                                 
                             if relation_id :
-                                field_val = relation_id[0][0]
+                                field_val = relation_id[0]
                             else:
                                 
                                 if field.create_related:
@@ -614,7 +617,7 @@ class import_data_file(osv.osv):
                     if external_id_ids and rec.do_update:
                         external = model_data_obj.browse(cr,uid,external_id_ids[0])
                         count += 1
-                        model.write(cr,uid,external.res_id,vals,context=context)
+                        model.write(cr,uid,external.res_id.id,vals,context=context)
                     elif not external_id_ids and external_id_name:
                         
                         res_id = model.create(cr,uid,vals, context=context) 
@@ -647,6 +650,7 @@ class import_data_file(osv.osv):
                     _logger.error(_('Error %s' % (e,)))
                     log_vals = {'error_log': sys_err,
                             'has_errors':True}
+                    cr.rollback()
                     self.write(cr,uid,ids[0],log_vals)
                     return vals
         log_vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
