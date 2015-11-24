@@ -199,14 +199,14 @@
                   		<field name="is_unique_external"/>
                   		<field name="default_val"/>
                   		<field name="create_related"/>
-                  	 	<field name="model" required="0" readonly="1" />
+                  	 	<field name="model" required="0" readonly="0" />
                   		<field name="model_field" required="0" domain="[('model_id','=',model)]"
                   				context = "{'manual':True, 'default_model_id':model}"
                   				on_change="onchange_model_field(model_field)"/>
                   		<field name="model_field_name" />
-                  		<field name="model_field_type" readonly="1" />
-                  		<field name="relation" readonly="1"/>
-                  		<field name="relation_field" readonly="1"/>
+                  		<field name="model_field_type" readonly="0" />
+                  		<field name="relation" readonly="0"/>
+                  		<field name="relation_field" readonly="0"/>
                   		<field name="search_filter"/> 
                   		<field name="m2o_substituions" attrs="{'invisible':[('model_field_type','!=','many2one')]}">
                   			<tree editable="bottom">

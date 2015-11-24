@@ -42,6 +42,7 @@ import sys, traceback
 import contextlib
 from string import strip
 from  types import *
+from __builtin__ import False
 
 _logger = logging.getLogger(__name__)
 
@@ -479,6 +480,7 @@ class import_data_file(osv.osv):
             row = 0
             count = 0
             error_log = ""
+            
             for import_record in dbf_table:
                 row+= 1
                 domain_filter_skip = False
@@ -489,7 +491,7 @@ class import_data_file(osv.osv):
                 external_id_name = False
                 
                 if  count >= rec.test_sample_size  and context.get('test',False):
-
+                    
                     t2 = datetime.now()
                     time_delta = (t2 - time_start)
                     time_each = time_delta / rec.test_sample_size                   
@@ -505,7 +507,6 @@ class import_data_file(osv.osv):
                 
                     self.write(cr,uid,ids[0],vals)
                     return self.show_warning(cr, uid, msg , context = context)
-            
                 try:
                     o2m = {}
                     domain_filter_skip = False
@@ -514,6 +515,7 @@ class import_data_file(osv.osv):
                         if not field.model_field: continue # Skip where no Odoo field set
     
                         relation_id = False
+                        res_id = False
                                
                         field_val =  field.name and import_record[field.name]  or False
                         field_type = type(field_val)
@@ -537,9 +539,7 @@ class import_data_file(osv.osv):
                             field_val = substitutes.get(field_val, field_val)
                             related_obj = self.pool.get(field.relation)
                             field_val = field_val.strip()
-                            
-                            
-                                
+                               
                             if field.search_related_external:
                                 search = [('name','=',field_val),('model','=', model_model)]                     
                                 ext_ids =  model_data_obj.search(cr,uid,search) or None
