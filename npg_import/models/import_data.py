@@ -653,7 +653,9 @@ class import_data_file(osv.osv):
                     #  When Using field for External ID                 
                     if rec.record_external:         
                         external_id_name = ('%s_%s' % ( rec.name.split('.')[0], row,))
-                        
+                     
+                     
+                    res_id = False    
                     if external_id_name:
                         
                         search = [('name','=',external_id_name),('model','=', model_model)]                     
