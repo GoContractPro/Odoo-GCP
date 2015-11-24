@@ -92,14 +92,14 @@
 			                    		<field name="model_field" required="0" 
 			                    				context = "{'manual':True, 'default_model_id':model}"
 			                    				on_change="onchange_model_field(model_field)"/>	
-			                    		<field name="model_field_name" readonly="1" />
-			                    		<field name="model_field_type" readonly="1" />
+			                    		<field name="model_field_name" readonly="0" />
+			                    		<field name="model_field_type" readonly="0" />
 			                    	</group>
 			                    	<group string="Related Search Settings" cols="2" 
 											attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
 			                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
-			                    		<field name="relation" readonly="1"/>
-			                    		<field name="relation_id" readonly="1" nolabel='1' colspan='2'/>
+			                    		<field name="relation" readonly="0"/>
+			                    		<field name="relation_id" readonly="0" nolabel='1' colspan='2'/>
 			                    		<field name="relation_field" attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"
 	                    				readonly="1" />
 										<field name="search_related_external"></field>
