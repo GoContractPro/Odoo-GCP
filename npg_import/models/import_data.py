@@ -123,8 +123,8 @@ class import_data_header(osv.osv):
     
     
     def onchange_model_field(self, cr, uid, ids, model_field, context=None):
-        if not ids:
-            return {}
+#         if not ids:
+#             return {}
         fld = self.pool.get('ir.model.fields').browse(cr,uid,model_field)
         if fld:
             '''    if fld.ttype == 'one2many':
@@ -148,7 +148,7 @@ class import_data_header(osv.osv):
                     'relation_id': relation_id and relation_id[0] or False,
                     'relation': fld.relation,
                     }
-            self.write(cr,uid,ids[0],vals)
+#             self.write(cr,uid,ids[0],vals)
             return {'value':vals}
             
         else:
@@ -157,7 +157,7 @@ class import_data_header(osv.osv):
                     'relation_field': False,
                     'relation_id': False,
                     'relation': False,}
-            self.write(cr,uid,ids[0],vals)
+#             self.write(cr,uid,ids[0],vals)
           
             return {'value':vals}
         
