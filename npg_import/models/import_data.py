@@ -93,7 +93,7 @@ class import_data_header(osv.osv):
                     help="The  technical name of Field Relation field in one2many and many2many "),
                 'search_filter':fields.char('Filter Source', size=256,
                       help="""Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import, \n
-                      Can use mulitple values for filter,  format as python type list for values example ['value1','value2','value3'], """),           
+                      Can use mulitple values for filter,  format as python type list for values example 'value1','value2','value3', """),           
                 'create_related':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
                 'field_label':fields.char('Description', size=32,),
                 'field_type':fields.char('Data Type', size=8,),
@@ -118,7 +118,6 @@ class import_data_header(osv.osv):
     
     _defaults = {
                  'model':_get_model,
-                 'search_filter' : [],
                  }
     
     
