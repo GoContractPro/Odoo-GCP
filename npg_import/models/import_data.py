@@ -127,20 +127,7 @@ class import_data_header(osv.osv):
 #             return {}
         fld = self.pool.get('ir.model.fields').browse(cr,uid,model_field)
         if fld:
-            '''    if fld.ttype == 'one2many':
-                #TODO add the functionality for o2m and remove this exception
-                vals =  {'model_field_type': False,
-                    'model_field_name': False,
-                    'relation_field': False,
-                    'relation_id': False,
-                    'relation': False,
-                    'model_field': False,}
-                self.write(cr,uid,ids[0],vals)
-                
-                raise osv.except_osv(_('Warning'), _("one2many not yet supported!"))
-            '''
-                
-        
+       
             relation_id = self.pool.get('ir.model').search(cr,uid,[('model','=',fld.relation)])
             vals = {'model_field_type': fld.ttype,
                     'model_field_name': fld.name,
@@ -687,7 +674,7 @@ class import_data_file(osv.osv):
                         
                         _logger.info(_('Created record %s values %s external %s') % (row,vals,external_id_name))
                                      
-                    elif external_id_ids and not rec.do_update:
+                    elif res_id and not rec.do_update:
                         e = ('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
                         _logger.info(_(e))
                         error_log += '\n'+  _(e)
