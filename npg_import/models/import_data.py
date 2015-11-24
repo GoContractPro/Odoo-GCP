@@ -59,6 +59,19 @@ class import_m2o_substitutions(osv.osv):
                 'src_value':fields.char('Source field value', size=64,required=True),
                 'odoo_value':fields.char('Corresponding odoo value', size=64,required=True),
                 }
+    
+class import_m2o_values(osv.osv): 
+    # The Model Is a map from Odoo Data to CSV Sheet Data
+    _name = "import.m2o.values"
+    _description = "Create new value Substitutions functionality in Fields mapping"
+    
+    _columns = { 
+                'header_map':fields.many2one('import.data.header', 'Header Map', required=True, ondelete='cascade'),
+                'default_value':fields.char('Source Default value', size=64,required=True),
+                'source_field':fields.many2one('import.data.header', 'Source Field', Domain="[('import_data_id','=', header_map)]"),
+                'odoo_field':fields.many2one('ir.model.fields','Corresponding Odoo Field',Domain="[('model_id','=', header_map.model)]" ),
+                }
+
 
 
 class import_data_header(osv.osv): 
@@ -70,27 +83,32 @@ class import_data_header(osv.osv):
                 'import_data_id':fields.many2one('import.data.file','Import Data',required=True, ondelete='cascade',),
                 'is_unique':fields.boolean('Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated '),
                 'model':fields.many2one('ir.model','Model'),
-                'model_field':fields.many2one('ir.model.fields','Odoo Field'),
+                'model_field':fields.many2one('ir.model.fields','Odoo Field', domain="[('model_id','=',model)]"),
                 'model_field_type':fields.char('Odoo Data Type', size = 128),
                 'model_field_name':fields.char('Odoo Field Name', size = 128),
-                'relation': fields.char('Odoo Relation', size = 128,
-                    help="The  Model this field is related to"),
+                'relation': fields.char('Odoo Related Model', size = 128,
+                    help="The tecnmical name of  Model this field is related to"),
+                'relation_id': fields.many2one('ir.model','Odoo Related Model ID'),
                 'relation_field': fields.char('Odoo Relation Field', size = 128,
-                    help="The  Field this field is related to"),
-                'relation_search_field': fields.char('Related Field Searched', size = 128, 
-                    help="Use this if wanting to search in fields other than standard name searched fields or use external_id"),
-                'search_domain':fields.char('Filter Values', size=256,
-                     help="Define Filter List of following Format ['value1','value2','value3'], Records must match values in list or row is skipped on import "),           
+                    help="The  technical name of Field Relation field in one2many and many2many "),
+                'search_filter':fields.char('Filter Source', size=256,
+                      help="""Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import, \n
+                      Can use mulitple values for filter,  format as python type list for values example ['value1','value2','value3'], """),           
                 'create_related':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
                 'field_label':fields.char('Description', size=32,),
                 'field_type':fields.char('Data Type', size=8,),
                 'field_val':fields.char('Record Value', size=128),
-                'default_val':fields.char('Default Import Val', size = 256, help = 'The Default if no values for field in imported file'),
-                
+                'default_val':fields.char('Default Import Val', size = 256, help = 'The Default if no values for field in imported Source'),
                 'm2o_substituions':fields.one2many('import.m2o.substitutions','header_map', string="Source Value Substitutions"),
-                'is_unique_external':fields.boolean('Is Unique for External ID', readonly=True ,
+                'is_unique_external':fields.boolean('External ID Field', readonly=True ,
                                 help ='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID'),
-                
+                'm2o_values':fields.one2many('import.m2o.values','header_map', string="Default Values or source values to map to create related and parent records"),
+                'm2o_create_external':fields.boolean('Create External on Related'),
+                'search_related_external':fields.boolean('External ID Search'),
+                'search_name' : fields.boolean('Name Search'),
+                'search_other_field' : fields.many2one('ir.model.fields','Other Search Field', domain="[('model_id','=',relation_id)]", 
+                                help='Select field  to match in related record othe than Name or External ID'),
+                'related_source_table': fields.many2one('import.data.file','Related Source Table'),
                 }
     
   
@@ -100,6 +118,7 @@ class import_data_header(osv.osv):
     
     _defaults = {
                  'model':_get_model,
+                 'search_filter' : [],
                  }
     
     
@@ -108,9 +127,25 @@ class import_data_header(osv.osv):
             return {}
         fld = self.pool.get('ir.model.fields').browse(cr,uid,model_field)
         if fld:
+            '''    if fld.ttype == 'one2many':
+                #TODO add the functionality for o2m and remove this exception
+                vals =  {'model_field_type': False,
+                    'model_field_name': False,
+                    'relation_field': False,
+                    'relation_id': False,
+                    'relation': False,
+                    'model_field': False,}
+                self.write(cr,uid,ids[0],vals)
+                
+                raise osv.except_osv(_('Warning'), _("one2many not yet supported!"))
+            '''
+                
+        
+            relation_id = self.pool.get('ir.model').search(cr,uid,[('model','=',fld.relation)])
             vals = {'model_field_type': fld.ttype,
                     'model_field_name': fld.name,
                     'relation_field': fld.relation_field,
+                    'relation_id': relation_id and relation_id[0] or False,
                     'relation': fld.relation,
                     }
             self.write(cr,uid,ids[0],vals)
@@ -120,6 +155,7 @@ class import_data_header(osv.osv):
             vals =  {'model_field_type': False,
                     'model_field_name': False,
                     'relation_field': False,
+                    'relation_id': False,
                     'relation': False,}
             self.write(cr,uid,ids[0],vals)
           
@@ -472,14 +508,15 @@ class import_data_file(osv.osv):
                     return self.show_warning(cr, uid, msg , context = context)
             
                 try:
-
+                    o2m = {}
                     domain_filter_skip = False
                     for field in rec.header_ids:
 
                         if not field.model_field: continue # Skip where no Odoo field set
     
-                                
-                        field_val =  import_record[field.name] 
+                        relation_id = False
+                               
+                        field_val =  field.name and import_record[field.name]  or False
                         field_type = type(field_val)
                         if field_type in (StringType, UnicodeType):
                             field_val = field_val.strip()
@@ -487,8 +524,7 @@ class import_data_file(osv.osv):
                         if (not field_val or field_val == 0 or field_val == 0.0) and field.default_val:
                             field_val = field.default_val
                         
-                        
-                        if field.search_domain and str(field_val) not in field.search_domain:
+                        if field.search_filter and str(field_val) not in field.search_filter:
                             row-= 1 # this Record does not match filter skip to record in import Source
                             domain_filter_skip = True
                             break
@@ -502,39 +538,47 @@ class import_data_file(osv.osv):
                             field_val = substitutes.get(field_val, field_val)
                             related_obj = self.pool.get(field.relation)
                             field_val = field_val.strip()
-                            if not field.relation_search_field:
-                                relation_id = related_obj.name_search(cr,uid,name= field_val )[0]
-                            elif field.relation_search_field == 'external_id':
+                            
+                            
+                                
+                            if field.search_related_external:
                                 search = [('name','=',field_val),('model','=', model_model)]                     
                                 ext_ids =  model_data_obj.search(cr,uid,search) or None
                                 if ext_ids:
-                                    relation_id = model_data_obj.browse(cr, uid, ext_ids[0]).res_id
-                            else:
-                                search = [(field.relation_search_field,'=',field_val)]
-                                relation_id = related_obj.search(cr, uid, search)
-                                
-                            if relation_id :
-                                field_val = relation_id[0]
-                            else:
-                                
+                                    res = model_data_obj.browse(cr, uid, ext_ids[0])
+                                    relation_id = res and res.res_id
+                            if field.search_name and not relation_id:
+                                res = related_obj.name_search(cr,uid,name= field_val )
+                                if res:
+                                    relation_id = res[0][0] and False
+                            if field.search_other_field and not relation_id:    
+                                search = [(field.search_other_field.name,'=',field_val)]
+                                res = related_obj.search(cr, uid, search)
+                                relation_id = res and res[0]  or False
+                            if relation_id: # Success found the related record
+                                field_val = relation_id
+                            else:  # No Related Record is Found decide to create or Skip
                                 if field.create_related:
                                     try:
-                                        field_val = related_obj.create(cr,uid,{'name':field_val},context = context)
-                                        #e = _(('Value \'%s\' Created for the relation field \'%s\'') % (field_val,field.model_field.name )) 
-                                        #error_log += '\n'+ e
+                                        id = related_obj.create(cr,uid,{'name':field_val},context = context)
+                                        e = _(('Value \'%s\' Created for the relation field \'%s\'') % (field_val,field.model_field.name )) 
+                                        error_log += '\n'+ e
                                         _logger.info( e)
+                                        e = False
                                     except:
-                                        field_val = None
+                                        
                                         e = _(('Error  \'%s\' not created for the relation field \'%s\'') % (field_val,field.model_field.name ))
                                         error_log += '\n'+ e
                                         field_val = False
                                         _logger.info( e)
+                                        e = False
                                 else: 
-                                    field_val =  None   
+                                       
                                     e = _(('Value \'%s\' not found for the relation field \'%s\' related not set') % (field_val,field.model_field.name ))
                                     error_log += '\n'+ e
                                     field_val = False
                                     _logger.info( e)
+                                    e = False
                                 
                         elif field.model_field_type == 'date' and field_val :
                             
@@ -559,7 +603,13 @@ class import_data_file(osv.osv):
                         elif field.model_field_type == 'many2many' and  field_val:
                             #TODO: Add Functionality to handle Many2Many
                             field_val = False
-                             
+                            
+                        elif field.model_field_type == 'one2many' and  field_val:
+                            if field.model_field.name in vals:
+                                vals[field.model_field.name].update({'name':field_val})
+                            else:
+                                vals[field.model_field.name] = {'name':field_val}
+                            field_val = False 
                         elif field.model_field_type == 'char' and  field_val:
                             field_val = str(field_val).strip()
                             
@@ -571,13 +621,15 @@ class import_data_file(osv.osv):
                             # NO data field is False
                             pass
                             
-                        vals[field.model_field.name] = field_val
                         
-                        if field.is_unique:
-                            search_unique.append((field.model_field.name,"=", field_val))
+                        if field_val:
+                            vals[field.model_field.name] = field_val
                         
-                        if field.is_unique_external:
-                            is_field_unique_external = field_val
+                            if field.is_unique:
+                                search_unique.append((field.model_field.name,"=", field_val))
+                        
+                            if field.is_unique_external:
+                                is_field_unique_external = field_val
                     
                     
                     if domain_filter_skip : # this Record does not match filter skip to next Record in import Source
@@ -606,19 +658,22 @@ class import_data_file(osv.osv):
                     if external_id_name:
                         
                         search = [('name','=',external_id_name),('model','=', model_model)]                     
-                        external_id_ids =  model_data_obj.search(cr,uid,search) or None
+                        ext_ids =  model_data_obj.search(cr,uid,search) or None
+                        if ext_ids:
+                            res = model_data_obj.browse(cr, uid, ext_ids[0])
+                            res_id = res and res.res_id or False
                      
-                    if rec.do_update and  search_ids and external_id_ids and external_id_ids.res_id != search_ids[0]:
+                    if rec.do_update and  search_ids and res_id and res_id != search_ids[0]:
                         e = ('Error External Id and Unique not matching %s %s  Found at line %s record skipped') % (search_unique,external_id_name,row,)
                         _logger.info(_(e))
                         error_log += '\n'+ _(e)
+                        e = False
                         continue
                      
-                    if external_id_ids and rec.do_update:
-                        external = model_data_obj.browse(cr,uid,external_id_ids[0])
+                    if res_id and rec.do_update:
                         count += 1
-                        model.write(cr,uid,external.res_id.id,vals,context=context)
-                    elif not external_id_ids and external_id_name:
+                        model.write(cr,uid,res_id,vals,context=context)
+                    elif not res_id and external_id_name:
                         
                         res_id = model.create(cr,uid,vals, context=context) 
                         external_vals = {'name':external_id_name,
@@ -635,6 +690,7 @@ class import_data_file(osv.osv):
                         e = ('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
                         _logger.info(_(e))
                         error_log += '\n'+  _(e)
+                        e = False
                         continue
                  
                     else:
