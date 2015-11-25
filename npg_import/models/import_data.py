@@ -759,7 +759,7 @@ class import_data_file(osv.osv):
                         
         except:
             e = traceback.format_exc()
-            sys_err = ---[1]
+            sys_err = sys.exc_info()[1][1]
             _logger.error(_('Error %s' % (sys_err,)))
             log_vals = {'error_log': sys_err,
                     'has_errors':True}
