@@ -119,6 +119,7 @@ class import_data_header(osv.osv):
     
     _defaults = {
                  'model':_get_model,
+                 'search_name':True,
                  }
     
     
@@ -166,12 +167,12 @@ class import_data_file(osv.osv):
             'description':fields.text('Description',), 
             'model_id': fields.many2one('ir.model', 'Model', ondelete='cascade', required= False,
                 help="The model to import"),
-            'start_time': fields.datetime('Start',  readonly=True),
-            'end_time': fields.datetime('End',  readonly=True),
+            'start_time': fields.datetime('Start Time',  readonly=True),
+            'end_time': fields.datetime('End Time',  readonly=True),
             'attachment': fields.many2many('ir.attachment',
                 'data_import_ir_attachments_rel',
                 'import_data_id', 'attachment_id', 'CSV File'),
-            'error_log': fields.text('Error Log'),
+            'error_log': fields.text('Status Log'),
             'test_sample_size': fields.integer('Test Sample Size'),
             'do_update': fields.boolean('Allow Update', 
                     help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
@@ -184,6 +185,7 @@ class import_data_file(osv.osv):
             'has_errors':fields.boolean('Has Errors'),
             'rollback':fields.boolean('Roll Back Test Records'),
             'external_id_field':fields.many2one('import.data.header', string='External Id Field', domain="[('import_data_id','=',active_id)]"),
+            'row_count':fields.integer("Rows Processed"),
             }
     
     _defaults = {
@@ -470,6 +472,8 @@ class import_data_file(osv.osv):
                 row = 0
                 count = 0
                 error_log = ""
+                start_time = time_start.strftime('%Y-%m-%d %H:%M:%S')
+ 
                 
                 for import_record in dbf_table:
                     row+= 1
@@ -479,6 +483,14 @@ class import_data_file(osv.osv):
                     external_id_ids = None
                     is_field_unique_external = False
                     external_id_name = False
+                    
+                    log_vals = {'start_time':start_time,
+                        'end_time': False,
+                        'error_log': error_log,
+                        'row_count': row}
+                    
+                    self.write(cr,uid,ids[0],log_vals)
+                    
                     
                     if  count >= rec.test_sample_size  and context.get('test',False):
                         
@@ -570,13 +582,26 @@ class import_data_file(osv.osv):
                                             error_txt = _('Related ID  %s for Value \'%s\' Created for Odoo Relation Field\'%s\'' % (field_val,field_search_val,field.model_field.name )) 
                                             error_log += '\n'+ error_txt
                                             _logger.info( error_txt)
-                                            error_txt = False
-                                        except:
                                             
+                                            if field.search_related_external: #if searching on related rxternal IDs and creating the related use the search to create
+                                                external_vals = {'name':field_search_val,
+                                                    'model':model_model,
+                                                    'res_id':res_id,
+                                                    'module':''
+                                                    }
+                                
+                                                model_data_obj.create(cr,uid,external_vals, context=context)
+                                            
+                                            
+                                            error_txt = False
+                                            
+                                        except:
+                                            sys_err = sys.exc_info()
+                                            sys_err = sys_err[2]
                                             error_txt = _('Error  \'%s\' not created for the relation field \'%s\'' % (field_search_val,field.model_field.name ))
                                             error_log += '\n'+ error_txt
                                             field_val = False
-                                            _logger.info( error_txt)
+                                            _logger.info( error_txt + sys_err)
                                             error_txt = Falsesubstitutes = {}
 
                                 
@@ -617,14 +642,8 @@ class import_data_file(osv.osv):
                                 else:
                                     vals[field.model_field.name] = [(0,0,{'name':field_val})]
                                 field_val = False 
-                            elif field.model_field_type == 'char' and  field_val:
-                                field_val = str(field_val).strip()
-                                
-                            else :
-                                # NO data field is False
-                                field_val = None
-                                pass
-                                
+
+
                             
                             if field_val:
                                 vals[field.model_field.name] = field_val
@@ -648,7 +667,8 @@ class import_data_file(osv.osv):
                         except: # Buidling Vals DIctionary
                             
                             e = traceback.format_exc()
-                            sys_err = sys.exc_info()[1][1]
+                            sys_err = sys.exc_info()
+                            sys_err = sys_err[2]
                             error_txt = _('Error Building Vals at row:  %s -Field: %s == %s \n Vals Dict: %s ' %(row,field.model_field.name, field_val, vals,))
                             error_log += error_txt
                             _logger.error(error_txt + sys_err)
@@ -703,7 +723,8 @@ class import_data_file(osv.osv):
                     except: # Finding Existing Records
                                              
                         e = traceback.format_exc()
-                        sys_err = sys.exc_info()[1][1]
+                        sys_err = sys.exc_info()
+                        sys_err = sys_err[2]
                         error_txt = _('Error Finding:  %s-%s-%s ' % (row,search_unique,external_id_name))
                         _logger.error(error_txt + sys_err)
                         error_log += error_txt
@@ -743,31 +764,34 @@ class import_data_file(osv.osv):
                             model.create(cr,uid,vals, context=context)       
                             
                             _logger.info(_('Created row %s vals %s') % (row,vals,))
-                        cr.commit()
+                        
                         
                     except: # Error Writing or Creating Records
                                
                         e = traceback.format_exc()
-                        sys_err = sys.exc_info()[1][1]
+                        sys_err = sys.exc_info()
+                        sys_err = sys_err[2]
                         error_txt = _('Writing or Creating row %s vals %s ' % (row,vals,))
-                        error_log += error_txt
+                        error_log += '\n' + error_txt + '\n' + sys_err
                         _logger.error(error_txt + sys_err)
                         log_vals = {'error_log': error_log,
                                 'has_errors':True}
                         self.write(cr,uid,ids,log_vals)    
                         
-                        
+                    cr.commit()   
         except:
             e = traceback.format_exc()
-            sys_err = sys.exc_info()[1][1]
+            sys_err = sys.exc_info()
+            sys_err = sys_err[2]
             _logger.error(_('Error %s' % (sys_err,)))
             log_vals = {'error_log': sys_err,
                     'has_errors':True}
             cr.rollback()
         #    self.write(cr,uid,ids,log_vals)
             return vals
-        log_vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
+        log_vals = {'start_time':start_time,
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
+                'row_count':row ,
                 'error_log':error_log}
         if context.get('test',False) and rec.rollback:
             cr.rollback()
