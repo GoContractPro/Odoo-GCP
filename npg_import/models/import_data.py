@@ -322,8 +322,8 @@ class import_data_file(osv.osv):
                 return {'value': vals}
                 
             except:
-                sys_info = sys.exc_info()
-                e = 'Error opening DBF Import  %s: \n%s \n%s'  % (rec.dbf_path, sys_info[1],sys_info[2]) 
+                sys_info = sys.exc_info()[1][1]
+                e = 'Error opening DBF Import  %s: \n%s \n%s' % (rec.dbf_path, sys_info[1],sys_info) 
                 print e
                 _logger.error(_('Error:  %s ' % (e,)))
                 vals = {'error_log': e,
@@ -455,248 +455,308 @@ class import_data_file(osv.osv):
         
         time_start = datetime.now()
         list_size =0 
-        for rec in self.browse(cr, uid, ids, context=context):
-
-            model_data_obj = self.pool.get('ir.model.data')
-            model_model = rec.model_id.model
-            model =  self.pool.get(model_model)
+        
+        try:
             
-            dbf_table = dbf.Table(rec.dbf_path)
-            dbf_table.open()
-            list_size = len(dbf_table)
-            row = 0
-            count = 0
-            error_log = ""
+            for rec in self.browse(cr, uid, ids, context=context):
             
-            for import_record in dbf_table:
-                row+= 1
-                domain_filter_skip = False
-                vals = {}
-                search_unique =[]
-                external_id_ids = None
-                is_field_unique_external = False
-                external_id_name = False
+                model_data_obj = self.pool.get('ir.model.data')
+                model_model = rec.model_id.model
+                model =  self.pool.get(model_model)
                 
-                if  count >= rec.test_sample_size  and context.get('test',False):
+                dbf_table = dbf.Table(rec.dbf_path)
+                dbf_table.open()
+                list_size = len(dbf_table)
+                row = 0
+                count = 0
+                error_log = ""
+                
+                for import_record in dbf_table:
+                    row+= 1
+                    domain_filter_skip = False
+                    vals = {}
+                    search_unique =[]
+                    external_id_ids = None
+                    is_field_unique_external = False
+                    external_id_name = False
                     
-                    t2 = datetime.now()
-                    time_delta = (t2 - time_start)
-                    time_each = time_delta / rec.test_sample_size                   
-                      
-                    estimate_time = (time_each * list_size)
-                     
-                    print "time_end,time_delta,estimate_time",t2,time_delta,estimate_time
-                    msg = _('Time for %s records  is %s (hrs:min:sec) \n %s') % (list_size, estimate_time ,error_log)
-                    if rec.rollback: cr.rollback()
-                    vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
-                            'end_time': time.strftime('%Y-%m-%d %H:%M:%S' ),
-                            'error_log':error_log}
-                
-                    self.write(cr,uid,ids[0],vals)
-                    return self.show_warning(cr, uid, msg , context = context)
-                try:
+                    if  count >= rec.test_sample_size  and context.get('test',False):
+                        
+                        t2 = datetime.now()
+                        time_delta = (t2 - time_start)
+                        time_each = time_delta / rec.test_sample_size                   
+                          
+                        estimate_time = (time_each * list_size)
+                         
+                        print "time_end,time_delta,estimate_time",t2,time_delta,estimate_time
+                        msg = _('Time for %s records  is %s (hrs:min:sec) \n %s') % (list_size, estimate_time ,error_log)
+                        if rec.rollback: cr.rollback()
+                        vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
+                                'end_time': time.strftime('%Y-%m-%d %H:%M:%S' ),
+                                'error_log':error_log}
+                    
+                        self.write(cr,uid,ids[0],vals)
+                        return self.show_warning(cr, uid, msg , context = context)
+            
                     o2m = {}
                     domain_filter_skip = False
-                    for field in rec.header_ids:
-
-                        if not field.model_field: continue # Skip where no Odoo field set
-    
-                        relation_id = False
-                        res_id = False
-                               
-                        field_val =  field.name and import_record[field.name]  or False
-                        field_type = type(field_val)
-                        if field_type in (StringType, UnicodeType):
-                            field_val = field_val.strip()
-                            
-                        if (not field_val or field_val == 0 or field_val == 0.0) and field.default_val:
-                            field_val = field.default_val
-                        
-                        if field.search_filter and str(field_val) not in field.search_filter:
-                            row-= 1 # this Record does not match filter skip to record in import Source
-                            domain_filter_skip = True
-                            break
-                     
-                        if field.model_field_type == 'many2one' and field_val:
-                            substitutes = {}
-                            for sub in field.m2o_substituions:
-#                                 substitutes[str(sub.src_value).strip()] = str(sub.odoo_value).strip()
-                                substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
-                            field_val = str(field_val).strip()
-                            field_val = substitutes.get(field_val, field_val)
-                            related_obj = self.pool.get(field.relation)
-                            field_val = field_val.strip()
-                               
-                            if field.search_related_external:
-                                search = [('name','=',field_val),('model','=', model_model)]                     
-                                ext_ids =  model_data_obj.search(cr,uid,search) or None
-                                if ext_ids:
-                                    res = model_data_obj.browse(cr, uid, ext_ids[0])
-                                    relation_id = res and res.res_id
-                            if field.search_name and not relation_id:
-                                res = related_obj.name_search(cr,uid,name= field_val )
-                                if res:
-                                    relation_id = res[0][0] and False
-                            if field.search_other_field and not relation_id:    
-                                search = [(field.search_other_field.name,'=',field_val)]
-                                res = related_obj.search(cr, uid, search)
-                                relation_id = res and res[0]  or False
-                            if relation_id: # Success found the related record
-                                field_val = relation_id
-                            else:  # No Related Record is Found decide to create or Skip
-                                if field.create_related:
-                                    try:
-                                        id = related_obj.create(cr,uid,{'name':field_val},context = context)
-                                        e = _(('Value \'%s\' Created for the relation field \'%s\'') % (field_val,field.model_field.name )) 
-                                        error_log += '\n'+ e
-                                        _logger.info( e)
-                                        e = False
-                                    except:
-                                        
-                                        e = _(('Error  \'%s\' not created for the relation field \'%s\'') % (field_val,field.model_field.name ))
-                                        error_log += '\n'+ e
-                                        field_val = False
-                                        _logger.info( e)
-                                        e = False
-                                else: 
-                                       
-                                    e = _(('Value \'%s\' not found for the relation field \'%s\' related not set') % (field_val,field.model_field.name ))
-                                    error_log += '\n'+ e
-                                    field_val = False
-                                    _logger.info( e)
-                                    e = False
-                                
-                        elif field.model_field_type == 'date' and field_val :
-                            
-                            field_val = field_val.strftime("%Y-%m-%d")
-                            
-                        elif field.model_field_type == 'datetime' and field_val :
-                            
-                            field_val = field_val.strftime('%Y-%m-%d %H:%M:%S')
-                            
-                        elif field.model_field_type == 'boolean' and  field_val:
-#                             field_val = field.model_field.name
-                            field_val = bool(field_val)
-                            
-                        elif field.model_field_type == 'float' and  field_val:
-#                             field_val = field.model_field.name
-                            field_val = float(field_val)
-                            
-                        elif field.model_field_type == 'integer' and  field_val:
-#                             field_val = int(field.model_field.name)
-                            field_val = int(field_val)
-                          
-                        elif field.model_field_type == 'many2many' and  field_val:
-                            #TODO: Add Functionality to handle Many2Many
-                            field_val = False
-                            
-                        elif field.model_field_type == 'one2many' and  field_val:
-                            if field.model_field.name in vals:
-                                vals[field.model_field.name].update({'name':field_val})
-                            else:
-                                vals[field.model_field.name] = {'name':field_val}
-                            field_val = False 
-                        elif field.model_field_type == 'char' and  field_val:
-                            field_val = str(field_val).strip()
-                            
-                        elif field_val: # Default Assumes is String
-                            
-                            field_val = str(field_val).strip()
-                                
-                        else :
-                            # NO data field is False
-                            pass
-                            
-                        
-                        if field_val:
-                            vals[field.model_field.name] = field_val
-                        
-                            if field.is_unique:
-                                search_unique.append((field.model_field.name,"=", field_val))
-                        
-                            if field.is_unique_external:
-                                is_field_unique_external = field_val
                     
+                    for field in rec.header_ids:
+    
+                        try:   # Buidling Vals DIctionary
+                        
+                            if not field.model_field: continue # Skip where no Odoo field set
+        
+                            relation_id = False
+                            res_id = False
+                                   
+                            field_val =  field.name and import_record[field.name]  or False
+                            field_type = type(field_val)
+                            
+                            if field_type in (StringType, UnicodeType):
+                                field_val = field_val.strip().replace("&", "\&")
+                                
+                            if (not field_val or field_val == 0 or field_val == 0.0) and field.default_val:
+                                field_val = field.default_val
+                            
+                            if field.search_filter and str(field_val) not in field.search_filter:
+                                row-= 1 # this Record does not match filter skip to record in import Source
+                                domain_filter_skip = True
+                                break
+                         
+                            if field.model_field_type == 'many2one' and field_val:
+                                #substitutes = {}
+                                #for sub in field.m2o_substituions:
+        #                                 substitutes[str(sub.src_value).strip()] = str(sub.odoo_value).strip()
+                                #    substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
+                                #sub = None
+                                #field_val = str(field_val).strip()
+                                #field_val = substitutes.get(field_val, field_val)
+                                related_obj = self.pool.get(field.relation)
+                                
+                                field_search_val = field_val
+                                
+                                field_val = 0
+    
+                                if field.search_related_external:
+                                    search = [('name','=',field_search_val),('model','=', model_model)]                     
+                                    ext_ids =  model_data_obj.search(cr,uid,search) or None
+                                    if ext_ids:
+                                        res = model_data_obj.browse(cr, uid, ext_ids[0])
+                                        relation_id = res and res.res_id
+                                if field.search_name and not relation_id:
+                                    res = related_obj.name_search(cr,uid,name=field_search_val )
+                                    if res:
+                                        relation_id = res[0][0]
+                                if field.search_other_field and not relation_id:    
+                                    search = [(field.search_other_field.name,'=',field_search_val)]
+                                    res = related_obj.search(cr, uid, search)
+                                    relation_id = res and res[0]  or False
+                                if relation_id: # Success found the related record
+                                    field_val = relation_id
+                                else:  # No Related Record is Found decide to create or Skip
+                                    if field.create_related:
+                                        try:
+                                            field_val = related_obj.create(cr,uid,{'name':field_search_val},context = context)
+                                            error_txt = _('Related ID  %s for Value \'%s\' Created for Odoo Relation Field\'%s\'' % (field_val,field_search_val,field.model_field.name )) 
+                                            error_log += '\n'+ error_txt
+                                            _logger.info( error_txt)
+                                            error_txt = False
+                                        except:
+                                            
+                                            error_txt = _('Error  \'%s\' not created for the relation field \'%s\'' % (field_search_val,field.model_field.name ))
+                                            error_log += '\n'+ error_txt
+                                            field_val = False
+                                            _logger.info( error_txt)
+                                            error_txt = Falsesubstitutes = {}
+
+                                
+                            elif field.model_field_type == 'date' and field_val :
+                                
+                                field_val = field_val.strftime("%Y-%m-%d")
+                                
+                            elif field.model_field_type == 'datetime' and field_val :
+                                
+                                field_val = field_val.strftime('%Y-%m-%d %H:%M:%S')
+                                
+                            elif field.model_field_type == 'boolean' and  field_val:
+        #                             field_val = field.model_field.name
+                                field_val = bool(field_val)
+                                substitutes = {}
+                                for sub in field.m2o_substituions:
+        #                                 substitutes[str(sub.src_value).strip()] = str(sub.odoo_value).strip()
+                                    substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
+                                sub = None
+                                field_val = str(field_val).strip()
+                                field_val = substitutes.get(field_val, field_val)
+                                
+                            elif field.model_field_type == 'float' and  field_val:
+        #                             field_val = field.model_field.name
+                                field_val = float(field_val)
+                                
+                            elif field.model_field_type == 'integer' and  field_val:
+        #                             field_val = int(field.model_field.name)
+                                field_val = int(field_val)
+                              
+                            elif field.model_field_type == 'many2many' and  field_val:
+                                #TODO: Add Functionality to handle Many2Many
+                                field_val = False
+                                
+                            elif field.model_field_type == 'one2many' and  field_val:
+                                if field.model_field.name in vals:
+                                    vals[field.model_field.name].append((0,0,{'name':field_val}))
+                                else:
+                                    vals[field.model_field.name] = [(0,0,{'name':field_val})]
+                                field_val = False 
+                            elif field.model_field_type == 'char' and  field_val:
+                                field_val = str(field_val).strip()
+                                
+                            else :
+                                # NO data field is False
+                                field_val = None
+                                pass
+                                
+                            
+                            if field_val:
+                                vals[field.model_field.name] = field_val
+                            
+                                if field.is_unique:
+                                    search_unique.append((field.model_field.name,"=", field_val))
+                            
+                                if field.is_unique_external:
+
+                                    is_field_unique_external = field_val
+                                    if not field_val:
+                                        
+                                        error_txt = _('Error External Id  Import field not Set  Found at line %s for Dict: %s' % (row, vals))
+                                        _logger.info(error_txt)
+                                        error_log += '\n'+ error_txt
+                                        error_txt = False
+                                        continue 
+
+                                   
+                                    
+                        except: # Buidling Vals DIctionary
+                            
+                            e = traceback.format_exc()
+                            sys_err = sys.exc_info()[1][1]
+                            error_txt = _('Error Building Vals at row:  %s -Field: %s == %s \n Vals Dict: %s ' %(row,field.model_field.name, field_val, vals,))
+                            error_log += error_txt
+                            _logger.error(error_txt + sys_err)
+                            log_vals = {'error_log': error_txt,
+                                    'has_errors':True}
+                            self.write(cr,uid,ids,log_vals)
                     
                     if domain_filter_skip : # this Record does not match filter skip to next Record in import Source
                         continue 
                     
-                    if len(search_unique) > 0:      
-                        search_ids = model.search(cr,uid,search_unique)
-                    else:
-                        search_ids = False
+                    try:  # Finding existing Records  
+                    
+                        if len(search_unique) > 0:      
+                            search_ids = model.search(cr,uid,search_unique)
+                        else:
+                            search_ids = False
+             
+                            if search_ids and not rec.do_update:
+                                error_txt = _('Error Duplicate on Uniquie %s  Found at line %s record skipped' % (search_unique,row,))
+                                _logger.info(error_txt)
+                                error_log += '\n'+ error_txt
+                                continue
+                                           
+                            
+                            #  When Using field for External ID                 
+                            if rec.record_external:         
+                                external_id_name = ('%s_%s' % ( rec.name.split('.')[0], row,))
+                                
+                            #  When using Record Row External ID
+                            if is_field_unique_external:
+                                
+                                external_id_name = is_field_unique_external   
+                                                 
+                             
+                             
+                            res_id = False    
+                            if external_id_name:
+                                
+                                search = [('name','=',external_id_name),('model','=', model_model)]                     
+                                ext_ids =  model_data_obj.search(cr,uid,search) or None
+                                if ext_ids:
+                                    res = model_data_obj.browse(cr, uid, ext_ids[0])
+                                    res_id = res and res.res_id or False
+                             
+                            if rec.do_update and  search_ids and res_id and res_id != search_ids[0]:
+                                error_txt = _('Error External Id and Unique not matching %s %s  Found at line %s record skipped' % (search_unique,external_id_name,row,))
+                                _logger.info(error_txt)
+                                error_log += '\n'+ error_txt
+                                error_txt = False
+                                continue
                         
-                         
-                    if search_ids and not rec.do_update:
-                        e = ('Error Duplicate on Uniquie %s  Found at line %s record skipped') % (search_unique,row,)
-                        _logger.info(_(e))
-                        error_log += '\n'+ _(e)
-                        continue
-                                   
-                    #  When using Record Row External ID
-                    if is_field_unique_external:
-                        external_id_name = is_field_unique_external   
+                    except: # Finding Existing Records
+                                             
+                        e = traceback.format_exc()
+                        sys_err = sys.exc_info()[1][1]
+                        error_txt = _('Error Finding:  %s-%s-%s ' % (row,search_unique,external_id_name))
+                        _logger.error(error_txt + sys_err)
+                        error_log += error_txt
+                        log_vals = {'error_log': error_txt,
+                                'has_errors':True}
+                        self.write(cr,uid,ids,log_vals)    
+                                                
+                    try: # Writing or Create Records     
+                        
+                        print vals
+                        if res_id and rec.do_update:
+                            count += 1
+                            model.write(cr,uid,[res_id],vals,context=context)
+                        elif not res_id and external_id_name:
+                            
+                            res_id = model.create(cr,uid, vals, context=context)
+                             
+                            external_vals = {'name':external_id_name,
+                                             'model':model_model,
+                                             'res_id':res_id,
+                                             'module':''
+                                             }
+                            count += 1
+                            model_data_obj.create(cr,uid,external_vals, context=context)
+                            
+                            _logger.info(_('Created record %s values %s external %s' % (row,vals,external_id_name)))
                                          
-                    #  When Using field for External ID                 
-                    if rec.record_external:         
-                        external_id_name = ('%s_%s' % ( rec.name.split('.')[0], row,))
+                        elif res_id and not rec.do_update:
+                            error_txt = _('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
+                            _logger.info(error_txt)
+                            error_log += '\n'+  error_txt
+                            error_txt = False
+                            continue
                      
-                     
-                    res_id = False    
-                    if external_id_name:
+                        else:
+                            count += 1 
+                            model.create(cr,uid,vals, context=context)       
+                            
+                            _logger.info(_('Created row %s vals %s') % (row,vals,))
+                        cr.commit()
                         
-                        search = [('name','=',external_id_name),('model','=', model_model)]                     
-                        ext_ids =  model_data_obj.search(cr,uid,search) or None
-                        if ext_ids:
-                            res = model_data_obj.browse(cr, uid, ext_ids[0])
-                            res_id = res and res.res_id or False
-                     
-                    if rec.do_update and  search_ids and res_id and res_id != search_ids[0]:
-                        e = ('Error External Id and Unique not matching %s %s  Found at line %s record skipped') % (search_unique,external_id_name,row,)
-                        _logger.info(_(e))
-                        error_log += '\n'+ _(e)
-                        e = False
-                        continue
-                     
-                    if res_id and rec.do_update:
-                        count += 1
-                        model.write(cr,uid,res_id,vals,context=context)
-                    elif not res_id and external_id_name:
-                        
-                        res_id = model.create(cr,uid,vals, context=context) 
-                        external_vals = {'name':external_id_name,
-                                         'model':model_model,
-                                         'res_id':res_id,
-                                         'module':''
-                                         }
-                        count += 1
-                        model_data_obj.create(cr,uid,external_vals, context=context)
-                        
-                        _logger.info(_('Created record %s values %s external %s') % (row,vals,external_id_name))
-                                     
-                    elif res_id and not rec.do_update:
-                        e = ('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
-                        _logger.info(_(e))
-                        error_log += '\n'+  _(e)
-                        e = False
-                        continue
-                 
-                    else:
-                        count += 1 
-                        model.create(cr,uid,vals, context=context)       
-                        
-                        _logger.info(_('Created record %s values %s') % (row,vals,))
+                    except: # Error Writing or Creating Records
+                               
+                        e = traceback.format_exc()
+                        sys_err = sys.exc_info()[1][1]
+                        error_txt = _('Writing or Creating row %s vals %s ' % (row,vals,))
+                        error_log += error_txt
+                        _logger.error(error_txt + sys_err)
+                        log_vals = {'error_log': error_log,
+                                'has_errors':True}
+                        self.write(cr,uid,ids,log_vals)    
                         
                         
-                except:
-                    e = traceback.format_exc()
-                    sys_err = sys.exc_info()
-                    _logger.error(_('Error %s' % (e,)))
-                    log_vals = {'error_log': sys_err,
-                            'has_errors':True}
-                    cr.rollback()
-                    self.write(cr,uid,ids[0],log_vals)
-                    return vals
+        except:
+            e = traceback.format_exc()
+            sys_err = ---[1]
+            _logger.error(_('Error %s' % (sys_err,)))
+            log_vals = {'error_log': sys_err,
+                    'has_errors':True}
+            cr.rollback()
+        #    self.write(cr,uid,ids,log_vals)
+            return vals
         log_vals = {'start_time':time_start.strftime('%Y-%m-%d %H:%M:%S'),
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
                 'error_log':error_log}
@@ -811,7 +871,7 @@ class import_data_file(osv.osv):
                         _logger.info('Imported Line Number%s  ' % n)
                  
                 except:
-                    e = sys.exc_info() + '\n' + traceback.format_exc()
+                    e = sys.exc_info()[1][1] + '\n' + traceback.format_exc()
                     _logger.info(_('Error  %s record not created for line Number %s') % (e,n,))
                     error_log += _('Error  %s at Record %s --\n') % (e,n, ) 
                   
@@ -838,7 +898,7 @@ class import_data_file(osv.osv):
                         self.write(cr,uid,ids[0],vals)
                         return self.show_warning(cr, uid, msg , context = context)
                     except:
-                        e = sys.exc_info()
+                        e = sys.exc_info()[1][1]
                         _logger.error(_('Error %s' % (e,)))
                         vals = {'error_log': e}
                         self.write(cr,uid,ids[0],vals)

@@ -187,35 +187,66 @@
             <field name="name">import.data.header.form</field>
             <field name="model">import.data.header</field>
             <field name="arch" type="xml">
-                <form string="Read File" version="7.0">   
-        
-            	 <form string="Headers">
-                     <group>
-                  		<field name="name"/>	                    	
-                  		<field name="field_label"/>
-                  		<field name="field_type"/>
-                  	 	<field name="field_val" />
-                  		<field name="is_unique"/>
-                  		<field name="is_unique_external"/>
-                  		<field name="default_val"/>
-                  		<field name="create_related"/>
-                  	 	<field name="model" required="0" readonly="0" />
-                  		<field name="model_field" required="0" domain="[('model_id','=',model)]"
-                  				context = "{'manual':True, 'default_model_id':model}"
-                  				on_change="onchange_model_field(model_field)"/>
-                  		<field name="model_field_name" />
-                  		<field name="model_field_type" readonly="0" />
-                  		<field name="relation" readonly="0"/>
-                  		<field name="relation_field" readonly="0"/>
-                  		<field name="search_filter"/> 
-                  		<field name="m2o_substituions" attrs="{'invisible':[('model_field_type','!=','many2one')]}">
-                  			<tree editable="bottom">
-                  				<field name="src_value"/>	                    	
-                  				<field name="odoo_value"/>
-                  			</tree>
-                  		</field>
-                  		</group>	
-                  	</form>
+                <form string="Import Header" version="7.0">   
+                      
+                          	 	<group  cols="4">
+                          	 		<group string=" Source Info " cols="2">
+			                    		<field name="name"/>	                    	
+			                    		<field name="field_label"/>
+			                    		<field name="field_type"/>
+			                    	 	<field name="field_val" />
+			                    	 	<field name="is_unique"/>
+			                    	 	<field name="search_filter"/>
+		                    	 	</group>
+		                    	 	<group string="Odoo Record Creation Settings" cols="2">
+		                    	 		<field name="model" required="0" />
+			                    		<field name="is_unique_external"/>
+			                    		<field name="default_val"/>	
+	                    			</group>
+	                    			
+	                    			<group string="Odoo Field Information" cols="2" >
+			                    		<field name="model_field" required="0" 
+			                    				context = "{'manual':True, 'default_model_id':model}"
+			                    				on_change="onchange_model_field(model_field)"/>	
+			                    		<field name="model_field_name" readonly="0" />
+			                    		<field name="model_field_type" readonly="0" />
+			                    	</group>
+			                    	<group string="Related Search Settings" cols="2" 
+											attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
+			                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
+			                    		<field name="relation" readonly="0"/>
+			                    		<field name="relation_id" readonly="0" nolabel='1' colspan='2'/>
+			                    		<field name="relation_field" attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"
+	                    				readonly="1" />
+										<field name="search_related_external"></field>
+										<field name="search_name"></field>
+										<field name="search_other_field"/>
+										<field name="create_related"/>
+										</group>
+										<group string="Map Source Field Values to Odoo values" cols="4" attrs="{'invisible':[('model_field_type','!=','many2one')]}">
+										
+		                      			<field name="m2o_substituions" 
+		                      				 nolabel="1" colspan="4">
+				                  			<tree editable="bottom">
+				                  				<field name="src_value"/>	                    	
+				                  				<field name="odoo_value"/>
+				                  			</tree>
+				                  		</field>
+				                  		</group>
+				                  		<group string="Map Creating Odoo Related Records" cols='4'
+				                  			attrs="{'invisible':[('create_related','=',False)]}">
+				                  		<field name='m2o_create_external' cols="2"/>
+		                      			<field name="m2o_values" attrs="{'invisible':[('model_field_type','!=','many2one')]}" 
+		                      				nolabel="1" colspan="4">
+				                  			<tree editable="bottom">
+				                  				<field name="default_value"/>
+				                  				<field name="source_field"/>	                    	
+				                  				<field name="odoo_field"/>
+				                  			</tree>
+				                  		</field>
+				                  		</group>
+									
+				                </group>
                 </form>
             </field>
         </record>   
@@ -230,7 +261,7 @@
                  		<field name="field_type"/>
                  	 	<field name="field_val" />
                  	 	<field name="default_val"/>
-                 	 	<field name="model" required="0" readonly="1" invisible='1'/>
+                 	 	<field name="model" required="0" readonly="0" invisible='1'/>
                  		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
                  	</tree> 
                  	
