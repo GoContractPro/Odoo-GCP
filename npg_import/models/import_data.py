@@ -517,12 +517,21 @@ class import_data_file(osv.osv):
                                 field_val = field_val.strip().replace("&", "\&")
                                 
                             if (not field_val or field_val == 0 or field_val == 0.0) and field.default_val:
-                                field_val = field.default_val
+                                field_val = field.default_val.strip()
+                                
                             
-                            if field.search_filter and str(field_val) not in field.search_filter:
-                                row-= 1 # this Record does not match filter skip to record in import Source
-                                domain_filter_skip = True
-                                break
+                            
+                            if field.search_filter and field.search_filter != '[]':
+                                
+                                field.search_filter = field.search_filter.replace('[','')
+                                field.search_filter = field.search_filter.replace(']','')
+                                
+                                search_list = tuple(field_val(split(',')))
+                                
+                                if search_list and str(field_val) not in search_list:
+                                    row-= 1 # this Record does not match filter skip to record in import Source
+                                    domain_filter_skip = True
+                                    break
                          
                             if field.model_field_type == 'many2one' and field_val:
                                 #substitutes = {}
