@@ -43,6 +43,8 @@
 					
                          	<newline/>
                          	<field name="test_sample_size" />
+                         	<field name="time_estimate" widget="float_time" />
+                         	<field name="start_time"  />
                          	<field name="rollback"/>
                         	<field name="do_update" />
                           	<field name="record_external" string="External Id from Row #" on_change="onchange_record_external(record_external)"/>
@@ -107,15 +109,15 @@
 										<field name="search_other_field"/>
 										<field name="create_related"/>
 										</group>
-										<group string="Map Source Field Values to Odoo values" cols="4" attrs="{'invisible':[('model_field_type','!=','many2one')]}">
+										<group string="Map Source Field Values to Odoo values" cols="4" >
 										
-		                      			<field name="m2o_substituions" 
-		                      				 nolabel="1" colspan="4">
-				                  			<tree editable="bottom">
-				                  				<field name="src_value"/>	                    	
-				                  				<field name="odoo_value"/>
-				                  			</tree>
-				                  		</field>
+			                      			<field name="substitutions" 
+			                      				 nolabel="1" colspan="4">
+					                  			<tree editable="bottom">
+					                  				<field name="src_value"/>	                    	
+					                  				<field name="odoo_value"/>
+					                  			</tree>
+					                  		</field>
 				                  		</group>
 				                  		<group string="Map Creating Odoo Related Records" cols='4'
 				                  			attrs="{'invisible':[('create_related','=',False)]}">
@@ -163,6 +165,7 @@
                     	<field name="name"/>
                         <field name="tot_record_num" />
                         <field name="row_count" />
+                        <field name="count" />
                         <field name="start_time" />
                         <field name="end_time" />
                         <field name="has_errors" />
@@ -224,15 +227,15 @@
 										<field name="search_other_field"/>
 										<field name="create_related"/>
 										</group>
-										<group string="Map Source Field Values to Odoo values" cols="4" attrs="{'invisible':[('model_field_type','!=','many2one')]}">
+										<group string="Map Source Field Values to Odoo values" cols="4" >
 										
-		                      			<field name="m2o_substituions" 
-		                      				 nolabel="1" colspan="4">
-				                  			<tree editable="bottom">
-				                  				<field name="src_value"/>	                    	
-				                  				<field name="odoo_value"/>
-				                  			</tree>
-				                  		</field>
+			                      			<field name="substitutions" 
+			                      				 nolabel="1" colspan="4">
+					                  			<tree editable="bottom">
+					                  				<field name="src_value"/>	                    	
+					                  				<field name="odoo_value"/>
+					                  			</tree>
+					                  		</field>
 				                  		</group>
 				                  		<group string="Map Creating Odoo Related Records" cols='4'
 				                  			attrs="{'invisible':[('create_related','=',False)]}">
