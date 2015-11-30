@@ -91,8 +91,8 @@ class import_data_header(osv.osv):
                 'model_field_name':fields.char('Odoo Field Name', size = 128),
                 'relation': fields.char('Odoo Related Model', size = 128,
                     help="The tecnmical name of  Model this field is related to"),
-                'relation_id': fields.many2one('ir.model','Odoo Related Model ID'),
-                'relation_field': fields.char('Odoo Relation Field', size = 128,
+                'relation_id': fields.many2one('ir.model','Odoo Related Field'),
+                'relation_field': fields.char('Odoo Related Field', size = 128,
                     help="The  technical name of Field Relation field in one2many and many2many "),
                 'search_filter':fields.char('Filter Source', size=256,
                       help="""Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import, \n
@@ -444,30 +444,64 @@ class import_data_file(osv.osv):
     def action_import(self, cr, uid, ids, context=None):
         
         for rec in self.browse(cr, uid, ids, context=context):
+        
             if rec.dbf_path:
-                self.action_import_dbf(cr, uid, ids, context)
-                return
+                
+                if context.get('test',False):
+                    self.action_import_dbf(cr, uid, ids, context)
+                    return True
+        
+                else:
+                    vals={
+                        'name': 'Import %s' % (rec.name),
+                        'user_id': uid,
+                        'model': 'import.data.file',
+                        'function': 'action_import_dbf',
+                        'args': repr([ids[0]])\
+                        }
+                    
+                    self.pool.get('ir.cron').create(cr, uid, vals)
+                    
+                    stats_vals = {'start_time':False,
+                    'end_time': False,
+                    'error_log': False,
+                    'time_estimate': False,
+                    'row_count': False,
+                    'count': False}   
+                    return stats_vals
+
             if rec.rec.attachment:
                 self.action_import_csv(cr, uid, ids, context)
                 return
             
         raise osv.except_osv('Warning', 'No Data files to Import')
+             
+    def convert_backslash_string(self,s):
+        
+        if '//' in s:
+            if isinstance(s, str):
+                s = s.encode('string-escape')
+            elif isinstance(s, unicode):
+                s = s.encode('unicode-escape')
+            return s
+        else:
+            return s
     
-    def convert_raw_data_strings(self, field_raw):
+    def convert_raw_data_strings(self, field_raw):        
         
-        field_type = type(field_raw)
-        
-        if field_type in (StringType,UnicodeType):
+        if isinstance( field_raw, str):
             return field_raw.strip()
 
-        if isinstance(field_raw, datetime.datetime):
+        elif isinstance(field_raw, unicode):
+            return field_raw.strip()
+
+        elif isinstance(field_raw, datetime.datetime):
             return field_raw.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         
-        if isinstance(field_raw , datetime.date):
+        elif isinstance(field_raw , datetime.date):
             return field_raw.strftime(DEFAULT_SERVER_DATE_FORMAT)
-       
-        
-        return str(field_raw)
+
+        else: str(field_raw)
      
     def skip_current_row_filter(self, field_val, search_filter):
         
@@ -498,57 +532,67 @@ class import_data_file(osv.osv):
         return substitutes.get(field_val, field_val)
                     
      
-    def match_related_records(self, cr,uid, field_search_val, relation = False, model = False, search_external = False, 
-                              search_name = False, search_field = False, context=None ): 
+    def search_records(self, cr,uid, field_search_val, field, context=None ): 
             
-        related_obj = self.pool.get(relation)
-        
+        related_obj = self.pool.get(field.relation)
+                  
+            
         if related_obj:
-            
-            field_search_val
     
-            if search_external:
-                search = [('name','=',field_search_val),('model','=', model)]                     
+            if field.search_related_external:
+                search = [('name','=',field_search_val),('model','=', field.relation)]                     
                 ext_ids =  self.pool.get('ir.model.data').search(cr,uid,search) or None
                 if ext_ids:
                     res = self.pool.get('ir.model.data').browse(cr, uid, ext_ids[0])
                     return res and res.res_id or False
                 
-            if search_name:
+            if field.search_name:
+                self.convert_backslash_string( field_search_val)
                 res = related_obj.name_search(cr,uid,name=field_search_val )
                 return res and res[0][0]
                     
-            if search_field:    
-                search = [(search_field,'=',field_search_val)]
+            if field.search_other_field:    
+                search = [(field.search_other_field.name,'=',field_search_val)]
                 res = related_obj.search(cr, uid, search)
                 return res and res[0]  or False
-                
-    def create_related_record(self, cr, uid, ids, vals, rec, relation, search_related_external, row = None, context= None ):
         
-        related_obj = self.pool.get(relation)
-            
+        return False
+                
+    def create_related_record(self, cr, uid, ids,rec, field, field_val, row = None, context= None ):
+        
         try:
-            res_id = related_obj.create(cr,uid, vals,context = context) or False
-            log = _('Related record ID %s : \'%s\' Created for relation \'%s\' row %s' % (res_id, field_val,relation, row )) 
-            rec.error_log += '\n'+ log
-            _logger.info( log)
+            vals = self.set_related_vals(cr, uid, field_val, field, context)
+            res_id =  self.pool.get(field.relation).create(cr,uid, vals,context = context) or False
             
+            if not res_id:
+                log = _('Warning!: Related record for  value \'%s\' Not Created for relation \'%s\' row %s' % (res_id, field_val, field.relation, row )) 
+                rec.error_log += '\n'+ log
+                _logger.info( log)
+                return   False 
             
-            #if searching on related external IDs then creatthe related  external ID bsed on use field_val used to  search 
-            if res_id and search_related_external: 
+            #if searching on related external IDs then create the related  external ID based on  field_val used to search 
+            if res_id and field.search_related_external: 
                 vals = {'name':field_val,
-                    'model': relation,
+                    'model': field.relation,
                     'res_id':res_id,
                     'module':''
                     }
 
                 self.pool.get('ir.model.data').create(cr,uid,vals, context=context)
             
-        except:
-            error_txt = _('Error  record \'%s\' not created for model \'%s\'' % (vals,relation_model.model))
-            self.log_error_note(cr, uid, ids, rec, error_txt, context)
+            log = _('Related record ID %s : value \'%s\' Created for relation \'%s\' row %s' % (res_id, field_val, field.relation, row )) 
+            rec.error_log += '\n'+ log
+            _logger.info( log)    
             
-        return res_id
+            return res_id
+            
+        except:
+            rec.has_errors = True
+            error_txt = _('Error  record \'%s\' not created for model \'%s\'' % (vals,relation))
+            self.update_log_error(cr, uid, ids, rec, error_txt, context)
+            
+            return False
+        
      
     def create_import_record(self, cr, uid, ids, rec, vals, external_id_name = False, row = None,context=None): 
         
@@ -569,8 +613,9 @@ class import_data_file(osv.osv):
             _logger.info(_('Created record %s from Source row %s' % (vals,row)))
              
         except:
+            rec.has_errors = True
             error_txt = _('Error record %s not created for import row  %s' % (vals,row ))
-            self.log_error_note(cr, uid, ids, rec, error_txt, context)
+            self.update_log_error(cr, uid, ids, rec, error_txt, context)
             
         return res_id
                       
@@ -586,14 +631,14 @@ class import_data_file(osv.osv):
         
         return False
     
-    def log_error_note(self, cr, uid, ids,rec, error_txt, context = None):
+    def update_log_error(self, cr, uid, ids,rec, error_txt = '', context = None):
 
         e = traceback.format_exc()
         _logger.error(error_txt + e)
         rec.error_log += error_txt +'\n' + e + '\n'
         log_vals = {'error_log': rec.error_log,
-                'has_errors':True}
-        self.write(cr,uid,ids[0],log_vals)
+                'has_errors':rec.has_errors}
+        self.write(cr,uid,ids,log_vals)
         return log_vals
     
     def check_external_id_name(self, cr, uid, row, rec, external_id_name = False):  
@@ -614,31 +659,26 @@ class import_data_file(osv.osv):
             #TODO add functionality to build other Relate values defualts from list or other Tables
             return {'name': field_val}
         
-    def convert_odoo_data_types(self, cr, uid, ids, rec, field, field_val):
+    def convert_odoo_data_types(self, cr, uid, ids, rec, field, field_val, row=False, rec_val=None, context = None):
         
         if field.model_field_type == 'many2one' and field_val:
-                                              
-            res_id = self.match_related_records(cr,uid,field_val, relation = field.relation,
-                search_external=field.search_related_external,
-                search_name=field.search_name,
-                search_field=field.search_other_field.name)             
+     
+            res_id = self.search_records(cr, uid, field_search_val=field_val, field=field, context=context)
             
             if not res_id and field.create_related: 
-                    # If Success found the related record 
-                    vals = self.set_related_vals(cr, uid, field_val,field, context)
-                    res_id = self.create_related_record(cr,uid, ids, vals, rec, relation_model = field.relation
-                                                        ,external_id=field.search_related_external and field_val or False,
-                                                         context =context)
-        
+                # If Success found the related record 
+                res_id = self.create_related_record(cr, uid, ids,rec=rec, field=field, field_val=field_val, row=row, context=context)
+                
             return res_id
         
         elif field.model_field_type == 'boolean' and  field_val:
             try:
                 field_val = bool(field_val)
             except:
+                rec.has_errors = True
                 field_val = False
                 error_txt = ('Error: Row %s Field %s -- %s is not required Boolean type' %s (row,field.model_field.name,field_val,))
-                self.log_error_note( cr, uid, ids, rec, error_txt, context)
+                self.update_log_error( cr, uid, ids, rec, error_txt, context)
                 
             return field_val
         
@@ -649,9 +689,10 @@ class import_data_file(osv.osv):
             try:
                 field_val = float(field_val)
             except:
+                rec.has_errors = True
                 field_val = 0.0
                 error_txt = _('Error: Row %s Field %s -- %s is not required  Floating Point type' %s ( row,field.model_field.name,field_val))
-                self.log_error_note( cr, uid, ids, rec, error_txt, context)
+                self.update_log_error( cr, uid, ids, rec, error_txt, context)
                 
             return field_val
 
@@ -661,9 +702,10 @@ class import_data_file(osv.osv):
             try:
                 field_val = int(field_val)
             except:
+                rec.has_errors = True
                 field_val = 0
                 error_txt = _('Error: Row %s Field %s -- not required Integer  type' %s (row,field.model_field.name,field_val))
-                self.log_error_note( cr, uid, ids, rec, error_txt, context)
+                self.update_log_error( cr, uid, ids, rec, error_txt, context)
                 
             return field_val
         
@@ -674,53 +716,68 @@ class import_data_file(osv.osv):
             return field_val
         elif field.model_field_type == 'binary' and  field_val: 
             return field_val
+        elif field.model_field_type in ['one2many','many2many']:
+                                
+            
+            
+            res_id = self.search_records(cr, uid, field_search_val=field_val, field=field, context=context)
+            m20 = self.get_o2m_m2m_vals(cr, uid, ids, field,field_val=field_val,res_id=res_id) 
+            #TODO Add code here to handle finding related Records values in the Source Database and build Vals dict to pass to get_o2m_m2m_vals method        
+            if rec_val:
+                if m20:return rec_val.append(m20)
+                else: rec_val
+            else:
+                if m20:return [m20]
+                else:None
         else:
             return field_val
     
-    def get_o2m_m2m_vals(self, cr, uid, ids, field_val, rec = None, field = None,  ): 
+    def get_o2m_m2m_vals(self, cr, uid, ids,field, field_val, res_id = False, vals = None, context = None ): 
         
-            return ((0,0,{'name':field_val}))
+        if res_id:
+            return (4,res_id)
+        elif vals:
+            return (0,0,{vals})
+        else:
+            related_obj = self.pool.get(field.relation)
+            name = related_obj._rec_name or False
+            model_id = self.pool.get('ir.model').search(cr,uid,[('model','=',field.relation)])
+            field_id = self.pool.get('ir.model.fields').search(cr,uid,[('model_id','=',model_id and model_id[0] or False),('name','=',name)])
+            field_obj = self.pool.get('ir.model.fields').browse(cr,uid,field_id and field_id[0] or False)
+            if field_obj:
+                if field_obj.ttype == 'many2one':
+                    res_id = self.search_records(cr, uid, field_search_val=field_val, field=field, context=context)
+                    if res_id:return (0,0,{name:res_id})
+                    else: return None
+                else:
+                    return (0,0,{name:field_val})   
+            else:
+                return None
+                 
        
 
 
-    def prepare_test_statics(self, rec, processed_rows, count):           
+    def update_statistics(self,cr,uid,ids,rec,processed_rows,count,remaining=True):   
         '''params:
         rec: The main record set for import File
         processed_rows: Current number of Rows processed from Data Source
         count: Total number of Rows actually imported without Skipped
         
         '''
-        
-        estimate_time = self.estimate_import_time(start_time = rec.start_time, processed_rows = processed_rows, tot_record_num = rec.tot_record_num, remaining = False)
+        estimate_time = self.estimate_import_time(start_time=rec.start_time, processed_rows=processed_rows, tot_record_num=rec.tot_record_num, remaining=remaining)
 
-        vals = {'start_time':rec.start_time,
-                'end_time': False,
-                'error_log': rec.error_log,
-                'time_est' : estimate_time,
-                'row_count': processed_rows,
-                'count': count} 
- 
-        return vals 
-                    
-    def update_load_statistics(self,cr,uid,ids,rec,processed_rows,count):   
-        '''params:
-        rec: The main record set for import File
-        processed_rows: Current number of Rows processed from Data Source
-        count: Total number of Rows actually imported without Skipped
-        
-        '''
-        estimate_time = self.estimate_import_time(start_time = rec.start_time, processed_rows = processed_rows, tot_record_num = rec.tot_record_num, remaining = True)
-
-        log_vals = {'start_time':rec.start_time,
+        stats_vals = {'start_time':rec.start_time,
                     'end_time': False,
                     'error_log': rec.error_log,
-                    'time_est': estimate_time,
+                    'time_estimate': estimate_time,
                     'row_count': processed_rows,
                     'count': count}
                         
-        self.write(cr,uid,ids[0],log_vals) 
+        self.write(cr,uid,ids,stats_vals) 
         
-    def estimate_import_time(self, start_time, processed_rows, tot_record_num, remaining = False):
+        return stats_vals
+        
+    def estimate_import_time(self, start_time, processed_rows, tot_record_num, remaining = True):
         '''params:
         start_time: Time in string format YYYY-MM-DD HH:MM:SS when import started
         processed_rows: Current number of Rows processed from Data Source
@@ -730,14 +787,17 @@ class import_data_file(osv.osv):
         t2 = datetime.datetime.now()
         time_delta = (t2 - datetime.datetime.strptime(start_time, DEFAULT_SERVER_DATETIME_FORMAT))
         time_each = time_delta / processed_rows
+        time_each = time_each.total_seconds()
+        
         if remaining:
             
-            return time_each * (tot_record_num - processed_rows)
+            return (time_each * (tot_record_num - processed_rows)) / 3600 # return time in hours
                           
         else:
-            return time_each * tot_record_num                  
+            return (time_each * tot_record_num) / 3600                
           
-        
+ 
+            
     def action_import_dbf(self, cr, uid, ids, context=None):
         
 #        global log_msg
@@ -750,6 +810,7 @@ class import_data_file(osv.osv):
         try:
             
             for rec in self.browse(cr, uid, ids, context=context):
+                rec.has_errors = False
                 rec.error_log = ''           
                 dbf_table = dbf.Table(rec.dbf_path)
                 dbf_table.open()
@@ -760,19 +821,15 @@ class import_data_file(osv.osv):
                 count = 0
                 
                 for import_record in dbf_table:
-                    row+= 1
+                    
                     vals = {}
                     search_unique =[]
                     external_id_name = False
                     skip_record = False
                    
-                    if  count >= rec.test_sample_size  and context.get('test',False):
-                        
-                        if rec.rollback: cr.rollback()
-                        vals = self.prepare_test_statics(rec = rec, processed_rows = row, count = count)
-                        self.write(cr,uid,ids[0],vals)
-                        return vals # Exit Import Records Loop
 
+                    
+                    row+= 1
                     for field in rec.header_ids:
     
                         try:   # Buidling Vals DIctionary
@@ -801,30 +858,23 @@ class import_data_file(osv.osv):
                             field_val = self.do_substitution_mapping(field_val,field.substitutions)
                             
                             #Convert to Odoo Data types and add field to Record Vals Dictionary
-                           
-                            if field.model_field_type in ['one2many','many2many']:
-                                        
-                                if field.model_field.name in vals:
-                                    vals[field.model_field.name].append(self.get_o2m_m2m_vals(cr, uid, ids, field_val))
-                                else:
-                                    vals[field.model_field.name] = [self.get_o2m_m2m_vals(cr, uid, ids, field_val)]
-                            else:
-                                vals[field.model_field.name] = self.convert_odoo_data_types(cr, uid, ids, rec, field, field_val)
+
+                            vals[field.model_field.name] = self.convert_odoo_data_types(cr, uid, ids, rec, field, field_val, row, vals.get(field.model_field.name,False), context)
                                
                             # If field is marked as Unique in mapping append to search on unique to use to confirm no duplicates before creating new record    
                             if field.is_unique and not field_val:
                                 
                                 error_txt = _('Error Required unique field value not set at line %s ' % (row))
-                                self.log_error_note( cr, uid,ids,rec, error_txt, context)
+                                self.update_log_error( cr, uid,ids,rec, error_txt, context)
                                 skip_record = True
                                 break 
                             elif field.is_unique:
                                 search_unique.append((field.model_field.name,"=", field_val))
                                                                         
                         except: # Buidling Vals DIctionary
-                            
+                            rec.has_errors = True
                             error_txt = _('Error Building Vals at row:  %s -Field: %s == %s \n Vals Dict: %s ' %(row,field.model_field.name, field_val, vals,))
-                            self.log_error_note( cr, uid, ids,rec, error_txt, context)
+                            self.update_log_error( cr, uid, ids,rec, error_txt, context)
                     
                     if skip_record : # this Record does not match filter skip to next Record in import Source
                         continue 
@@ -844,13 +894,13 @@ class import_data_file(osv.osv):
                                 
                             if rec.do_update and  search_ids and res_id and res_id != search_ids[0]:
                                 error_txt = _('Error External Id and Unique not matching %s %s  Found at Row %s record skipped' % (search_unique,external_id_name,row,))
-                                self.log_error_note( cr, uid, ids, rec, error_txt, context)
+                                self.update_log_error( cr, uid, ids, rec, error_txt, context)
                                 
                                 continue
 
                         elif search_ids and not rec.do_update:
                                 error_txt = _('Error Duplicate on Uniquie %s  Found at Row %s record skipped' % (search_unique,row,))
-                                self.log_error_note( cr, uid, ids, rec, error_txt, context)
+                                self.update_log_error( cr, uid, ids, rec, error_txt, context)
                                 continue
                         elif search_ids:
                             res_id = search_ids[0] 
@@ -859,12 +909,13 @@ class import_data_file(osv.osv):
                             
                         
                     except: # Finding Existing Records
-                        
+                        rec.has_errors = True
                         error_txt = _('Error Finding:  %s-%s-%s ' % (row,search_unique,external_id_name))
-                        self.log_error_note(cr, uid, ids, rec, error_txt, context)                    
+                        self.update_log_error(cr, uid, ids, rec, error_txt, context)                    
 
                     try: # Writing or Create Records     
-                        
+
+
                         if res_id and rec.do_update:
                             
                             self.pool.get(rec.model_id.model).write(cr,uid,res_id, vals,context=context)
@@ -873,37 +924,38 @@ class import_data_file(osv.osv):
                         elif res_id and not rec.do_update:
                             
                             error_txt = _('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
-                            self.log_error_note( cr, uid, ids, rec, error_txt, context)
+                            self.update_log_error( cr, uid, ids, rec, error_txt, context)
                             continue
                      
                         else: # no record Found So Create new record
                             
                             self.create_import_record(cr, uid, ids, rec=rec, vals=vals, external_id_name=external_id_name, row=row, context=context)
                     except: # Error Writing or Creating Records
-
+                        rec.has_errors = True
                         error_txt = _('Writing or Creating row %s vals %s ' % (row,vals,))
-                        self.log_error_note(cr, uid, ids, rec, error_txt, context)
+                        self.update_log_error(cr, uid, ids, rec, error_txt, context)
                         
-                    count += 1 
-                    
-                    if row%10 == 0: # Update Statics every 10 records
-                        self.update_load_statistics(cr,uid,ids, rec, row, count)
-                    if not rec.rollback:   
-                        cr.commit()   
-        except:
-            
-            error_txt = _('Import Aborted')
-            return self.log_error_note( cr, uid, ids, rec, error_txt, context)
-            
-        log_vals = {'start_time':start_time,
-                'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'row_count':row ,
-                'error_log':rec.error_log}
-        
-        self.write(cr,uid,ids[0],log_vals)
-           
-        return {'value':log_vals}
 
+                    if row%10 == 0: # Update Statics every 10 records
+                        self.update_statistics(cr,uid ,ids , rec, row, count)
+                        
+                    if rec.rollback and context.get('test',False): 
+                        pass
+                    else:
+                        cr.commit() 
+
+                    count += 1 
+                    if  count >= rec.test_sample_size  and context.get('test',False):
+                        
+                        if rec.rollback: cr.rollback()
+                        # Exit Import Records Loop  
+                        return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
+        except:
+            rec.has_errors = True
+            error_txt = _('Import Aborted')
+            return self.update_log_error( cr, uid, ids, rec, error_txt, context)
+        
+        return 
     
     def action_import_csv(self, cr, uid, ids, context=None):
 
@@ -1114,7 +1166,7 @@ class import_data_file(osv.osv):
                 dbf_table_rec = dbf_table[record_num-1]   
                 
                 header_ids_vals = []
-                header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0])])
+                header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0]),('name','!=',False)])
                 for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
                 
                     vals = {  'field_val':dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False}

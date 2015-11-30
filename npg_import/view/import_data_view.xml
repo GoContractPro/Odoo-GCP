@@ -43,9 +43,11 @@
 					
                          	<newline/>
                          	<field name="test_sample_size" />
-                         	<field name="time_estimate" widget="float_time" />
                          	<field name="start_time"  />
-                         	<field name="rollback"/>
+                         	<field name="time_estimate" widget="float_time" />
+                         	<field name="row_count"/>
+                         	<field name="count" />
+                         	<field name="rollback" />
                         	<field name="do_update" />
                           	<field name="record_external" string="External Id from Row #" on_change="onchange_record_external(record_external)"/>
                           	<field name="external_id_field" string="External Id from Field"
@@ -94,14 +96,14 @@
 			                    		<field name="model_field" required="0" 
 			                    				context = "{'manual':True, 'default_model_id':model}"
 			                    				on_change="onchange_model_field(model_field)"/>	
-			                    		<field name="model_field_name" readonly="0" />
-			                    		<field name="model_field_type" readonly="0" />
+			                    		<field name="model_field_name" invisible="1" />
+			                    		<field name="model_field_type" invisible="1" />
 			                    	</group>
 			                    	<group string="Related Search Settings" cols="2" 
 											attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
 			                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
-			                    		<field name="relation" readonly="0"/>
-			                    		<field name="relation_id" readonly="0" nolabel='1' colspan='2'/>
+			                    		<field name="relation" />
+			                    		<field name="relation_id" invisible="1" nolabel='1' colspan='2'/>
 			                    		<field name="relation_field" attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"
 	                    				readonly="1" />
 										<field name="search_related_external"></field>
@@ -168,6 +170,7 @@
                         <field name="count" />
                         <field name="start_time" />
                         <field name="end_time" />
+                        <field name="time_estimate" widget="float_time" />
                         <field name="has_errors" />
                         <field name="error_log" />
                  </tree>
@@ -212,16 +215,17 @@
 			                    		<field name="model_field" required="0" 
 			                    				context = "{'manual':True, 'default_model_id':model}"
 			                    				on_change="onchange_model_field(model_field)"/>	
-			                    		<field name="model_field_name" readonly="0" />
-			                    		<field name="model_field_type" readonly="0" />
+			                    		<field name="model_field_name" invisible="1" />
+			                    		<field name="model_field_type" invisible="1" />
 			                    	</group>
+			                    	
 			                    	<group string="Related Search Settings" cols="2" 
 											attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
 			                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
 			                    		<field name="relation" readonly="0"/>
-			                    		<field name="relation_id" readonly="0" nolabel='1' colspan='2'/>
+			                    		<field name="relation_id" invisible="1" nolabel='1' colspan='2'/>
 			                    		<field name="relation_field" attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"
-	                    				readonly="1" />
+	                    				readonly="0" />
 										<field name="search_related_external"></field>
 										<field name="search_name"></field>
 										<field name="search_other_field"/>
