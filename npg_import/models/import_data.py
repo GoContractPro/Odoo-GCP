@@ -186,9 +186,14 @@ class import_data_file(osv.osv):
             'has_errors':fields.boolean('Has Errors'),
             'rollback':fields.boolean('Roll Back Test Records'),
             'external_id_field':fields.many2one('import.data.header', string='External Id Field', domain="[('import_data_id','=',active_id)]"),
+<<<<<<< Updated upstream
             'row_count':fields.integer("Rows Processed"),
             'count':fields.integer("Rows Imported"),
             'time_estimate':fields.float("Time Estimate"),
+=======
+            
+>>>>>>> Stashed changes
+            'base_external_dbsource' : fields.many2one('base.external.dbsource', help="External Database connection to foreign databases using ODBC, MS-SQL, Postgres, Oracle Client or SQLAlchemy."),
             }
     
     _defaults = {

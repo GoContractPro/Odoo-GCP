@@ -28,7 +28,7 @@
     """,
     'author': 'NovaPoint Group LLC, Stephen Levenhagen',
     'website': ' http://www.novapointgroup.com',
-    'depends': ['npg_warning','account'],
+    'depends': ['npg_warning','account','base_external_dbsource'],
     'data': ['view/import_data_view.xml',
              'wizard/wiz_import_dbf_directory.xml',
              'view/menus.xml',],
