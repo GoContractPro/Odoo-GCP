@@ -387,7 +387,10 @@ class import_data_file(osv.osv):
         for rec in self.browse(cr, uid, ids, context=context):
             src_table = str(rec.src_table_name).strip()
 #             qry = "select column_name, data_type, character_maximum_length from INFORMATION_SCHEMA.COLUMNS where table_name = %s;" % src_table
-            qry = "select * from %s limit 1;" % src_table
+#             qry = "select TOP 1 * from %(src_table)s"
+#             params = {'src_table':src_table}
+#             result = rec.base_external_dbsource.execute(sqlquery=qry,sqlparams=params, metadata=True)
+            qry = "select TOP 1 * from %s" % src_table
             result = rec.base_external_dbsource.execute(sqlquery=qry,metadata=True)
             if not result.has_key('cols'):
                 continue
@@ -638,6 +641,7 @@ class import_data_file(osv.osv):
             return res_id
             
         except:
+            cr.rollback()
             rec.has_errors = True
             error_txt = _('Error  record \'%s\' not created for model \'%s\'' % (vals,relation))
             self.update_log_error(cr, uid, ids, rec, error_txt, context)
@@ -664,6 +668,7 @@ class import_data_file(osv.osv):
             _logger.info(_('Created record %s from Source row %s' % (vals,row)))
              
         except:
+            cr.rollback()
             rec.has_errors = True
             error_txt = _('Error record %s not created for import row  %s' % (vals,row ))
             self.update_log_error(cr, uid, ids, rec, error_txt, context)
@@ -726,6 +731,7 @@ class import_data_file(osv.osv):
             try:
                 field_val = bool(field_val)
             except:
+                cr.rollback()
                 rec.has_errors = True
                 field_val = False
                 error_txt = ('Error: Row %s Field %s -- %s is not required Boolean type' %s (row,field.model_field.name,field_val,))
@@ -740,6 +746,7 @@ class import_data_file(osv.osv):
             try:
                 field_val = float(field_val)
             except:
+                cr.rollback()
                 rec.has_errors = True
                 field_val = 0.0
                 error_txt = _('Error: Row %s Field %s -- %s is not required  Floating Point type' %s ( row,field.model_field.name,field_val))
@@ -753,6 +760,7 @@ class import_data_file(osv.osv):
             try:
                 field_val = int(field_val)
             except:
+                cr.rollback()
                 rec.has_errors = True
                 field_val = 0
                 error_txt = _('Error: Row %s Field %s -- not required Integer  type' %s (row,field.model_field.name,field_val))
@@ -923,6 +931,7 @@ class import_data_file(osv.osv):
                                 search_unique.append((field.model_field.name,"=", field_val))
                                                                         
                         except: # Buidling Vals DIctionary
+                            cr.rollback()
                             rec.has_errors = True
                             error_txt = _('Error Building Vals at row:  %s -Field: %s == %s \n Vals Dict: %s ' %(row,field.model_field.name, field_val, vals,))
                             self.update_log_error( cr, uid, ids,rec, error_txt, context)
@@ -960,6 +969,7 @@ class import_data_file(osv.osv):
                             
                         
                     except: # Finding Existing Records
+                        cr.rollback()
                         rec.has_errors = True
                         error_txt = _('Error Finding:  %s-%s-%s ' % (row,search_unique,external_id_name))
                         self.update_log_error(cr, uid, ids, rec, error_txt, context)                    
@@ -982,6 +992,7 @@ class import_data_file(osv.osv):
                             
                             self.create_import_record(cr, uid, ids, rec=rec, vals=vals, external_id_name=external_id_name, row=row, context=context)
                     except: # Error Writing or Creating Records
+                        cr.rollback()
                         rec.has_errors = True
                         error_txt = _('Writing or Creating row %s vals %s ' % (row,vals,))
                         self.update_log_error(cr, uid, ids, rec, error_txt, context)
@@ -1002,6 +1013,7 @@ class import_data_file(osv.osv):
                         # Exit Import Records Loop  
                         return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
         except:
+            cr.rollback()
             rec.has_errors = True
             error_txt = _('Import Aborted')
             return self.update_log_error( cr, uid, ids, rec, error_txt, context)
@@ -1023,9 +1035,8 @@ class import_data_file(osv.osv):
                 rec.has_errors = False
                 rec.error_log = ''  
                 src_table = str(rec.src_table_name).strip()         
-                qry = "select * from %s;" % src_table
-                result = rec.base_external_dbsource.execute(sqlquery=qry,metadata=True)
-                all_data = result['rows']
+                qry = "select TOP 10 * from %s" % src_table
+                all_data = rec.base_external_dbsource.execute(sqlquery=qry)
                 rec.tot_record_num = len(all_data)
                 rec.start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
                 
@@ -1051,7 +1062,9 @@ class import_data_file(osv.osv):
                             res_id = False
                             field_val = False
                             
-                            field_raw =  field.name and import_record[field.name]  or False
+#                             field_raw =  field.name and import_record[field.name]  or False
+                            field_raw =  field.name and getattr(import_record, field.name)  or False
+                              
                             # test  Clean and convert Rawincoming Data values to stings to allow comparing to search filters and substitutions         
                             field_val = self.convert_raw_data_strings(field_raw)
                             
@@ -1084,6 +1097,7 @@ class import_data_file(osv.osv):
                                 search_unique.append((field.model_field.name,"=", field_val))
                                                                         
                         except: # Buidling Vals DIctionary
+                            cr.rollback()
                             rec.has_errors = True
                             error_txt = _('Error Building Vals at row:  %s -Field: %s == %s \n Vals Dict: %s ' %(row,field.model_field.name, field_val, vals,))
                             self.update_log_error( cr, uid, ids,rec, error_txt, context)
@@ -1121,6 +1135,7 @@ class import_data_file(osv.osv):
                             
                         
                     except: # Finding Existing Records
+                        cr.rollback()
                         rec.has_errors = True
                         error_txt = _('Error Finding:  %s-%s-%s ' % (row,search_unique,external_id_name))
                         self.update_log_error(cr, uid, ids, rec, error_txt, context)                    
@@ -1143,6 +1158,7 @@ class import_data_file(osv.osv):
                             
                             self.create_import_record(cr, uid, ids, rec=rec, vals=vals, external_id_name=external_id_name, row=row, context=context)
                     except: # Error Writing or Creating Records
+                        cr.rollback()
                         rec.has_errors = True
                         error_txt = _('Writing or Creating row %s vals %s ' % (row,vals,))
                         self.update_log_error(cr, uid, ids, rec, error_txt, context)
@@ -1163,6 +1179,7 @@ class import_data_file(osv.osv):
                         # Exit Import Records Loop  
                         return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
         except:
+            cr.rollback()
             rec.has_errors = True
             error_txt = _('Import Aborted')
             return self.update_log_error( cr, uid, ids, rec, error_txt, context)

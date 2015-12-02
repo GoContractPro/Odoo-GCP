@@ -144,7 +144,7 @@ Sample connection strings:
             else:
                 # using other db connectors
                 cur = conn.cursor()
-                cur.execute(sqlquery, sqlparams)
+                cur.execute(sqlquery)
                 if metadata:
                     cols = [d[0] for d in cur.description]
                 rows = cur.fetchall()
