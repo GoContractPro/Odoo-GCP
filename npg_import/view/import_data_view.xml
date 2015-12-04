@@ -7,21 +7,39 @@
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
                 <form string="Read File" version="7.0">
+                	<header>
+                		<button name='action_get_headers' string="Load Header Fields" 
+                    	 		context="{'model':model_id}" 
+                    	 		type="object" class="oe_highlight"
+                    	 		confirm="???Are you Sure??? This will overrite any changes made to Field Mappings"/>
+                    		<button name="action_import" string="Run Test" type="object" class="oe_highlight" context="{'test':True}"/>
+                    		<button name="action_import" string="Import Data" type="object" class="oe_highlight" attrs="{'invisible':[('schedule_import', '!=', False)]}"/>
+                    		<button name="import_schedule" string="Schedule Import" type="object" icon="gtk-paste"/>
+                	</header>
                     <group>
                     
-                    <group >
-                    	<field name="name"/>
-                        <field name="model_id" on_change="onchange_model(model_id)"/>
-                    	<field name="has_errors" readonly="1"/>
-                    	<field name="src_type"/>
-                    	<field name="attachment" widget="many2many_binary" attrs="{'invisible':[('src_type', '!=', 'csv')], 'required':[('src_type', '=', 'csv')]}"/>
-                        <field name="dbf_path" attrs="{'invisible':[('src_type', '!=', 'dbf')], 'required':[('src_type', '=', 'dbf')]}"/>
-                        <field name="base_external_dbsource" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
-                        <field name="src_table_name" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
-                    </group>   
-                    <group>    
-                        <field name="start_time" string="Started"/>
-                    	<field name="end_time"/>
+                    <group col="4" colspan="4">
+                    	<field name="name" colspan="4"/>
+                    	<newline/>
+                    	<group colspan="2">
+	                        <field name="model_id" on_change="onchange_model(model_id)"/>
+	                    	<field name="has_errors" readonly="1"/>
+                    	</group>
+                    	<group colspan="2">
+                    		<field name="start_time" string="Started"/>
+                    		<field name="end_time"/>
+                    	</group>
+                    	 <newline/>
+                    	<group colspan="4" col="4">
+	                    	<field name="src_type" colspan="2"/>
+	                    	<field name="attachment" widget="many2many_binary" attrs="{'invisible':[('src_type', '!=', 'csv')], 'required':[('src_type', '=', 'csv')]}"/>
+	                        <field name="dbf_path" attrs="{'invisible':[('src_type', '!=', 'dbf')], 'required':[('src_type', '=', 'dbf')]}"/>
+	                        <field name="base_external_dbsource" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
+	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
+	                        <newline/>
+	                        <field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
+	                        <field name="schedule_import" invisible="1"/>
+                        </group>
                     	
                     </group>
                     
@@ -29,21 +47,7 @@
                     
                     <group col="8">
                     
-                    	 <group colspan='2'>
-                    	 	<button name='action_get_headers' string="Load Header Fields" 
-                    	 		context="{'model':model_id}" 
-                    	 		type="object" class="oe_highlight"
-                    	 		confirm="???Are you Sure??? This will overrite any changes made to Field Mappings"/>
-                    	 	<newline/>
-                    		<button name="action_import" string="Run Test" type="object" class="oe_highlight" context="{'test':True}"/>
-                    		<newline/>
-                    		<button name="action_import" string="Import Data" type="object" class="oe_highlight" />
-	                        <newline/> 
-	                    	      
-                         </group >
                          <group colspan="2">
-					
-                         	<newline/>
                          	<field name="test_sample_size" />
                          	<field name="start_time"  />
                          	<field name="time_estimate" widget="float_time" />

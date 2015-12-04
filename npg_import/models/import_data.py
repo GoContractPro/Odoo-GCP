@@ -112,7 +112,7 @@ class import_data_header(osv.osv):
                 'search_other_field' : fields.many2one('ir.model.fields','Other Search Field', domain="[('model_id','=',relation_id)]", 
                                 help='Select field  to match in related record othe than Name or External ID'),
                 'related_source_table': fields.many2one('import.data.file','Related Source Table'),
-                }
+            }
         
     def _get_model(self,cr,uid,context={}):
         return context.get('model',False)
@@ -191,7 +191,11 @@ class import_data_file(osv.osv):
             'time_estimate':fields.float("Time Estimate"),
             'base_external_dbsource' : fields.many2one('base.external.dbsource', string="ODBC Connection", help="External Database connection to foreign databases using ODBC, MS-SQL, Postgres, Oracle Client or SQLAlchemy."),
             'src_table_name' : fields.char('Source Table Name',size=256),
-            'src_type' : fields.selection([('csv', 'CSV'),('dbf', 'DBF File'),('odbc', 'ODBC Connection')], "Data Source Type", required=True)
+            'src_type' : fields.selection([('csv', 'CSV'),('dbf', 'DBF File'),('odbc', 'ODBC Connection')], "Data Source Type", required=True),
+            
+            'sql_source': fields.text('SQL', help='Write a valid "SELECT" SQL query to fetch data from Source database'),
+            #                 'state':fields.selection([(''),()]),
+                'schedule_import': fields.many2one('ir.cron','Related Source Table'),
             }
     
     _defaults = {
@@ -199,6 +203,36 @@ class import_data_file(osv.osv):
         'record_num':1,
         'src_type':'csv'
         }
+
+    
+    def import_schedule(self, cr, uid, ids, context=None):
+        cron_obj = self.pool.get('ir.cron')
+        for imp in self.browse(cr, uid, ids, context):
+            cron_id = False
+            if not imp.schedule_import:
+                new_create_id = cron_obj.create(cr, uid, {
+                    'name': 'Import ODBC tables',
+                    'interval_type': 'hours',
+                    'interval_number': 1,
+                    'numbercall': -1,
+                    'model': 'import.data.file',
+                    'function': 'action_import',
+                    'doall': False,
+                    'active': True
+                })
+                imp.write({'schedule_import':new_create_id})
+                cron_id = new_create_id
+            else:
+                cron_id = imp.schedule_import.id
+        return {
+            'name': 'Import ODBC tables',
+            'view_type': 'form',
+            'view_mode': 'form,tree',
+            'res_model': 'ir.cron',
+            'res_id': cron_id,
+            'type': 'ir.actions.act_window',
+        }
+    
     
     
 
@@ -390,7 +424,8 @@ class import_data_file(osv.osv):
 #             qry = "select TOP 1 * from %(src_table)s"
 #             params = {'src_table':src_table}
 #             result = rec.base_external_dbsource.execute(sqlquery=qry,sqlparams=params, metadata=True)
-            qry = "select TOP 1 * from %s" % src_table
+#             qry = "select TOP 1 * from %s" % src_table
+            qry = str(rec.sql_source)
             result = rec.base_external_dbsource.execute(sqlquery=qry,metadata=True)
             if not result.has_key('cols'):
                 continue
@@ -401,15 +436,17 @@ class import_data_file(osv.osv):
             if header_csv_ids:
                 header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
             
-            headers_list = []
-            for header in result['cols']:
-                headers_list.append(header.strip())
+#             headers_list = []
+#             for header in result['cols']:
+#                 headers_list.append(header[0].strip())
+            headers_list = result['cols']
             n=0
-            for header in headers_list:
+            for col in headers_list:
 #                 fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', rec.model_id.id)])
 #                 rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': row, 'csv_id':rec.id,
 #                                                                           'model_field':fids and fids[0] or False, 
 #                                                                           'model':rec.model_id.id},context=context)
+                header = col[0]
                 fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
                 vals = {'name':header, 'import_data_id':rec.id,
                             'model_field':fld_obj and fld_obj.id or False,
@@ -419,8 +456,10 @@ class import_data_file(osv.osv):
                             'relation': fld_obj and fld_obj.relation or False,
                             'relation_field' : fld_obj and fld_obj.relation_field or False,
                             'field_label': header or False,
-#                             'field_type':field[1],
+                            'field_type':col[1],
+                            'field_val' : col[3],
                             }
+                
                 header_id = self.pool.get('import.data.header').create(cr,uid,vals,context=context)
         return True
  
@@ -1035,7 +1074,8 @@ class import_data_file(osv.osv):
                 rec.has_errors = False
                 rec.error_log = ''  
                 src_table = str(rec.src_table_name).strip()         
-                qry = "select TOP 10 * from %s" % src_table
+#                 qry = "select TOP 10 * from %s" % src_table
+                qry = str(rec.sql_source)
                 all_data = rec.base_external_dbsource.execute(sqlquery=qry)
                 rec.tot_record_num = len(all_data)
                 rec.start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
