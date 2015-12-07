@@ -150,7 +150,9 @@ Sample connection strings:
                     cur.execute(sqlquery)
                 if metadata:
                     cols = [d for d in cur.description]
-                rows = cur.fetchall()
+		    rows = cur.fetchone()
+		else:  
+	            rows = cur.fetchall()
             conn.close()
         if metadata:
             return{'cols': cols, 'rows': rows}

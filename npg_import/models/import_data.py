@@ -43,6 +43,7 @@ from  types import *
 from __builtin__ import False
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT 
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
+import pdb
 
 
 _logger = logging.getLogger(__name__)
@@ -96,7 +97,9 @@ class import_data_header(osv.osv):
                     help="The  technical name of Field Relation field in one2many and many2many "),
                 'search_filter':fields.char('Filter Source', size=256,
                       help="""Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import, \n
-                      Can use mulitple values for filter,  format as python type list for values example 'value1','value2','value3', """),           
+                      Can use mulitple values for filter,  format as python type list for values example 'value1','value2','value3', 
+		      """
+		      ),           
                 'create_related':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
                 'field_label':fields.char('Description', size=32,),
                 'field_type':fields.char('Data Type', size=8,),
@@ -420,12 +423,14 @@ class import_data_file(osv.osv):
             context = {}
         for rec in self.browse(cr, uid, ids, context=context):
             src_table = str(rec.src_table_name).strip()
-#             qry = "select column_name, data_type, character_maximum_length from INFORMATION_SCHEMA.COLUMNS where table_name = %s;" % src_table
-#             qry = "select TOP 1 * from %(src_table)s"
-#             params = {'src_table':src_table}
-#             result = rec.base_external_dbsource.execute(sqlquery=qry,sqlparams=params, metadata=True)
-#             qry = "select TOP 1 * from %s" % src_table
-            qry = str(rec.sql_source)
+	    if rec.sql_source:
+	        qry = str(rec.sql_source)
+	    else:
+#		qry = "select column_name, data_type, character_maximum_length from INFORMATION_SCHEMA.COLUMNS where table_name = %s;" % src_table
+#		qry = "select TOP 1 * from %(src_table)s"
+#		params = {'src_table':src_table}
+#             	result = rec.base_external_dbsource.execute(sqlquery=qry,sqlparams=params, metadata=True)
+             	qry = "select TOP 1 * from %s" % src_table
             result = rec.base_external_dbsource.execute(sqlquery=qry,metadata=True)
             if not result.has_key('cols'):
                 continue
@@ -447,7 +452,10 @@ class import_data_file(osv.osv):
 #                                                                           'model_field':fids and fids[0] or False, 
 #                                                                           'model':rec.model_id.id},context=context)
                 header = col[0]
-                fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
+#                fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
+#		for c in col:
+#			print c
+#		pdb.set_trace()
                 vals = {'name':header, 'import_data_id':rec.id,
                             'model_field':fld_obj and fld_obj.id or False,
                             'model_field_name' :fld_obj and fld_obj.name or False,
@@ -1073,9 +1081,13 @@ class import_data_file(osv.osv):
             for rec in self.browse(cr, uid, ids, context=context):
                 rec.has_errors = False
                 rec.error_log = ''  
-                src_table = str(rec.src_table_name).strip()         
-#                 qry = "select TOP 10 * from %s" % src_table
-                qry = str(rec.sql_source)
+                src_table = str(rec.src_table_name).strip()
+		if rec.sql_source:         
+	                qry = str(rec.sql_source)
+		elif context.get('test',False):
+			qry = "select TOP %s * from %s" % (rec.test_sample_size, src_table)
+		else:
+			qry = "select * from %s" % src.table,	
                 all_data = rec.base_external_dbsource.execute(sqlquery=qry)
                 rec.tot_record_num = len(all_data)
                 rec.start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
@@ -1362,7 +1374,7 @@ class import_data_file(osv.osv):
                         return False
 
                     
-        vals = {'start_time':start,
+	        vals = {'start_time':start,
                 'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
                 'error_log':error_log}
         if context.get('test',False):
@@ -1418,37 +1430,58 @@ class import_data_file(osv.osv):
         
         if context is None:
             context = {}
-        
-        header_ids_vals = []
-        if record_num > 0:
 
-            for rec in self.browse(cr, uid, ids, context=context):
-            
-                dbf_table = dbf.Table(rec.dbf_path)
-                if not dbf_table:
-                    
-                    e = 'Error opening DBF Import  %s:'  % (rec.dbf_path, )
-                    _logger.error(_('Error %s' % (e,)))
-                    raise osv.except_osv('Warning', e)
-                    
-                dbf_table.open()
-                dbf_table_rec = dbf_table[record_num-1]   
-                
-                header_ids_vals = []
-                header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0]),('name','!=',False)])
-                for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
-                
-                    vals = {  'field_val':dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False}
-                    header_ids_vals.append((1,header_rec.id, vals))
-                    header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})
-                
-                
+	if record_num < 1:
+		raise	osv.except_osv('Warning', "The Record Number must be positive value")
+		return {}
 
-            return{'value':{"header_ids":header_ids_vals}}
-    
-        else:
-            return {}    
-     
+	
+	
+        for rec in self.browse(cr, uid, ids, context=context):
+	        header_ids_vals = []
+		if rec.src_type == 'odbc':
+	                raise   osv.except_osv('Warning', "Record set Values  is not available on CSV")
+        	        return {}		
+
+		elif rec.src_type == 'csv':
+			raise   osv.except_osv('Warning', "Record set Values  is not available on CSV")
+	                return {}
+
+		elif rec.src_type == 'dbf':
+		           
+			dbf_table = dbf.Table(rec.dbf_path)
+                	if not dbf_table:
+                    
+                    		e = 'Error opening DBF Import  %s:'  % (rec.dbf_path, )
+	                    	_logger.error(_('Error %s' % (e,)))
+        	            	raise osv.except_osv('Warning', e)
+                    
+	        	        dbf_table.open()
+        	        	dbf_table_rec = dbf_table[record_num-1]   
+                
+	                	header_ids_vals = []
+		                header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0]),('name','!=',False)])
+        		        for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
+                
+                		    vals = {  'field_val':dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False}
+		                    header_ids_vals.append((1,header_rec.id, vals))
+        	        	header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})
+        	        
+                    
+        	else:
+            		return {}    
+
+		header_ids_vals = []
+        	header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0]),('name','!=',False)])
+	        for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
+
+            		vals = {  'field_val':dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False}
+			header_ids_vals.append((1,header_rec.id, vals))
+	
+		header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})
+
+	        return{'value':{'header_ids':header_ids_vals}}
+
      
 class ir_model_fields(osv.osv):
     _inherit = 'ir.model.fields'    

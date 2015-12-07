@@ -35,9 +35,9 @@
 	                    	<field name="attachment" widget="many2many_binary" attrs="{'invisible':[('src_type', '!=', 'csv')], 'required':[('src_type', '=', 'csv')]}"/>
 	                        <field name="dbf_path" attrs="{'invisible':[('src_type', '!=', 'dbf')], 'required':[('src_type', '=', 'dbf')]}"/>
 	                        <field name="base_external_dbsource" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
-	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
+	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
 	                        <newline/>
-	                        <field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
+	                        <field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" attrs="{'invisible':[('src_type', '!=', 'odbc')]}"/>
 	                        <field name="schedule_import" invisible="1"/>
                         </group>
                     	
