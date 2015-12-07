@@ -113,7 +113,7 @@ Sample connection strings:
 
         return conn
 
-    def execute(self, cr, uid, ids, sqlquery, sqlparams=None, metadata=False,
+    def execute(self, cr, uid, ids, sqlquery, sqlparams=None, metadata=False, first_record=False,
                 context=None):
         """Executes SQL and returns a list of rows.
 
@@ -150,9 +150,9 @@ Sample connection strings:
                     cur.execute(sqlquery)
                 if metadata:
                     cols = [d for d in cur.description]
-		    rows = cur.fetchone()
-		else:  
-	            rows = cur.fetchall()
+                    rows = cur.fetchone()
+                else:  
+                    rows = cur.fetchall()
             conn.close()
         if metadata:
             return{'cols': cols, 'rows': rows}

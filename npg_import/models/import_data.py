@@ -102,7 +102,7 @@ class import_data_header(osv.osv):
 		      ),           
                 'create_related':fields.boolean('Create Related', help = "Will create the related records using system default values if missing" ),
                 'field_label':fields.char('Description', size=32,),
-                'field_type':fields.char('Data Type', size=8,),
+                'field_type':fields.char('Data Type', size=32,),
                 'field_val':fields.char('Record Value', size=128),
                 'default_val':fields.char('Default Import Val', size = 256, help = 'The Default if no values for field in imported Source'),
                 'substitutions':fields.one2many('import.m2o.substitutions','header_map', string="Source Value Substitutions"),
@@ -423,18 +423,18 @@ class import_data_file(osv.osv):
             context = {}
         for rec in self.browse(cr, uid, ids, context=context):
             src_table = str(rec.src_table_name).strip()
-	    if rec.sql_source:
-	        qry = str(rec.sql_source)
-	    else:
-#		qry = "select column_name, data_type, character_maximum_length from INFORMATION_SCHEMA.COLUMNS where table_name = %s;" % src_table
-#		qry = "select TOP 1 * from %(src_table)s"
-#		params = {'src_table':src_table}
-#             	result = rec.base_external_dbsource.execute(sqlquery=qry,sqlparams=params, metadata=True)
-             	qry = "select TOP 1 * from %s" % src_table
+            if rec.sql_source:
+                qry = str(rec.sql_source)
+            else:
+    #        qry = "select column_name, data_type, character_maximum_length from INFORMATION_SCHEMA.COLUMNS where table_name = %s;" % src_table
+    #        qry = "select TOP 1 * from %(src_table)s"
+    #        params = {'src_table':src_table}
+    #                 result = rec.base_external_dbsource.execute(sqlquery=qry,sqlparams=params, metadata=True)
+                qry = "select TOP 1 * from %s" % src_table
             result = rec.base_external_dbsource.execute(sqlquery=qry,metadata=True)
             if not result.has_key('cols'):
                 continue
-            
+            has_row = result.has_key('rows')
             header_csv_obj = self.pool.get('import.data.header')
             header_csv_ids=header_csv_obj.search(cr, uid,[('import_data_id','=',ids[0])])
             
@@ -445,6 +445,7 @@ class import_data_file(osv.osv):
 #             for header in result['cols']:
 #                 headers_list.append(header[0].strip())
             headers_list = result['cols']
+            row_data = result['rows']
             n=0
             for col in headers_list:
 #                 fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', rec.model_id.id)])
@@ -465,9 +466,11 @@ class import_data_file(osv.osv):
                             'relation_field' : fld_obj and fld_obj.relation_field or False,
                             'field_label': header or False,
                             'field_type':col[1],
-                            'field_val' : col[3],
+                            'field_val' : False,
                             }
-                
+                if has_row:
+                    vals.update({'field_val' : row_data[n],})
+                    n += 1
                 header_id = self.pool.get('import.data.header').create(cr,uid,vals,context=context)
         return True
  
@@ -1081,157 +1084,171 @@ class import_data_file(osv.osv):
             for rec in self.browse(cr, uid, ids, context=context):
                 rec.has_errors = False
                 rec.error_log = ''  
-                src_table = str(rec.src_table_name).strip()
-		if rec.sql_source:         
-	                qry = str(rec.sql_source)
-		elif context.get('test',False):
-			qry = "select TOP %s * from %s" % (rec.test_sample_size, src_table)
-		else:
-			qry = "select * from %s" % src.table,	
-                all_data = rec.base_external_dbsource.execute(sqlquery=qry)
-                rec.tot_record_num = len(all_data)
-                rec.start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+                src_table = str(rec.src_table_name).strip()  
+                if rec.sql_source:         
+                    qry = str(rec.sql_source)
+                elif context.get('test',False):
+                    qry = "select TOP %s * from %s" % (rec.test_sample_size, src_table)
+                else:
+                    qry = "select * from %s" % src.table
+#                 qry = "select TOP 10 * from %s" % src_table
+#                 all_data = rec.base_external_dbsource.execute(sqlquery=qry)
                 
+#                 conn = rec.base_external_dbsource.conn_open()
+                conn = self.pool.get('base.external.dbsource').conn_open(cr, uid, rec.base_external_dbsource.id)
+#                 conn = self.conn_open(cr, uid, obj.id)
+                cur = conn.cursor()
+                
+                cur.execute(qry)
+                
+#                 rec.tot_record_num = len(all_data)
+                rec.write({'start_time' : datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)})
+                cr.commit()
                 row = 0
                 count = 0
-                
-                for import_record in all_data:
-                    
-                    vals = {}
-                    search_unique =[]
-                    external_id_name = False
-                    skip_record = False
-                   
-
-                    
-                    row+= 1
-                    for field in rec.header_ids:
-    
-                        try:   # Buidling Vals DIctionary
+                all_data = True
+                while all_data:
+                    all_data = cur.fetchmany(500)
+                    if not all_data:
+                        break
+                    for import_record in all_data:
                         
-                            if not field.model_field: continue # Skip to next Field if no Odoo field set
-                           
-                            res_id = False
-                            field_val = False
-                            
-#                             field_raw =  field.name and import_record[field.name]  or False
-                            field_raw =  field.name and getattr(import_record, field.name)  or False
-                              
-                            # test  Clean and convert Rawincoming Data values to stings to allow comparing to search filters and substitutions         
-                            field_val = self.convert_raw_data_strings(field_raw)
-                            
-                            if not field_val and field.default_val:
-                                field_val = field.default_val
+                        vals = {}
+                        search_unique =[]
+                        external_id_name = False
+                        skip_record = False
 
-                            if field.is_unique_external:
-                                external_id_name = field_val
-
-                            # IF Field value not found in Filter Search list skip out to next import record row
-                            if self.skip_current_row_filter(field_val,field.search_filter):
-                                skip_record = True
-                                break
+                        row+= 1
+                        for field in rec.header_ids:
+        
+                            try:   # Buidling Vals DIctionary
                             
-                            # Update Field value if Substitution Value Found. 
-                            field_val = self.do_substitution_mapping(field_val,field.substitutions)
-                            
-                            #Convert to Odoo Data types and add field to Record Vals Dictionary
-
-                            vals[field.model_field.name] = self.convert_odoo_data_types(cr, uid, ids, rec, field, field_val, row, vals.get(field.model_field.name,False), context)
+                                if not field.model_field: continue # Skip to next Field if no Odoo field set
                                
-                            # If field is marked as Unique in mapping append to search on unique to use to confirm no duplicates before creating new record    
-                            if field.is_unique and not field_val:
+                                res_id = False
+                                field_val = False
                                 
-                                error_txt = _('Error Required unique field value not set at line %s ' % (row))
-                                self.update_log_error( cr, uid,ids,rec, error_txt, context)
-                                skip_record = True
-                                break 
-                            elif field.is_unique:
-                                search_unique.append((field.model_field.name,"=", field_val))
-                                                                        
-                        except: # Buidling Vals DIctionary
+    #                             field_raw =  field.name and import_record[field.name]  or False
+                                field_raw =  field.name and getattr(import_record, field.name)  or False
+                                  
+                                # test  Clean and convert Rawincoming Data values to stings to allow comparing to search filters and substitutions         
+                                field_val = self.convert_raw_data_strings(field_raw)
+                                
+                                if not field_val and field.default_val:
+                                    field_val = field.default_val
+    
+                                if field.is_unique_external:
+                                    external_id_name = field_val
+    
+                                # IF Field value not found in Filter Search list skip out to next import record row
+                                if self.skip_current_row_filter(field_val,field.search_filter):
+                                    skip_record = True
+                                    break
+                                
+                                # Update Field value if Substitution Value Found. 
+                                field_val = self.do_substitution_mapping(field_val,field.substitutions)
+                                
+                                #Convert to Odoo Data types and add field to Record Vals Dictionary
+    
+                                vals[field.model_field.name] = self.convert_odoo_data_types(cr, uid, ids, rec, field, field_val, row, vals.get(field.model_field.name,False), context)
+                                   
+                                # If field is marked as Unique in mapping append to search on unique to use to confirm no duplicates before creating new record    
+                                if field.is_unique and not field_val:
+                                    
+                                    error_txt = _('Error Required unique field value not set at line %s ' % (row))
+                                    self.update_log_error( cr, uid,ids,rec, error_txt, context)
+                                    skip_record = True
+                                    break 
+                                elif field.is_unique:
+                                    search_unique.append((field.model_field.name,"=", field_val))
+                                                                            
+                            except: # Buidling Vals DIctionary
+                                cr.rollback()
+                                rec.has_errors = True
+                                error_txt = _('Error Building Vals at row:  %s -Field: %s == %s \n Vals Dict: %s ' %(row,field.model_field.name, field_val, vals,))
+                                self.update_log_error( cr, uid, ids,rec, error_txt, context)
+                        
+                        if skip_record : # this Record does not match filter skip to next Record in import Source
+                            continue 
+                        
+                        try:  # Finding existing Records  
+                            
+                            if len(search_unique) > 0:      
+                                search_ids = self.pool.get(rec.model_id.model).search(cr,uid,search_unique)
+                            else:
+                                search_ids = False
+                                
+                            external_id_name = self.check_external_id_name(cr, uid, row=row, rec=rec, external_id_name = external_id_name)
+    
+                            if external_id_name:
+                            
+                                res_id = self.search_external_id(cr, uid, external_id_name, rec.model_id.model, context)
+                                    
+                                if rec.do_update and  search_ids and res_id and res_id != search_ids[0]:
+                                    error_txt = _('Error External Id and Unique not matching %s %s  Found at Row %s record skipped' % (search_unique,external_id_name,row,))
+                                    self.update_log_error( cr, uid, ids, rec, error_txt, context)
+                                    
+                                    continue
+    
+                            elif search_ids and not rec.do_update:
+                                    error_txt = _('Error Duplicate on Uniquie %s  Found at Row %s record skipped' % (search_unique,row,))
+                                    self.update_log_error( cr, uid, ids, rec, error_txt, context)
+                                    continue
+                            elif search_ids:
+                                res_id = search_ids[0] 
+                            else:
+                                res_id = False   
+                                
+                            
+                        except: # Finding Existing Records
                             cr.rollback()
                             rec.has_errors = True
-                            error_txt = _('Error Building Vals at row:  %s -Field: %s == %s \n Vals Dict: %s ' %(row,field.model_field.name, field_val, vals,))
-                            self.update_log_error( cr, uid, ids,rec, error_txt, context)
-                    
-                    if skip_record : # this Record does not match filter skip to next Record in import Source
-                        continue 
-                    
-                    try:  # Finding existing Records  
-                        
-                        if len(search_unique) > 0:      
-                            search_ids = self.pool.get(rec.model_id.model).search(cr,uid,search_unique)
-                        else:
-                            search_ids = False
+                            error_txt = _('Error Finding:  %s-%s-%s ' % (row,search_unique,external_id_name))
+                            self.update_log_error(cr, uid, ids, rec, error_txt, context)                    
+    
+                        try: # Writing or Create Records     
+    
+    
+                            if res_id and rec.do_update:
+                                
+                                self.pool.get(rec.model_id.model).write(cr,uid,res_id, vals,context=context)
+                                _logger.info(_('Update row %s vals %s') % (row,vals,))
                             
-                        external_id_name = self.check_external_id_name(cr, uid, row=row, rec=rec, external_id_name = external_id_name)
-
-                        if external_id_name:
-                        
-                            res_id = self.search_external_id(cr, uid, external_id_name, rec.model_id.model, context)
+                            elif res_id and not rec.do_update:
                                 
-                            if rec.do_update and  search_ids and res_id and res_id != search_ids[0]:
-                                error_txt = _('Error External Id and Unique not matching %s %s  Found at Row %s record skipped' % (search_unique,external_id_name,row,))
-                                self.update_log_error( cr, uid, ids, rec, error_txt, context)
-                                
-                                continue
-
-                        elif search_ids and not rec.do_update:
-                                error_txt = _('Error Duplicate on Uniquie %s  Found at Row %s record skipped' % (search_unique,row,))
+                                error_txt = _('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
                                 self.update_log_error( cr, uid, ids, rec, error_txt, context)
                                 continue
-                        elif search_ids:
-                            res_id = search_ids[0] 
-                        else:
-                            res_id = False   
+                         
+                            else: # no record Found So Create new record
+                                
+                                self.create_import_record(cr, uid, ids, rec=rec, vals=vals, external_id_name=external_id_name, row=row, context=context)
+                        except: # Error Writing or Creating Records
+                            cr.rollback()
+                            rec.has_errors = True
+                            error_txt = _('Writing or Creating row %s vals %s ' % (row,vals,))
+                            self.update_log_error(cr, uid, ids, rec, error_txt, context)
                             
-                        
-                    except: # Finding Existing Records
-                        cr.rollback()
-                        rec.has_errors = True
-                        error_txt = _('Error Finding:  %s-%s-%s ' % (row,search_unique,external_id_name))
-                        self.update_log_error(cr, uid, ids, rec, error_txt, context)                    
-
-                    try: # Writing or Create Records     
-
-
-                        if res_id and rec.do_update:
+    
+                        if row%10 == 0: # Update Statics every 10 records
+                            self.update_statistics(cr,uid ,ids , rec, row, count)
+    
+                        count += 1 
+                        if  count >= rec.test_sample_size  and context.get('test',False):
                             
-                            self.pool.get(rec.model_id.model).write(cr,uid,res_id, vals,context=context)
-                            _logger.info(_('Update row %s vals %s') % (row,vals,))
-                        
-                        elif res_id and not rec.do_update:
+                            if rec.rollback: cr.rollback()
+                            # Exit Import Records Loop  
+                            return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
                             
-                            error_txt = _('Error Duplicate External %s ID  Found at line %s record skipped') % (external_id_name,row,)
-                            self.update_log_error( cr, uid, ids, rec, error_txt, context)
-                            continue
-                     
-                        else: # no record Found So Create new record
-                            
-                            self.create_import_record(cr, uid, ids, rec=rec, vals=vals, external_id_name=external_id_name, row=row, context=context)
-                    except: # Error Writing or Creating Records
-                        cr.rollback()
-                        rec.has_errors = True
-                        error_txt = _('Writing or Creating row %s vals %s ' % (row,vals,))
-                        self.update_log_error(cr, uid, ids, rec, error_txt, context)
-                        
-
-                    if row%10 == 0: # Update Statics every 10 records
-                        self.update_statistics(cr,uid ,ids , rec, row, count)
-                        
                     if rec.rollback and context.get('test',False): 
                         pass
                     else:
                         cr.commit() 
-
-                    count += 1 
-                    if  count >= rec.test_sample_size  and context.get('test',False):
-                        
-                        if rec.rollback: cr.rollback()
-                        # Exit Import Records Loop  
-                        return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
+                            
+                conn.close()
         except:
             cr.rollback()
+            conn.close()
             rec.has_errors = True
             error_txt = _('Import Aborted')
             return self.update_log_error( cr, uid, ids, rec, error_txt, context)
