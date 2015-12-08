@@ -453,7 +453,7 @@ class import_data_file(osv.osv):
 #                                                                           'model_field':fids and fids[0] or False, 
 #                                                                           'model':rec.model_id.id},context=context)
                 header = col[0]
-#                fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
+                fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
 #		for c in col:
 #			print c
 #		pdb.set_trace()
