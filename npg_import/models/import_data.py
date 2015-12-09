@@ -851,8 +851,10 @@ class import_data_file(osv.osv):
         '''
         t2 = datetime.datetime.now()
         time_delta = (t2 - datetime.datetime.strptime(start_time, DEFAULT_SERVER_DATETIME_FORMAT))
-        time_each = time_delta / processed_rows
-        time_each = time_each.total_seconds()
+        if processed_rows < 0:
+            time_each = time_delta / processed_rows
+            time_each = time_each.total_seconds()
+        else: time_each = 0.0
         
         if remaining:
             
