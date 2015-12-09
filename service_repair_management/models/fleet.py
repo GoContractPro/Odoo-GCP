@@ -27,9 +27,24 @@
 from openerp.osv import osv,fields
 class fleet_vehicle(osv.osv):
     _inherit = 'fleet.vehicle'
+    
+    def _vehicle_name_get_fnc(self, cr, uid, ids, prop, unknow_none, context=None):
+        res = {}
+        if not context.get('default_is_service_repair',False):
+            for record in self.browse(cr, uid, ids, context=context):
+                res[record.id] = record.model_id.brand_id.name + '/' + record.model_id.modelname + ' / ' + record.license_plate
+        else:
+            for record in self.browse(cr, uid, ids, context=context):
+                res[record.id] = record.unit + '/' + record.make + ' / ' + record.model
+        return res
+
     _columns={
+              'name': fields.function(_vehicle_name_get_fnc, type="char", string='Name', store=True),
+               'license_plate': fields.char('License Plate', help='License plate number of the vehicle (ie: plate number for a car)'),
               'unit':fields.char('Unit',size=64),
                'make':fields.char('Make',size=64),
               'model':fields.char('Model',size=64),
+              'is_service_repair':fields.boolean('Is Service Repair ?'),
+              'model_id': fields.many2one('fleet.vehicle.model', 'Model', help='Model of the vehicle'),
               }
 fleet_vehicle()
