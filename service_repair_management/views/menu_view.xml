@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <openerp>
-    <data>
-       <menuitem id="menu_service_repair" parent="base.menu_sales" 
-       sequence="2" name="Service Repair" groups="base.group_sale_salesman,base.group_sale_manager"/>
-       
-       <menuitem action="open_view_project_all_service_repair" id="menu_sale_order" parent="menu_service_repair"  name="Service Repair Orders"
-       sequence="1" groups="base.group_sale_salesman,base.group_sale_manager"/>
-       
-       <menuitem action="service_repair_action_view_task" id="menu_action_view_task"
-			parent="menu_service_repair" name="Service Repair" sequence="2" />
-       
-    </data>
+	<data>
+		<menuitem id="menu_service_repair" parent="base.menu_sales"
+			sequence="2" name="Service Repair" groups="base.group_sale_salesman,base.group_sale_manager" />
+
+		<menuitem action="open_view_project_all_service_repair" id="menu_sale_order"
+			parent="menu_service_repair" name="Service Repair Orders" sequence="1"
+			groups="base.group_sale_salesman,base.group_sale_manager" />
+
+		<menuitem action="service_repair_action_view_task" id="menu_action_view_task"
+			parent="menu_service_repair" name="Jobs" sequence="2" />
+
+
+	</data>
 </openerp>

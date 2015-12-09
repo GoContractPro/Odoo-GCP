@@ -39,6 +39,7 @@ Service Repair Management.
     'data': [
         'views/service_repair_view.xml',
         'views/fleet_view.xml',
+        'views/partner_view.xml',
         'views/menu_view.xml',
     ],
     'qweb' : [
