@@ -184,6 +184,16 @@
 														<field name="search_other_field"/>
 														<field name="create_related"/>
 														</group>
+														<group string="Map Source Field Values to Odoo values" cols="4" >
+										
+			                      							<field name="substitutions" 
+			                      				 			nolabel="1" colspan="4">
+					                  						<tree editable="bottom">
+					                  							<field name="src_value"/>	                    	
+					                  							<field name="odoo_value"/>
+					                  						</tree>
+					                  						</field>
+				                  						</group>
 													</group>
 												</form>
 			                      		
