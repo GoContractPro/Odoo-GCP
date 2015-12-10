@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	 <data>
+
+        <!-- Sequences for Project.project -->
+        <record id="seq_type_service_repair_order" model="ir.sequence.type">
+            <field name="name">Service Repair Management</field>
+            <field name="code">project.project</field>
+        </record>
+
+        <record id="seq_service_repair_order" model="ir.sequence">
+            <field name="name">Service Repair Management</field>
+            <field name="code">project.project</field>
+            <field name="prefix">WO%(y)s </field>
+            <field name="padding">4</field>
+        </record>
+
+    </data>
+</openerp>
+	

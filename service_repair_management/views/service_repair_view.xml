@@ -52,6 +52,10 @@
 			<field name="arch" type="xml">
 				<form string="Project">
 					<header>
+						<button name="convert_to_quotation" string="Convert To Quotation"
+							type="object" class="oe_highlight" />
+						<button name="%(hr_timesheet_invoice.action_hr_timesheet_invoice_create)d" string="Create Invoice"
+							type="action" class="oe_highlight" context="{'default_is_service_repair':1}"/>
 						<field name="stage_id" widget="statusbar" clickable="True"
 							options="{'fold_field': 'fold'}" />
 					</header>
@@ -62,10 +66,20 @@
 						<h1>
 							<field name="name" placeholder="Task summary..." class="oe_inline" />
 						</h1>
+						<div class="oe_right oe_button_box" name="buttons" groups="base.group_user">
+							<button class="oe_inline oe_stat_button" type="object" 
+								attrs="{'invisible':[('is_service_repair','=', 0)]}" name="get_sale_order"
+								icon="fa-tasks">
+								<field string="View Sales" name="sale_count" widget="statinfo" />
+							</button>
+						</div>
 						<group>
 							<group>
-								<field name="project_id" domain="[('state','not in', ('close', 'cancelled'))]"
-									on_change="onchange_project(project_id)" context="{'default_use_tasks':1}" />
+								<field name="project_id"
+									domain="[('state','not in', ('close', 'cancelled')),('is_service_repair','=',True)]"
+									on_change="onchange_project(project_id)"
+									context="{'default_use_tasks':1,'default_is_service_repair':1,'form_view_ref': 'service_repair_management.service_repair_edit_project'}"
+									string="Service Repair Order" />
 								<field name="user_id" options='{"no_open": True}'
 									context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'project.group_project_user']}" />
 								<field name="reviewer_id" options='{"no_open": True}'
@@ -109,9 +123,9 @@
 								<div class="oe_clear" />
 							</page>
 							<page string="Delegation" groups="project.group_delegate_task">
-								<separator string="Parent Tasks" />
+								<separator string="Parent Jobs" />
 								<field name="parent_ids" />
-								<separator string="Delegated tasks" />
+								<separator string="Delegated Jobs" />
 								<field name="child_ids">
 									<tree string="Delegated tasks">
 										<field name="name" />
@@ -141,7 +155,13 @@
 									<group>
 										<field name="date_last_stage_update" groups="base.group_no_one" />
 									</group>
+									<group>
+										<field name="is_sale" />
+									</group>
 								</group>
+							</page>
+							<page string="Sale Order">
+								<field name="sale_order_ids" widget="one2many" />
 							</page>
 						</notebook>
 					</sheet>
@@ -273,8 +293,8 @@
 					string="Tasks">
 					<field name="message_unread" invisible="1" />
 					<field name="sequence" invisible="not context.get('seq_visible', False)" />
-					<field name="name" />
-					<field name="project_id" invisible="context.get('user_invisible', False)" />
+					<field name="name" string="Job Summary" />
+					<field name="project_id" string="Service Repair Order" />
 					<field name="user_id" invisible="context.get('user_invisible', False)" />
 					<field name="delegated_user_id" invisible="context.get('show_delegated', True)" />
 					<field name="total_hours" invisible="1" />
@@ -285,7 +305,7 @@
 					<field name="remaining_hours" widget="float_time" sum="Remaining Hours"
 						on_change="onchange_remaining(remaining_hours,planned_hours)"
 						invisible="context.get('set_visible',False)" groups="project.group_time_work_estimation_tasks" />
-					<field name="date_deadline" invisible="context.get('deadline_visible',True)" />
+					<field name="date_deadline" />
 					<field name="stage_id" invisible="context.get('set_visible',False)" />
 					<field name="date_start" groups="base.group_no_one" />
 					<field name="date_end" groups="base.group_no_one" />
@@ -448,51 +468,78 @@
 							statusbar_colors='{"pending":"blue"}' readonly="1" />
 					</header>
 					<sheet string="Project">
-						<field name="analytic_account_id" invisible="1" required="0" />
+						<h1>
+							<label string="Service Repair Order "
+								attrs="{'invisible':[('is_service_repair','=', 0)]}" />
+							<field name="seq_no" class="oe_inline" readonly="1" attrs="{'invisible':[('is_service_repair','=', 0)]}"/>
+						</h1>
 						<div class="oe_title">
-							<label for="name" class="oe_edit_only" string="Project Name" />
+							<label for="name" class="oe_edit_only" string="Service Repair Order" />
 							<h1>
-								<field name="name" string="Project Name" />
+								<field name="name" string="Service Repair Order" />
 							</h1>
-								<field name="use_tasks" class="oe_inline" invisible="1" />
+							<field name="use_tasks" class="oe_inline" invisible="1" />
 						</div>
+						<field name="use_issues" class="oe_inline" invisible="1" />
+						<label for="use_issues" invisible="1" />
+						<field name="use_timesheets" invisible="1" />
 						<div class="oe_right oe_button_box" name="buttons" groups="base.group_user">
 							<button class="oe_inline oe_stat_button" type="action"
 								attrs="{'invisible':[('use_tasks','=', 0)]}"
 								name="%(service_repair_act_project_project_2_project_task_all)d"
 								icon="fa-tasks">
-								<field string="Tasks" name="task_count" widget="statinfo" />
+								<field string="Jobs" name="task_count" widget="statinfo" />
 							</button>
 							<button class="oe_inline oe_stat_button" name="attachment_tree_view"
 								type="object" icon="fa-files-o">
 								<field string="Documents" name="doc_count" widget="statinfo" />
 							</button>
+							<button class="oe_inline oe_stat_button" type="action"
+								attrs="{'invisible':[('use_issues','=', 0)]}"
+								name="%(project_issue.act_project_project_2_project_issue_all)d"
+								icon="fa-bug">
+								<field string="Issues" name="issue_count" widget="statinfo" />
+								<button class="oe_inline oe_stat_button" name="open_timesheets"
+									type="object" attrs="{'invisible':[('use_timesheets','=', 0)]}"
+									icon="fa-calendar" string="Timesheets" />
+							</button>
 						</div>
-
 						<group colspan="4">
 							<field name="partner_id" on_change="onchange_partner_id(partner_id)"
 								string="Customer" />
 							<field name="person_dropping_of" domain="[('parent_id','=',partner_id)]" />
-							<field name="item_tobe_repaired" string="Items to be Repaired" />
+							<group colspan="4" cols="4">
+								<group colspan="4" col="4">
+									<field name="item_tobe_repaired" string="Items to be Repaired"
+										colspan="2" />
+									<p attrs="{'invisible': [('analytic_account_id','=',False)]}">
+										To invoice or setup invoicing and renewal options, go to the
+										related contract:
+										<field name="analytic_account_id" readonly="1" required="0"
+											class="oe_inline" nolabel="1" colspan="2" />
+										.
+									</p>
+								</group>
+							</group>
 							<field name="related_unit" on_change="onchange_related_unit(related_unit)"
 								domain="[('is_service_repair','=',True),('driver_id','=',partner_id)]"
 								context="{'default_is_service_repair':1,'default_driver_id':partner_id,'form_view_ref': 'service_repair_management.service_repaired_fleet_vehicle_form'}" />
 							<group colspan="4" cols="4">
 								<group colspan="4" col="4">
 									<field name="need_quote" colspan="2" />
-									<field name="quote_approver" colspan="2" />
+									<field name="quote_approver" colspan="2" attrs="{'invisible':[('need_quote','=',False)]}"/>
 								</group>
 							</group>
-							<field name="eval_job" />
+							<field name="eval_job" context="{'default_is_service_repair':1,'default_name':name,'default_user_id':False}"/>
 						</group>
 						<notebook>
-						<page string="Issue">
+							<page string="Issue">
 								<group>
 									<group colspan="4" cols="4">
 										<field name="issue" placeholder="What is wrong" />
 										<field name="symptoms"
 											placeholder="What are the symptoms or What is the unit doing or not doing" />
-										<field name="repair_order_project" />
+										<field name="repair_order_project" invisible="1"/>
 										<field name="is_service_repair" invisible="1" />
 									</group>
 									<group colspan="4" cols="4" invisible="1">
@@ -546,24 +593,18 @@
 											attrs="{'invisible':[('state','in',['open', 'pending', 'template'])]}" />
 										<field name="currency_id" groups="base.group_multi_currency"
 											required="1" />
+										<field name="company_id"/>
 										<field name="parent_id" string="Parent"
 											help="Append this project to another one using analytic accounts hierarchy"
 											domain="[('id','!=',analytic_account_id)]" context="{'current_model': 'project.project'}" />
-										<group col="4">
+										<group col="4" invisible="1">
 											<field name="user_id" string="Project Manager"
 												attrs="{'readonly':[('state','in',['close', 'cancelled'])]}"
 												context="{'default_groups_ref': ['base.group_user', 'base.group_partner_manager', 'project.group_project_manager']}" />
 											<newline />
 										</group>
-										<p attrs="{'invisible': [('analytic_account_id','=',False)]}">
-											To invoice or setup invoicing and renewal options, go to the
-											related contract:
-											<field name="analytic_account_id" readonly="1"
-												required="0" class="oe_inline" nolabel="1" />
-											.
-										</p>
 										<group name="group_alias"
-											attrs="{'invisible': [('alias_domain', '=', False)]}">
+											attrs="{'invisible': [('alias_domain', '=', False)]}" invisible="1">
 											<label for="alias_name" string="Email Alias" />
 											<div name="alias_def">
 												<field name="alias_id" class="oe_read_only oe_inline"
@@ -576,9 +617,10 @@
 														readonly="1" />
 												</div>
 											</div>
-											<label for="alias_model" string="Incoming Emails create" />
-											<field name="alias_model" class="oe_inline" nolabel="1" />
-											<field name="alias_contact" class="oe_inline" string="Accept Emails From" />
+											<label for="alias_model" string="Incoming Emails create" invsible="1"/>
+											<field name="alias_model" class="oe_inline" nolabel="1" invsible="1"/>
+											<field name="alias_contact" class="oe_inline" string="Accept Emails From" invsible="1"/>
+											<field name="to_invoice" invisible="1"/>
 										</group>
 									</group>
 								</group>
@@ -605,28 +647,11 @@
 			<field name="model">project.project</field>
 			<field name="arch" type="xml">
 				<search string="Search Project">
-					<field name="name" string="Project Name" />
 					<field name="unit" />
 					<field name="make" />
 					<field name="model" />
-					<filter string="Open" name="Current" domain="[('state', '=','open')]" />
-					<filter string="Pending" name="Pending" domain="[('state', '=','pending')]" />
-					<filter string="Template" name="Template" domain="[('state', '=','template')]" />
 					<separator />
-					<filter string="Member" name="Member"
-						domain="['|',('user_id', '=', uid),('members', '=', uid)]" />
-					<filter string="Manager" domain="[('user_id','=',uid)]" />
-					<separator />
-					<filter string="New Mail" name="message_unread"
-						domain="[('message_unread','=',True)]" />
-					<field name="user_id" string="Project Manager" />
-					<field name="partner_id" string="Contact"
-						filter_domain="[('partner_id', 'child_of', self)]" />
 					<group expand="0" string="Group By">
-						<filter string="Manager" name="Manager" context="{'group_by':'user_id'}" />
-						<filter string="Contact" name="Partner" context="{'group_by':'partner_id'}" />
-						<filter string="Parent" name="Parent" help="Parent"
-							context="{'group_by':'parent_id'}" />
 						<filter string="Unit" name="Unit" context="{'group_by':'unit'}" />
 						<filter string="Make" name="Make" context="{'group_by':'make'}" />
 						<filter string="Model" name="Model" context="{'group_by':'model'}" />
@@ -645,7 +670,7 @@
 					<field name="sequence" widget="handle" />
 					<field name="message_unread" invisible="1" />
 					<field name="date" invisible="1" />
-					<field name="name" string="Project Name" />
+					<field name="name" string="Service Repair Order" />
 					<field name="user_id" string="Project Manager" />
 					<field name="partner_id" string="Contact" />
 					<field name="parent_id" string="Parent" invisible="1" />
@@ -655,94 +680,6 @@
 					<field name="progress_rate" widget="progressbar" />
 					<field name="state" />
 				</tree>
-			</field>
-		</record>
-
-		<record model="ir.ui.view" id="view_project_kanban_service_repair">
-			<field name="name">project.project.kanban</field>
-			<field name="model">project.project</field>
-			<field name="arch" type="xml">
-				<kanban class="oe_background_grey">
-					<field name="effective_hours" />
-					<field name="planned_hours" />
-					<field name="name" />
-					<field name="members" />
-					<field name="use_tasks" />
-					<field name="user_id" />
-					<field name="date" />
-					<field name="color" />
-					<field name="task_count" />
-					<field name="task_ids" />
-					<field name="alias_id" />
-					<field name="alias_name" />
-					<field name="alias_domain" />
-					<field name="doc_count" />
-					<templates>
-						<t t-name="kanban-box">
-							<div
-								t-attf-class="oe_kanban_color_#{kanban_getcolor(record.color.raw_value)} oe_kanban_card oe_kanban_project oe_kanban_global_click">
-								<div class="oe_dropdown_toggle oe_dropdown_kanban" groups="base.group_user">
-									<span class="oe_e">í</span>
-									<ul class="oe_dropdown_menu">
-										<t t-if="widget.view.is_action_enabled('edit')">
-											<li>
-												<a type="edit">Project Settings</a>
-											</li>
-										</t>
-										<t t-if="widget.view.is_action_enabled('delete')">
-											<li>
-												<a type="delete">Delete</a>
-											</li>
-										</t>
-										<li>
-											<ul class="oe_kanban_colorpicker" data-field="color" />
-										</li>
-									</ul>
-								</div>
-								<div class="oe_kanban_content">
-									<h4 class="text-center">
-										<strong>
-											<field name="name" />
-										</strong>
-									</h4>
-									<div class="text-center oe_kanban_alias"
-										t-if="record.alias_name.value and record.alias_domain.value">
-										<small>
-											<i class="fa fa-envelope-o"></i>
-											<field name="alias_id" />
-										</small>
-									</div>
-									<div class="oe_kanban_project_list">
-										<a t-if="record.doc_count.raw_value" name="attachment_tree_view"
-											type="object" style="margin-right: 10px">
-											<field name="doc_count" />
-											Documents
-										</a>
-									</div>
-									<div class="oe_kanban_footer_left">
-										<span groups="project.group_time_work_estimation_tasks">
-											<span class="oe_e">R</span>
-											<t t-esc="Math.round(record.effective_hours.raw_value)" />
-											/
-											<t t-esc="Math.round(record.planned_hours.raw_value)" />
-											<field name="company_uom_id" />
-										</span>
-										<span t-if="record.date.raw_value">
-											<span class="oe_e">N</span>
-											<field name="date" />
-										</span>
-									</div>
-									<div class="oe_kanban_project_avatars">
-										<t t-foreach="record.members.raw_value.slice(0,11)" t-as="member">
-											<img t-att-src="kanban_image('res.users', 'image_small', member)"
-												t-att-data-member_id="member" />
-										</t>
-									</div>
-								</div>
-							</div>
-						</t>
-					</templates>
-				</kanban>
 			</field>
 		</record>
 
@@ -761,7 +698,7 @@
 			<field name="res_model">project.project</field>
 			<field name="view_type">form</field>
 			<field name="view_mode">kanban,tree,form,gantt</field>
-			<field name="view_id" ref="view_project_kanban_service_repair" />
+			<field name="view_id" ref="project.view_project_kanban" />
 			<field name="search_view_id" ref="view_project_project_service_repair_filter" />
 			<field name="context">{'search_default_Current':
 				1,'default_is_service_repair':True,'default_repair_order_project':True}
@@ -800,7 +737,7 @@
 			model="ir.actions.act_window.view">
 			<field name="sequence" eval="0" />
 			<field name="view_mode">kanban</field>
-			<field name="view_id" ref="view_project_kanban_service_repair" />
+			<field name="view_id" ref="project.view_project_kanban" />
 			<field name="act_window_id" ref="open_view_project_all_service_repair" />
 		</record>
 		<record id="service_repair_open_view_project_list_tree" model="ir.actions.act_window.view">
