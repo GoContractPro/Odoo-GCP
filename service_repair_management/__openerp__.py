@@ -35,10 +35,9 @@ Service Repair Management.
 
     """,
     'website': 'http://www.novapointgroup.com',
-    'depends' : ['fleet','project','sale','project_issue','project_timesheet','hr_timesheet_invoice'],
+    'depends' : ['fleet', 'mrp_sale_ficticious', 'project','sale','project_issue','project_timesheet','hr_timesheet_invoice'],
     'data': [
              'views/sequence_view.xml',
-              'views/sale_order_view.xml',
         'views/service_repair_view.xml',
         'views/fleet_view.xml',
         'views/partner_view.xml',

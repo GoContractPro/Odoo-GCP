@@ -48,7 +48,7 @@ class project(osv.osv):
             'company_id':fields.many2one('res.company','Company'),
               }
     _defaults={
-              'seq_no':'/',
+              'name':'/',
               }
     def onchange_partner_id(self, cr, uid, ids, part=False, context=None):
         partner_obj = self.pool.get('res.partner')
@@ -71,8 +71,8 @@ class project(osv.osv):
         create_context = dict(context, project_creation_in_progress=True,
                               alias_model_name=vals.get('alias_model', 'project.task'),
                               alias_parent_model_name=self._name)
-        if vals.get('seq_no', '/') == '/' and context.get('default_is_service_repair',False)==True:
-            vals['seq_no'] = self.pool.get('ir.sequence').get(cr, uid, 'project.project', context=context) or '/'
+        if vals.get('name', '/') == '/' and context.get('default_is_service_repair',False)==True:
+            vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'project.project', context=context) or '/'
 
         if vals.get('type', False) not in ('template', 'contract'):
             vals['type'] = 'contract'
@@ -141,7 +141,7 @@ class task(osv.osv):
                 defaults = sale_obj.onchange_partner_id(cr, uid, [],rec.project_id.partner_id.id , context=context)['value']
                 defaults.update({
                      'partner_id':rec.partner_id and rec.partner_id.id or False,
-                     'service_repair_project_id':rec.project_id and rec.project_id.id or False
+                     'main_project_id':rec.project_id and rec.project_id.id or False
                      })
                 ctx = dict(context or {}, mail_create_nolog=True)
                 so_ids = sale_obj.create(cr, uid, defaults, context=ctx)
@@ -231,12 +231,6 @@ class res_partner(osv.osv):
               }
 res_partner()
 
-class sale_order(osv.osv):
-    _inherit='sale.order'
-    _columns={
-              'service_repair_project_id':fields.many2one('project.project','Main Project')
-              }
-sale_order()
 
 
 
