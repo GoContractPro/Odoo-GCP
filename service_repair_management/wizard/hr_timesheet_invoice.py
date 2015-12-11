@@ -45,16 +45,12 @@ class hr_timesheet_invoice_create(osv.osv_memory):
     def do_create(self, cr, uid, ids, context=None):
         data = self.read(cr, uid, ids, context=context)[0]
         # Create an invoice based on selected timesheet lines
-        print'===context[active_ids]',context['active_ids']
-        print'==data==',data
         if not context.get('default_is_service_repair',False):
             invs = self.pool.get('account.analytic.line').invoice_cost_create(cr, uid, context['active_ids'], data, context=context)
         else:
             analytic_lst=[]
             for rec in self.pool.get('project.task').browse(cr,uid,context.get('active_ids'),context=context):
                 analytic_lst=[work_line.hr_analytic_timesheet_id.line_id.id for work_line in rec.work_ids]
-                
-            print'=analytic_lst====',analytic_lst    
             invs = self.pool.get('account.analytic.line').invoice_cost_create(cr, uid, analytic_lst, data, context=context)
         mod_obj = self.pool.get('ir.model.data')
         act_obj = self.pool.get('ir.actions.act_window')

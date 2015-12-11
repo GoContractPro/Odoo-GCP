@@ -37,13 +37,7 @@ class fleet_vehicle(osv.osv):
                 res[record.id] = record.model_id.brand_id.name + '/' + record.model_id.modelname + ' / ' + record.license_plate
         else:
             for record in self.browse(cr, uid, ids, context=context):
-                if not record.unit :
-                    raise osv.except_osv(_('Error!'), _('Please fill the Unit value !'))
-                if not record.make :
-                    raise osv.except_osv(_('Error!'), _('Please fill the Make value !'))
-                if not record.model:
-                    raise osv.except_osv(_('Error!'), _('Please fill the Model value !'))
-                res[record.id] = record.unit + '/' + record.make + ' / ' + record.model
+                res[record.id] = record.unit or ' '  + '/' + record.make or ' ' + ' / ' + record.model or ' '
         return res
 
     _columns={
