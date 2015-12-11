@@ -667,7 +667,7 @@ class import_data_file(osv.osv):
                 
                 self.pool.get('ir.model.data').create(cr,uid,external_vals, context=context)
                 
-            _logger.info(_('Created record %s from Source row %s' % (vals,row)))
+            _logger.info(_('Created record %s ID: %s from Source row %s' % (external_id_name or '',res_id,row)))
 
             return res_id
 
@@ -980,7 +980,7 @@ class import_data_file(osv.osv):
             if res_id and rec.do_update:
                 
                 self.pool.get(rec.model_id.model).write(cr,uid,res_id, vals,context=context)
-                _logger.info(_('Update row %s vals %s') % (row,vals,))
+                _logger.info(_('Update row %s Odoo Database ID: %s') % (row,res_id,))
             
             elif res_id and not rec.do_update:
                 
