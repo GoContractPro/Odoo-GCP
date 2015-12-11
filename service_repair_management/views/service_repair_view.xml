@@ -379,7 +379,7 @@
 			<field name="view_id" ref="service_repair_view_task_tree2" />
 			<field name="act_window_id" ref="service_repair_action_view_task" />
 		</record>
-		<record id="service_repair_open_view_task_list_tree" model="ir.actions.act_window.view">
+		<record id="service_repair_open_view_task_list_form" model="ir.actions.act_window.view">
 			<field name="sequence" eval="1" />
 			<field name="view_mode">form</field>
 			<field name="view_id" ref="service_repair_view_task_form2" />
@@ -792,26 +792,26 @@
 		</record>
 
 
-		<record id="parent_inherit_open_view_project_list_kanban"
+		<record id="service_parent_inherit_open_view_project_list_kanban"
 			model="ir.actions.act_window.view">
 			<field name="sequence" eval="0" />
 			<field name="view_mode">kanban</field>
 			<field name="view_id" ref="project.view_project_kanban" />
 			<field name="act_window_id" ref="project.open_view_project_all" />
 		</record>
-		<record id="parent_inherit_open_view_project_list_tree" model="ir.actions.act_window.view">
+		<record id="service_parent_inherit_open_view_project_list_tree" model="ir.actions.act_window.view">
 			<field name="sequence" eval="1" />
 			<field name="view_mode">tree</field>
 			<field name="view_id" ref="project.view_project" />
 			<field name="act_window_id" ref="project.open_view_project_all" />
 		</record>
-		<record id="parent_inherit_open_view_project_list_form" model="ir.actions.act_window.view">
+		<record id="service_parent_inherit_open_view_project_list_form" model="ir.actions.act_window.view">
 			<field name="sequence" eval="2" />
 			<field name="view_mode">form</field>
 			<field name="view_id" ref="project.edit_project" />
 			<field name="act_window_id" ref="project.open_view_project_all" />
 		</record>
-		<record id="parent_inherit_open_view_project_list_form" model="ir.actions.act_window.view">
+		<record id="service_parent_inherit_open_view_project_list_gantt" model="ir.actions.act_window.view">
 			<field name="sequence" eval="3" />
 			<field name="view_mode">gantt</field>
 			<field name="view_id" ref="project.view_project_project_gantt" />

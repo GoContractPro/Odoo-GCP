@@ -24,6 +24,18 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-import fleet
-#import analytic
-import service_repair
+from openerp.osv import osv,fields
+
+class account_analytic_account(osv.osv):
+    _inherit='account.analytic.account'
+    
+    def _get_pricelist_id(self, cr, uid, context=None):
+        print'===context====',context
+        if context.get('default_is_service_repair',False)== True:
+            user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
+        return user.company_id.currency_id.id
+        
+    
+    _defaults={
+               'pricelist_id':_get_pricelist_id,
+               }
