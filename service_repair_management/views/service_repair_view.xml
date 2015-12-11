@@ -54,8 +54,10 @@
 					<header>
 						<button name="convert_to_quotation" string="Convert To Quotation"
 							type="object" class="oe_highlight" />
-						<button name="%(hr_timesheet_invoice.action_hr_timesheet_invoice_create)d" string="Create Invoice"
-							type="action" class="oe_highlight" context="{'default_is_service_repair':1}"/>
+						<button
+							name="%(hr_timesheet_invoice.action_hr_timesheet_invoice_create)d"
+							string="Create Invoice" type="action" class="oe_highlight"
+							context="{'default_is_service_repair':1}" />
 						<field name="stage_id" widget="statusbar" clickable="True"
 							options="{'fold_field': 'fold'}" />
 					</header>
@@ -67,7 +69,7 @@
 							<field name="name" placeholder="Task summary..." class="oe_inline" />
 						</h1>
 						<div class="oe_right oe_button_box" name="buttons" groups="base.group_user">
-							<button class="oe_inline oe_stat_button" type="object" 
+							<button class="oe_inline oe_stat_button" type="object"
 								attrs="{'invisible':[('is_service_repair','=', 0)]}" name="get_sale_order"
 								icon="fa-tasks">
 								<field string="View Sales" name="sale_count" widget="statinfo" />
@@ -471,7 +473,8 @@
 						<h1>
 							<label string="Service Repair Order "
 								attrs="{'invisible':[('is_service_repair','=', 0)]}" />
-							<field name="name" class="oe_inline" readonly="1" attrs="{'invisible':[('is_service_repair','=', 0)]}"/>
+							<field name="name" class="oe_inline" readonly="1"
+								attrs="{'invisible':[('is_service_repair','=', 0)]}" />
 						</h1>
 						<div class="oe_title">
 							<field name="use_tasks" class="oe_inline" invisible="1" />
@@ -502,7 +505,7 @@
 						</div>
 						<group colspan="4">
 							<field name="partner_id" on_change="onchange_partner_id(partner_id)"
-								string="Customer" required="1"/>
+								string="Customer" required="1" />
 							<field name="person_dropping_of" domain="[('parent_id','=',partner_id)]" />
 							<group colspan="4" cols="4">
 								<group colspan="4" col="4">
@@ -523,11 +526,15 @@
 							<group colspan="4" cols="4">
 								<group colspan="4" col="4">
 									<field name="need_quote" colspan="2" />
-									<field name="quote_approver" colspan="2" attrs="{'invisible':[('need_quote','=',False)]}"/>
+									<field name="quote_approver" colspan="2"
+										attrs="{'invisible':[('need_quote','=',False)]}" />
 								</group>
 							</group>
-<!-- 							<field name="eval_job" domain="[('is_service_repair', '=', True), ('project_id', '=', active_id)]" context="{'default_is_service_repair':1,'default_project_id':active_id,'default_name':'Evaluation','default_user_id':False}"/>
- -->							<field name="eval_job" domain="[('is_service_repair','=',True), ('project_id', '=', active_id)]" context="{'default_is_service_repair':1,'default_project_id':active_id,'default_name':name,'default_user_id':False,'form_view_ref': 'service_repair_management.service_repair_view_task_form2'}"/>
+							<!-- <field name="eval_job" domain="[('is_service_repair', '=', True), 
+								('project_id', '=', active_id)]" context="{'default_is_service_repair':1,'default_project_id':active_id,'default_name':'Evaluation','default_user_id':False}"/> -->
+							<field name="eval_job"
+								domain="[('is_service_repair','=',True), ('project_id', '=', active_id)]"
+								context="{'default_is_service_repair':1,'default_project_id':active_id,'default_name':name,'default_user_id':False,'form_view_ref': 'service_repair_management.service_repair_view_task_form2'}" />
 						</group>
 						<notebook>
 							<page string="Issue">
@@ -536,7 +543,7 @@
 										<field name="issue" placeholder="What is wrong" />
 										<field name="symptoms"
 											placeholder="What are the symptoms or What is the unit doing or not doing" />
-										<field name="repair_order_project" invisible="1"/>
+										<field name="repair_order_project" invisible="1" />
 										<field name="is_service_repair" invisible="1" />
 									</group>
 									<group colspan="4" cols="4" invisible="1">
@@ -590,7 +597,7 @@
 											attrs="{'invisible':[('state','in',['open', 'pending', 'template'])]}" />
 										<field name="currency_id" groups="base.group_multi_currency"
 											required="1" />
-										<field name="company_id"/>
+										<field name="company_id" />
 										<field name="parent_id" string="Parent"
 											help="Append this project to another one using analytic accounts hierarchy"
 											domain="[('id','!=',analytic_account_id)]" context="{'current_model': 'project.project'}" />
@@ -601,7 +608,8 @@
 											<newline />
 										</group>
 										<group name="group_alias"
-											attrs="{'invisible': [('alias_domain', '=', False)]}" invisible="1">
+											attrs="{'invisible': [('alias_domain', '=', False)]}"
+											invisible="1">
 											<label for="alias_name" string="Email Alias" />
 											<div name="alias_def">
 												<field name="alias_id" class="oe_read_only oe_inline"
@@ -614,10 +622,13 @@
 														readonly="1" />
 												</div>
 											</div>
-											<label for="alias_model" string="Incoming Emails create" invsible="1"/>
-											<field name="alias_model" class="oe_inline" nolabel="1" invsible="1"/>
-											<field name="alias_contact" class="oe_inline" string="Accept Emails From" invsible="1"/>
-											<field name="to_invoice" invisible="1"/>
+											<label for="alias_model" string="Incoming Emails create"
+												invsible="1" />
+											<field name="alias_model" class="oe_inline" nolabel="1"
+												invsible="1" />
+											<field name="alias_contact" class="oe_inline" string="Accept Emails From"
+												invsible="1" />
+											<field name="to_invoice" invisible="1" />
 										</group>
 									</group>
 								</group>
@@ -748,6 +759,63 @@
 			<field name="view_mode">form</field>
 			<field name="view_id" ref="service_repair_edit_project" />
 			<field name="act_window_id" ref="open_view_project_all_service_repair" />
+		</record>
+
+
+		<!-- Project .project -->
+
+		<record id="project.open_view_project_all" model="ir.actions.act_window">
+			<field name="name">Projects</field>
+			<field name="res_model">project.project</field>
+			<field name="view_type">form</field>
+			<field name="context">{'search_default_Current': 1,'default_is_service_repair':False}</field>
+			<field name="domain">[('is_service_repair','=',0)]</field>
+			<field name="view_mode">kanban,tree,form,gantt</field>
+			<field name="view_id" ref="project.view_project_kanban" />
+			<field name="search_view_id" ref="project.view_project_project_filter" />
+			
+			<field name="help" type="html">
+				<p class="oe_view_nocontent_create">
+					Click to start a new project.
+				</p>
+				<p>
+					Projects are used to organize your activities; plan
+					tasks, track issues, invoice timesheets. You can define
+					internal projects (R&amp;D, Improve Sales Process),
+					private projects (My Todos) or customer ones.
+				</p>
+				<p>
+					You will be able collaborate with internal users on
+					projects or invite customers to share your activities.
+				</p>
+			</field>
+		</record>
+
+
+		<record id="parent_inherit_open_view_project_list_kanban"
+			model="ir.actions.act_window.view">
+			<field name="sequence" eval="0" />
+			<field name="view_mode">kanban</field>
+			<field name="view_id" ref="project.view_project_kanban" />
+			<field name="act_window_id" ref="project.open_view_project_all" />
+		</record>
+		<record id="parent_inherit_open_view_project_list_tree" model="ir.actions.act_window.view">
+			<field name="sequence" eval="1" />
+			<field name="view_mode">tree</field>
+			<field name="view_id" ref="project.view_project" />
+			<field name="act_window_id" ref="project.open_view_project_all" />
+		</record>
+		<record id="parent_inherit_open_view_project_list_form" model="ir.actions.act_window.view">
+			<field name="sequence" eval="2" />
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="project.edit_project" />
+			<field name="act_window_id" ref="project.open_view_project_all" />
+		</record>
+		<record id="parent_inherit_open_view_project_list_form" model="ir.actions.act_window.view">
+			<field name="sequence" eval="3" />
+			<field name="view_mode">gantt</field>
+			<field name="view_id" ref="project.view_project_project_gantt" />
+			<field name="act_window_id" ref="project.open_view_project_all" />
 		</record>
 
 	</data>
