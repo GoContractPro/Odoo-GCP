@@ -41,7 +41,7 @@ class fleet_vehicle(osv.osv):
         return res
 
     _columns={
-              'name': fields.function(_vehicle_name_get_fnc, type="char", string='Name', store=True),
+              'name': fields.function(_vehicle_name_get_fnc, type="char", string='Name'),
                'license_plate': fields.char('License Plate', help='License plate number of the vehicle (ie: plate number for a car)'),
               'unit':fields.char('Unit',size=64),
                'make':fields.char('Make',size=64),

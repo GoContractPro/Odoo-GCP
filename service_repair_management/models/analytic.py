@@ -30,12 +30,35 @@ class account_analytic_account(osv.osv):
     _inherit='account.analytic.account'
     
     def _get_pricelist_id(self, cr, uid, context=None):
-        print'===context====',context
-        if context.get('default_is_service_repair',False)== True:
-            user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
-        return user.company_id.currency_id.id
-        
+        pricelist_id =False
+        partner_obj = self.pool.get('res.partner')
+        if context.get('default_is_service_repair',False)== True and context.get('partner_id',False):
+            pricelist = partner_obj.browse(cr, uid, context.get('partner_id',False))
+            pricelist_id = pricelist.property_product_pricelist and pricelist.property_product_pricelist.id or False
+        return pricelist_id
     
     _defaults={
                'pricelist_id':_get_pricelist_id,
                }
+    def default_get(self, cr, uid, fields, context=None):
+        if context is None:
+            context = {}
+        res = super(account_analytic_account, self).default_get(cr, uid, fields, context=context)
+        to_invoice = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'hr_timesheet_invoice', 'timesheet_invoice_factor1')
+        res.update({'to_invoice':to_invoice[1]})
+        return res
+
+account_analytic_account()
+    
+class account_analytic_line(osv.osv):
+    _inherit = 'account.analytic.line'
+    
+    def default_get(self, cr, uid, fields, context=None):
+        if context is None:
+            context = {}
+        res = super(account_analytic_line, self).default_get(cr, uid, fields, context=context)
+        to_invoice = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'hr_timesheet_invoice', 'timesheet_invoice_factor1')
+        res.update({'to_invoice':to_invoice[1]})
+        return res
+    
+account_analytic_line()

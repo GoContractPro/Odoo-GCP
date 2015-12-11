@@ -25,5 +25,5 @@
 #
 ##############################################################################
 import fleet
-#import analytic
+import analytic
 import service_repair

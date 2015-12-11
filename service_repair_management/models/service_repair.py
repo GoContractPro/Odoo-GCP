@@ -62,6 +62,7 @@ class project(osv.osv):
             pricelist_id = pricelist.get('property_product_pricelist', False) and pricelist.get('property_product_pricelist')[0] or False
             val['pricelist_id'] = pricelist_id
             val['company_id'] = company_id.get('company_id',False)[0]
+            val['related_unit'] = False
         return {'value': val}
  
     def create(self, cr, uid, vals, context=None):
@@ -70,7 +71,7 @@ class project(osv.osv):
         # Prevent double project creation when 'use_tasks' is checked + alias management
         create_context = dict(context, project_creation_in_progress=True,
                               alias_model_name=vals.get('alias_model', 'project.task'),
-                              alias_parent_model_name=self._name)
+                              alias_parent_model_name=self._name,partner_id=vals.get('partner_id',False))
         if vals.get('name', '/') == '/' and context.get('default_is_service_repair',False)==True:
             vals['name'] = self.pool.get('ir.sequence').get(cr, uid, 'project.project', context=context) or '/'
 
@@ -93,6 +94,13 @@ class project(osv.osv):
 
 project()
 
+class sale_order(osv.osv):
+    _inherit='sale.order'
+    _columns={
+              'job_id':fields.many2one('project.task','Task'),
+              }
+
+sale_order()
 class task(osv.osv):
     _inherit='project.task'
     
@@ -107,7 +115,8 @@ class task(osv.osv):
     _columns={
               
                'is_service_repair':fields.boolean('Is Service Repair ?'),
-               'sale_order_ids':fields.many2many('sale.order','sale_order_task_rel','task_id','sale_id','Sales Order'),
+               #'sale_order_ids':fields.many2many('sale.order','sale_order_task_rel','task_id','sale_id','Sales Order'),
+               'sale_order_ids':fields.one2many('sale.order','job_id','Sales Order'),
                'is_sale':fields.boolean('Is Sale Order'),
                'sale_count': fields.function(_sale_count, string='View Sales', type='integer'), 
               }
@@ -121,11 +130,12 @@ class task(osv.osv):
                 defaults = sale_obj.onchange_partner_id(cr, uid, [],rec.project_id.partner_id.id , context=context)['value']
                 defaults.update({
                      'partner_id':rec.partner_id and rec.partner_id.id or False,
-                     'main_project_id':rec.project_id and rec.project_id.id or False
+                     'main_project_id':rec.project_id and rec.project_id.id or False,
+                     'job_id':rec.id
                      })
                 ctx = dict(context or {}, mail_create_nolog=True)
                 so_ids = sale_obj.create(cr, uid, defaults, context=ctx)
-                self.write(cr,uid,rec.id,{'is_sale':True,'sale_order_ids':[(4,so_ids)]})
+                self.write(cr,uid,rec.id,{'is_sale':True})
             else:
                 so_ids += [saleorder.id for saleorder in rec.sale_order_ids]
         return self.open_sale_order( cr, uid, ids, so_ids, context=context)
