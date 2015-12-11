@@ -25,6 +25,8 @@
 #
 ##############################################################################
 from openerp.osv import osv,fields
+from openerp.tools.translate import _
+
 class fleet_vehicle(osv.osv):
     _inherit = 'fleet.vehicle'
     
@@ -35,7 +37,7 @@ class fleet_vehicle(osv.osv):
                 res[record.id] = record.model_id.brand_id.name + '/' + record.model_id.modelname + ' / ' + record.license_plate
         else:
             for record in self.browse(cr, uid, ids, context=context):
-                res[record.id] = record.unit + '/' + record.make + ' / ' + record.model
+                res[record.id] = record.unit or ' '  + '/' + record.make or ' ' + ' / ' + record.model or ' '
         return res
 
     _columns={
