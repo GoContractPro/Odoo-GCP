@@ -509,7 +509,8 @@ class import_data_file(osv.osv):
                     'time_estimate': False,
                     'row_count': False,
                     'count': False}   
-
+                
+                self.write(cr,uid,ids,stats_vals)
                 return stats_vals
             
             
@@ -674,7 +675,7 @@ class import_data_file(osv.osv):
         except:
             cr.rollback()
             rec.has_errors = True
-            error_txt = _('Error  record \'%s\' not created for model \'%s\'' % (vals,model))
+            error_txt = _('Error  record  %s at row %s not created for model \'%s\'' % (external_id_name, row,model))
             self.update_log_error(cr, uid, ids, rec, error_txt, context)
             
             return False
@@ -693,7 +694,7 @@ class import_data_file(osv.osv):
     def update_log_error(self, cr, uid, ids,rec, error_txt = '', context = None):
 
         e = traceback.format_exc()
-         
+        e = e[:500]
         _logger.error(error_txt + e)
         if e:rec.error_log += e + '\n'
         if  error_txt: rec.error_log += error_txt +'\n' 
