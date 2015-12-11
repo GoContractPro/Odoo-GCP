@@ -28,6 +28,7 @@
                     	<group colspan="2">
                     		<field name="start_time" string="Started"/>
                     		<field name="end_time"/>
+                    		<field name="time_estimate" widget="float_time" />
                     	</group>
                     	 <newline/>
                     	<group colspan="4" col="4">
@@ -50,8 +51,6 @@
                          <group colspan="2">
                          	<field name="test_sample_size" />
                          	<field name="start_row"/>
-                         	<field name="start_time"  />
-                         	<field name="time_estimate" widget="float_time" />
                          	<field name="row_count"/>
                          	<field name="count" />
                          	<field name="rollback" />
