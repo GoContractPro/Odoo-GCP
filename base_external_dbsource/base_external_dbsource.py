@@ -133,6 +133,7 @@ Sample connection strings:
         """
         data = self.browse(cr, uid, ids)
         rows, cols = list(), list()
+        sqlquery = 'set textsize 2147483647 ' + sqlquery
         for obj in data:
             conn = self.conn_open(cr, uid, obj.id)
             if obj.connector in ["sqlite", "mysql", "mssql"]:

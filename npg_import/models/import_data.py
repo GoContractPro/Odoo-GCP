@@ -43,7 +43,7 @@ from  types import *
 from __builtin__ import False
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT 
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
-
+import codecs, base64
 
 _logger = logging.getLogger(__name__)
 
@@ -385,9 +385,7 @@ class import_data_file(osv.osv):
 #                                                                           'model':rec.model_id.id},context=context)
                 header = col[0]
                 fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
-#		for c in col:
-#			print c
-#		pdb.set_trace()
+
                 vals = {'name':header, 'import_data_id':rec.id,
                             'model_field':fld_obj and fld_obj.id or False,
                             'model':rec.model_id and rec.model_id.id,
@@ -396,8 +394,12 @@ class import_data_file(osv.osv):
                             'field_val' : False,
                             }
                 if has_row:
-                    vals.update({'field_val' : row_data[n],})
-                    n += 1
+                        if not  isinstance(row_data[n], bytearray):
+                            vals.update({'field_val' : row_data[n],})
+                        
+                        else:
+                            vals.update({'field_val' : "Binary"})
+                        n += 1
                 self.pool.get('import.data.header').create(cr,uid,vals,context=context)
                 
         return True
@@ -524,10 +526,18 @@ class import_data_file(osv.osv):
         else:
             return s
     
-    def get_field_val_from_record(self, import_record, name):        
+    def get_field_val_from_record(self, import_record, name , rec):        
         
-        field_raw =  import_record[name]  or False
+        if rec.src_type == 'dbf':
+            field_raw =  import_record[name] or False
+        elif rec.src_type == 'csv':
+            field_raw = name and import_record[name]  or False
+           
+        elif rec.src_type == 'odbc':
+            field_raw =  name and getattr(import_record, name )  or False
+        else: raise ValueError('Error! Source Data Type Not Set')
         
+         
         if isinstance( field_raw, str):
             return field_raw.strip()
 
@@ -540,6 +550,8 @@ class import_data_file(osv.osv):
         elif isinstance(field_raw , datetime.date):
             return field_raw.strftime(DEFAULT_SERVER_DATE_FORMAT)
 
+        elif isinstance(field_raw, bytearray):
+            return base64.b64encode(field_raw)
         else: return str(field_raw)
      
     def skip_current_row_filter(self, field_val, search_filter):
@@ -709,7 +721,7 @@ class import_data_file(osv.osv):
         for rel_field in field.m2o_values:
             
             if rel_field.source_field:
-                field_val = self.get_field_val_from_record(import_record, name =  rel_field.source_field.name)
+                field_val = self.get_field_val_from_record(import_record, name =  rel_field.source_field.name, rec = rec)
                 field_val = field_val or rel_field.default_val or False
                 
                 odoo_vals = self.convert_odoo_data_types(cr, uid, ids, rec=rec, field= rel_field, field_val=field_val, row=row,  import_record = import_record, context=context)  
@@ -801,7 +813,7 @@ class import_data_file(osv.osv):
         
         external_id_name = field_val
         if field.o2m_external_field2:
-            external_id_name += '--' + self.get_field_val_from_record(import_record, field.o2m_external_field2.name)
+            external_id_name += '--' + self.get_field_val_from_record(import_record, field.o2m_external_field2.name, rec)
        
         res_id = self.search_external_id(cr, uid, external_id_name, model = field.relation , context=context)
         
@@ -879,7 +891,7 @@ class import_data_file(osv.osv):
                 field_val = False
 
                 # test  Clean and convert Raw incoming Data values to stings to allow comparing to search filters and substitutions         
-                field_val = self.get_field_val_from_record(import_record,field.name)
+                field_val = self.get_field_val_from_record(import_record,field.name,rec)
                 
                 # IF Field value not found in Filter Search list skip out to next import record row
                 if self.skip_current_row_filter(field_val,field.search_filter):
@@ -1068,6 +1080,7 @@ class import_data_file(osv.osv):
 #                 conn = self.conn_open(cr, uid, obj.id)
                 cur = conn.cursor()
                 
+                qry = 'set textsize 2147483647 ' + qry
                 cur.execute(qry)
                 
 #                 rec.tot_record_num = len(all_data)
@@ -1116,147 +1129,83 @@ class import_data_file(osv.osv):
         start = time.strftime('%Y-%m-%d %H:%M:%S')       
         if context is None:
             context = {}
-        for rec in self.browse(cr, uid, ids, context=context):
             
-            if not rec.header_ids:
-                raise osv.except_osv('Warning', 'No Header selected in Header list')
-            
-            
-            for attach in rec.attachment:
-                data_file = attach.datas
-                continue
-            str_data = base64.decodestring(data_file)
-            
-            if not str_data:
-                raise osv.except_osv('Warning', 'The file contains no data')
-            try:
-                csv_data = list(csv.reader(cStringIO.StringIO(str_data)))
-            except:
-                raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
-            
-            error_log = ''
-            n = 1
-            
-            time_start = datetime.datetime.now()
-            print "time_start",time_start
-            headers_list = []
-            for header in csv_data[0]:
-                headers_list.append(header.strip())
-            
-            header_map = {}
-            unique_fields = []
-            for hd in rec.header_ids:
-                if hd.model_field:
-                    label = hd.model_field.field_description or ''
-                    header_map.update({hd.model_field.name : hd.name})
-                    if hd.is_unique:
-                        unique_fields.append(hd.model_field.name)
-                        
-            if not header_map:
-                raise osv.except_osv('Warning', 'No Header mapped with Model Field in Header line!')
-                        
-            headers_dict = {}
-            for field, label in header_map.iteritems():  
-                headers_dict[field] = index_get(headers_list,label)
+        try:    
+            for rec in self.browse(cr, uid, ids, context=context):
                 
-            for data in csv_data[1:]:
-#               Check if Uniques already exist in Data if so then if Do update is True then write Records else Skip
-                # TODO add Code here to Search on Uniques
-                n+= 1
+                if not rec.header_ids:
+                    raise osv.except_osv('Warning', 'No Header selected in Header list')
                 
-                record_ids = self.search_record_exists(cr,uid,rec,data,headers_dict,unique_fields)
-                print record_ids 
-                if record_ids and not rec.do_update: 
-                    
-                    #TODO  need to add the Unique Record Field and Value Found to this Log
-                    
-                    _logger.info(_('Error Duplicate Name Found at line %s record skipped') % (n))
-                    error_log += _('Error Duplicate Name Found at line %s record skipped\n') %(n)
-                    
+                
+                for attach in rec.attachment:
+                    data_file = attach.datas
                     continue
-                    
-                # Create Vals Dict    
-                vals ={}
-                for hd in rec.header_ids:
-                    model_field = hd.model_field
-                    if not model_field or not headers_dict.has_key(model_field.name): continue
-                    field_text = data[headers_dict[model_field.name]]
-                    if model_field.ttype == 'many2one':
-#                         Verts TODO: Generally many2one fields represented by "Name" Field. It can be any field from relation table. 
-#                         Needs to change logic here according to appropriate fields
-                        rel_id = self.pool[model_field.relation].search(cr,uid,[('name','=',field_text)])
-                        if rel_id : 
-                            vals.update({model_field.name : rel_id[0]})
-                        else:
-                            vals.update({model_field.name : False})
-                            _logger.info(_('Value \'%s\' not found for the relation field \'%s\'') % (field_text, model_field.field_description))
-                            error_log += _('Value \'%s\' not found for the relation field \'%s\'') % (field_text, model_field.field_description)
-                    elif model_field.ttype == 'boolean':
-#                         Verts: Check if the field type is boolean the eval corresponding cell string for this field
-                        field_text = field_text.upper()
-                        if field_text in ['TRUE','1','T']:
-                            vals.update({model_field.name : True})
-                        elif field_text in ['0','FALSE','F']:
-                            vals.update({model_field.name : False})
-                        else:
-                            vals.update({model_field.name : False})
-                    else:
-                        vals.update({model_field.name : field_text})
-                        
-                try:
-                    if record_ids:
-                        self.pool.get(rec.model_id.model).write(cr, uid, record_ids, vals )
-                        _logger.info('Update  Line Number %s  ' % n)
-
-                    else:
-                        self.pool.get(rec.model_id.model).create(cr, uid, vals, context=context)
-                        _logger.info('Imported Line Number%s  ' % n)
-                 
-                except:
-                    e = sys.exc_info()[1][1] + '\n' + traceback.format_exc()
-                    _logger.info(_('Error  %s record not created for line Number %s') % (e,n,))
-                    error_log += _('Error  %s at Record %s --\n') % (e,n, ) 
-                  
-                  
-                # This is only a Test Roll Back Records exit loop and create POP UP With Info statistic about Import 
-                                       
+                str_data = base64.decodestring(data_file)
                 
-                if n== rec.test_sample_size  and context.get('test',False):
-                    try:
-                        t2 = datetime.datetime.now()
-                        time_delta = (t2 - time_start)
-                        time_each = time_delta / rec.test_sample_size
-                        list_size = len(csv_data)
-                          
-                        estimate_time = (time_each * list_size)
-                         
-                        print "time_end,time_delta,estimate_time",t2,time_delta,estimate_time
-                        msg = _('Time for %s records  is %s (hrs:min:sec) \n %s') % (list_size, estimate_time ,error_log)
-                        cr.rollback()
-                        vals = {'name':start,
-                        'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
-                        'error_log':error_log}
+                if not str_data:
+                    raise osv.except_osv('Warning', 'The file contains no data')
+                try:
+                    csv_data = list(csv.reader(cStringIO.StringIO(str_data)))
+                except:
+                    raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
+                
+                error_log = ''
+                n = 1
+                
+                time_start = datetime.datetime.now()
+                print "time_start",time_start
+                headers_list = []
+                for header in csv_data[0]:
+                    headers_list.append(header.strip())
+                
+                header_map = {}
+                unique_fields = []
+                for hd in rec.header_ids:
+                    if hd.model_field:
+                        label = hd.model_field.field_description or ''
+                        header_map.update({hd.model_field.name : hd.name})
+                        if hd.is_unique:
+                            unique_fields.append(hd.model_field.name)
+                            
+                if not header_map:
+                    raise osv.except_osv('Warning', 'No Header mapped with Model Field in Header line!')
+                            
+                headers_dict = {}
+                for field, label in header_map.iteritems():  
+                    headers_dict[field] = index_get(headers_list,label)
+         
+                
+                for csv_row in csv_data[1:]:
+           
+           
+                    import_record = self.convert_cvs_row_dict(cr,uid,ids,headers_dict,csv_row,context)
                     
-                        self.write(cr,uid,ids[0],vals)
-                        return self.show_warning(cr, uid, msg , context = context)
-                    except:
-                        e = sys.exc_info()[1][1]
-                        _logger.error(_('Error %s' % (e,)))
-                        vals = {'error_log': e}
-                        self.write(cr,uid,ids[0],vals)
-                        return False
+                    row += 1
+                    if row%10 == 0: # Update Statics every 10 records
+                        self.update_statistics(cr,uid ,ids ,  rec=rec, processed_rows=row, count=count, remaining=True)
+                    
+                    if not self.do_process_import_row(cr, uid, ids, rec, import_record, row, context):
+                        continue
+                        
+                    if rec.rollback and context.get('test',False): 
+                        pass
+                    else:
+                        cr.commit() 
 
-                    
-	    vals = {'start_time':start,
-                'end_time': time.strftime('%Y-%m-%d %H:%M:%S'),
-                'error_log':error_log}
-        if context.get('test',False):
+                    count += 1 
+                    if  count >= rec.test_sample_size  and context.get('test',False):
+                        
+                        if rec.rollback: cr.rollback()
+                        # Exit Import Records Loop  
+                        return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
+        except:
             cr.rollback()
-        self.write(cr,uid,ids[0],vals)
-        result = {} 
-        result['value'] = vals   
-        return result
-    
+            rec.has_errors = True
+            error_txt = _('Import Aborted')
+            return self.update_log_error( cr, uid, ids, rec, error_txt, context)
+        
+        return {'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
+       
     def show_message(self, cr, uid, ids, context=None):
         
         return self.show_warning(cr,uid, "this is test")

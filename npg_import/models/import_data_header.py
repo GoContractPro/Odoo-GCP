@@ -56,8 +56,8 @@ class import_data_header(models.Model):
                       help="""Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import, \n
                       Can use mulitple values for filter,  format as python type list for values example 'value1','value2','value3', """)           
     create_related =fields.Boolean('Create Related', help = "Will create the related records using system default values if missing" )
-    field_label =fields.Char(string='Description', size=32,)
-    field_type =fields.Char(string='Data Type', size=8,)
+    field_label =fields.Char(string='Description', size=64,)
+    field_type =fields.Char(string='Data Type', size=64,)
     field_val =fields.Char(string='Record Value', size=128)
     default_val =fields.Char(string='Default Import Val', size = 256, help = 'The Default if no values for field in imported Source')
     substitutions =fields.One2many('import.m2o.substitutions','header_map', string="Source Value Substitutions")
