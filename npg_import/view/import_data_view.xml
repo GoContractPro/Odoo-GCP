@@ -9,12 +9,15 @@
                 <form string="Read File" version="7.0">
                 	<header>
                 		<button name='action_get_headers' string="Load Header Fields" 
+                				states="draft"
                     	 		context="{'model':model_id}" 
                     	 		type="object" class="oe_highlight"
-                    	 		confirm="???Are you Sure??? This will overrite any changes made to Field Mappings"/>
-                    		<button name="action_import" string="Run Test" type="object" class="oe_highlight" context="{'test':True}"/>
-                    		<button name="action_import" string="Import Data" type="object" class="oe_highlight" attrs="{'invisible':[('schedule_import', '!=', False)]}"/>
-                    		<button name="import_schedule" string="Schedule Import" type="object" icon="gtk-paste"/>
+                    	 		confirm="???Are you Sure??? This will overwrite any changes made to Field Mappings"/>
+                    		<button name="action_import" string="Run Test" states="map,ready" type="object" class="oe_highlight" context="{'test':True}"/>
+                    		<button name="action_import" string="Import Data" states="ready" type="object" class="oe_highlight" />
+                    		<button name="import_schedule" states="ready" string="Schedule Import" type="object" icon="gtk-paste"/>
+                    		<field name="state" widget="statusbar" statusbar_visible="draft,map,ready,importing" readonly="0" clickable="True"/>
+
                 	</header>
                     <group>
                     
@@ -247,7 +250,7 @@
                         <field name="end_time" />
                         <field name="time_estimate" widget="float_time" />
                         <field name="has_errors" />
-                        <field name="error_log" />
+                        <field name="src_type" />
                  </tree>
             </field>
         </record>

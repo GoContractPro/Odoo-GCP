@@ -44,6 +44,7 @@ from __builtin__ import False
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT 
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 import codecs, base64
+import re
 
 _logger = logging.getLogger(__name__)
 
@@ -132,16 +133,17 @@ class import_data_file(osv.osv):
             'base_external_dbsource' : fields.many2one('base.external.dbsource', string="ODBC Connection", help="External Database connection to foreign databases using ODBC, MS-SQL, Postgres, Oracle Client or SQLAlchemy."),
             'src_table_name' : fields.char('Source Table Name',size=256),
             'src_type' : fields.selection([('csv', 'CSV'),('dbf', 'DBF File'),('odbc', 'ODBC Connection')], "Data Source Type", required=True),
-            
             'sql_source': fields.text('SQL', help='Write a valid "SELECT" SQL query to fetch data from Source database'),
-            #                 'state':fields.selection([(''),()]),
-                'schedule_import': fields.many2one('ir.cron','Related Source Table'),
+            'schedule_import': fields.many2one('ir.cron','Related Source Table'),
+            
+            'state': fields.selection([('draft','Draft'),('map','Mapping'),('ready','Ready'),('importing','Importing')], "Status"),
             }
     
     _defaults = {
         'test_sample_size':10,
         'record_num':1,
-        'src_type':'csv'
+        'src_type':'csv',
+        'state': 'draft',
         }
 
     
@@ -205,13 +207,14 @@ class import_data_file(osv.osv):
         for rec in self.browse(cr, uid, ids, context=context):
             if rec.src_type == 'dbf':
                 self.action_get_headers_dbf(cr, uid, ids, context)
-                return
+                
             elif rec.src_type == 'csv':
                 self.action_get_headers_csv(cr, uid, ids, context)
-                return
+                
             elif rec.src_type == 'odbc':
                 self.action_get_headers_odbc(cr, uid, ids, context)
-                return
+            
+            return{'value':{'state':'new'}}
             
         raise osv.except_osv('Warning', 'No Data files to Import')
     
@@ -353,15 +356,13 @@ class import_data_file(osv.osv):
         if context is None:
             context = {}
         for rec in self.browse(cr, uid, ids, context=context):
+            
             src_table = str(rec.src_table_name).strip()
             if rec.sql_source:
                 qry = str(rec.sql_source)
             else:
-    #        qry = "select column_name, data_type, character_maximum_length from INFORMATION_SCHEMA.COLUMNS where table_name = %s;" % src_table
-    #        qry = "select TOP 1 * from %(src_table)s"
-    #        params = {'src_table':src_table}
-    #                 result = rec.base_external_dbsource.execute(sqlquery=qry,sqlparams=params, metadata=True)
                 qry = "select TOP 1 * from %s" % src_table
+                
             result = rec.base_external_dbsource.execute(sqlquery=qry,metadata=True)
             if not result.has_key('cols'):
                 continue
@@ -372,17 +373,11 @@ class import_data_file(osv.osv):
             if header_csv_ids:
                 header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
             
-#             headers_list = []
-#             for header in result['cols']:
-#                 headers_list.append(header[0].strip())
             headers_list = result['cols']
             row_data = result['rows']
             n=0
             for col in headers_list:
-#                 fids = self.pool.get('ir.model.fields').search(cr,uid,[('field_description','ilike',header), ('model_id', '=', rec.model_id.id)])
-#                 rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': row, 'csv_id':rec.id,
-#                                                                           'model_field':fids and fids[0] or False, 
-#                                                                           'model':rec.model_id.id},context=context)
+                
                 header = col[0]
                 fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
 
@@ -401,6 +396,17 @@ class import_data_file(osv.osv):
                             vals.update({'field_val' : "Binary"})
                         n += 1
                 self.pool.get('import.data.header').create(cr,uid,vals,context=context)
+                
+            conn = self.pool.get('base.external.dbsource').conn_open(cr, uid, rec.base_external_dbsource.id)
+            cur = conn.cursor()
+            tot_records = self.get_row_count_odbc(qry, cur)
+               
+            vals = {'error_log':'Successful Header Import',
+                    'has_errors':False,
+                    'tot_record_num':tot_records, 
+                    }
+            self.write(cr,uid,ids[0],vals)    
+                
                 
         return True
  
@@ -469,52 +475,7 @@ class import_data_file(osv.osv):
         # if not Found Return false
         
         return False  
-    
-    def action_import(self, cr, uid, ids, context=None):
-        
-        for rec in self.browse(cr, uid, ids, context=context):
-            
-            if context.get('test',False):
-                
-                if rec.src_type == 'dbf':
-                    self.action_import_dbf(cr, uid, ids, context)
-                    return 
-                elif rec.src_type == 'csv':
-                    self.action_import_csv(cr, uid, ids, context)
-                    return
-                elif rec.src_type == 'odbc':
-                    self.action_import_odbc(cr, uid, ids, context)
-                    return
-                    
-            else:       
-                   
-                vals={'name': 'Import %s' % (rec.name),
-                        'user_id': uid,
-                        'model': 'import.data.file',
-                        'args': repr([ids[0]])\
-                        }
-                
-                if rec.src_type == 'dbf':       
-                    vals['function'] = 'action_import_dbf'
-                elif rec.src_type == 'csv':
-                    vals['function'] = 'action_import_csv'
-                elif rec.src_type == 'odbc':
-                    vals['function'] = 'action_import_odbc' 
-                      
-                self.pool.get('ir.cron').create(cr, uid, vals)
-                    
-                stats_vals = {'start_time':False,
-                    'end_time': False,
-                    'error_log': False,
-                    'time_estimate': False,
-                    'row_count': False,
-                    'count': False}   
-                
-                self.write(cr,uid,ids,stats_vals)
-                return stats_vals
-            
-            
-        raise osv.except_osv('Warning', 'No Data files to Import')
+
              
     def convert_backslash_string(self,s):
         
@@ -652,11 +613,10 @@ class import_data_file(osv.osv):
         try:
             res_id = False
             
-            if model:
-                model_obj = self.pool.get(model)
-            else:
-                model_obj = self.pool.get(rec.model_id.model)
+            model = model or rec.model_id.model
             
+            model_obj = self.pool.get(model)
+
             res_id = model_obj.create(cr,uid, vals, context)
               
             if external_id_name:                   
@@ -694,7 +654,7 @@ class import_data_file(osv.osv):
     def update_log_error(self, cr, uid, ids,rec, error_txt = '', context = None):
 
         e = traceback.format_exc()
-        e = e[:500]
+        e = e[:1000]
         _logger.error(error_txt + e)
         if e:rec.error_log += e + '\n'
         if  error_txt: rec.error_log += error_txt +'\n' 
@@ -850,6 +810,9 @@ class import_data_file(osv.osv):
                     'time_estimate': estimate_time,
                     'row_count': processed_rows,
                     'count': count}
+        
+        if not remaining:
+            stats_vals['state'] = 'ready'
                         
         self.write(cr,uid,ids,stats_vals) 
         
@@ -864,7 +827,7 @@ class import_data_file(osv.osv):
         '''
         t2 = datetime.datetime.now()
         time_delta = (t2 - datetime.datetime.strptime(start_time, DEFAULT_SERVER_DATETIME_FORMAT))
-        if processed_rows < 0:
+        if processed_rows > 0:
             time_each = time_delta / processed_rows
             time_each = time_each.total_seconds()
         else: time_each = 0.0
@@ -874,8 +837,19 @@ class import_data_file(osv.osv):
             return (time_each * (tot_record_num - processed_rows)) / 3600 # return time in hours
                           
         else:
-            return (time_each * tot_record_num) / 3600                
-          
+            return (time_each * tot_record_num) / 3600   
+    def get_row_count_odbc(self,qry,cur):
+        
+        pos = qry.lower().find('from')
+        count_qry = qry[pos-1:]
+        count_qry = 'select count(*) as rows ' + count_qry
+        cur.execute(count_qry)
+        count_result = cur.fetchone()
+        for tot_count in count_result:
+            return tot_count
+            
+        return False
+    
     def do_process_import_row(self, cr, uid, ids, rec, import_record, row, context):
 
         vals = {}
@@ -1002,6 +976,55 @@ class import_data_file(osv.osv):
         
         return True
         
+        
+    def action_import(self, cr, uid, ids, context=None):
+        
+        for rec in self.browse(cr, uid, ids, context=context):
+            
+            if context.get('test',False):
+                
+                if rec.src_type == 'dbf':
+                    self.action_import_dbf(cr, uid, ids, context)
+                    return 
+                elif rec.src_type == 'csv':
+                    self.action_import_csv(cr, uid, ids, context)
+                    return
+                elif rec.src_type == 'odbc':
+                    self.action_import_odbc(cr, uid, ids, context)
+                    return
+                    
+            else:       
+                   
+                vals={'name': 'Import %s' % (rec.name),
+                        'user_id': uid,
+                        'model': 'import.data.file',
+                        'args': repr([ids[0]])\
+                        }
+                
+                if rec.src_type == 'dbf':       
+                    vals['function'] = 'action_import_dbf'
+                elif rec.src_type == 'csv':
+                    vals['function'] = 'action_import_csv'
+                elif rec.src_type == 'odbc':
+                    vals['function'] = 'action_import_odbc' 
+                      
+                self.pool.get('ir.cron').create(cr, uid, vals)
+                    
+                stats_vals = {'start_time':False,
+                    'end_time': False,
+                    'error_log': False,
+                    'time_estimate': False,
+                    'row_count': False,
+                    'count': False,
+                    'state': 'importing'}   
+                
+                self.write(cr,uid,ids,stats_vals)
+                cr.commit()
+                return stats_vals
+            
+            
+        raise osv.except_osv('Warning', 'No Data files to Import')    
+        
     def action_import_dbf(self, cr, uid, ids, context=None):
         
 #        global log_msg
@@ -1073,13 +1096,11 @@ class import_data_file(osv.osv):
                     qry = "select TOP %s * from %s" % (rec.test_sample_size, src_table)
                 else:
                     qry = "select * from %s" % src_table
-#                 qry = "select TOP 10 * from %s" % src_table
-#                 all_data = rec.base_external_dbsource.execute(sqlquery=qry)
-                
-#                 conn = rec.base_external_dbsource.conn_open()
+
                 conn = self.pool.get('base.external.dbsource').conn_open(cr, uid, rec.base_external_dbsource.id)
-#                 conn = self.conn_open(cr, uid, obj.id)
                 cur = conn.cursor()
+                
+                rec.tot_record_num = self.get_row_count_odbc(qry, cur)
                 
                 qry = 'set textsize 2147483647 ' + qry
                 cur.execute(qry)
@@ -1123,7 +1144,7 @@ class import_data_file(osv.osv):
             error_txt = _('Import Aborted')
             return self.update_log_error( cr, uid, ids, rec, error_txt, context)
         
-        return 
+        return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
     
     def action_import_csv(self, cr, uid, ids, context=None):
 
