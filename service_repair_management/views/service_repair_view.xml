@@ -489,6 +489,27 @@
 								icon="fa-tasks">
 								<field string="Jobs" name="task_count" widget="statinfo" />
 							</button>
+							<button class="oe_inline oe_stat_button"
+                            					type="action"
+                            				name="%(mrp_project_link.act_project_2_production_all)d"
+                            				icon="fa-list">
+                            				<field string="Manufacturing" name="production_count"
+                                				widget="statinfo" />
+                   					 </button>
+							 <button class="oe_inline oe_stat_button"
+                        				type="action"
+                        				name="%(purchase_mrp_project_link.act_project_2_purchase_all)d"
+                        				icon="fa-shopping-cart">
+                        				<field string="Purchases" name="purchase_count"
+                            				widget="statinfo" />
+                                                        </button>
+    							<button class="oe_inline oe_stat_button"
+                        				type="action"
+                        				name="%(sale_mrp_project_link.act_project_2_sale_all)d"
+                        				icon="fa-strikethrough">
+                        				<field string="Sales" name="sale_count"
+                            				widget="statinfo" />
+                					</button>                					
 							<button class="oe_inline oe_stat_button" name="attachment_tree_view"
 								type="object" icon="fa-files-o">
 								<field string="Documents" name="doc_count" widget="statinfo" />
@@ -506,7 +527,7 @@
 						<group colspan="4">
 							<field name="partner_id" on_change="onchange_partner_id(partner_id)"
 								string="Customer" required="1" />
-							<field name="person_dropping_of" domain="[('parent_id','=',partner_id)]" />
+							<field name="person_dropping_of" domain="[('parent_id','=',partner_id)]" context="{'default_parent_id':partner_id}" />
 							<group colspan="4" cols="4">
 								<group colspan="4" col="4">
 									<field name="item_tobe_repaired" string="Items to be Repaired"
@@ -527,7 +548,7 @@
 								<group colspan="4" col="4">
 									<field name="need_quote" colspan="2" />
 									<field name="quote_approver" colspan="2"
-										attrs="{'invisible':[('need_quote','=',False)]}" />
+										attrs="{'invisible':[('need_quote','=',False)]}" domain="[('parent_id','=',partner_id)]" context="{'default_parent_id':partner_id}" />
 								</group>
 							</group>
 							<!-- <field name="eval_job" domain="[('is_service_repair', '=', True), 
@@ -775,7 +796,8 @@
 					<field name="message_unread" invisible="1" />
 					<field name="date" invisible="1" />
 					<field name="name" string="Service Repair Order" />
-					<field name="user_id" string="Project Manager" />
+					<field name="user_id" string="Service Manager" />
+                                        <field name="related_unit" string="Related Unit"/>
 					<field name="partner_id" string="Contact" />
 					<field name="parent_id" string="Parent" invisible="1" />
 					<field name="planned_hours" widget="float_time" />
