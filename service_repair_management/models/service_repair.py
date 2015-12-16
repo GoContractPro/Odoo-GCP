@@ -45,7 +45,7 @@ class project(osv.osv):
             'model': fields.char('Model'),
             'person_dropping_of':fields.many2one('res.partner','Person Dropping Off'),
             'seq_no':fields.char('Service Repair Order'),
-            'company_id':fields.many2one('res.company','Company'),
+            'promise_date':fields.datetime('Promised Date'),
               }
     _defaults={
               'name':'/',

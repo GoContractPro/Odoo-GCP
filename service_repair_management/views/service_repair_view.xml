@@ -323,13 +323,26 @@
 			<field eval="2" name="priority" />
 			<field name="arch" type="xml">
 				<calendar color="user_id" date_start="date_deadline"
-					string="Tasks">
+					string="Service Tasks">
 					<field name="name" />
 					<field name="project_id" />
 				</calendar>
 			</field>
 		</record>
-
+		<record id="service_repair_action_view_calendar" model="ir.actions.act_window">
+			<field name="name">View Schedule</field>
+			<field name="res_model">project.task</field>
+			<field name="view_mode">calendar,tree,gantt</field>
+			<field name="search_view_id" ref="service_repair_view_task_search_form" />
+			<field name="view_id" ref="service_repair_view_task_calendar" />
+			<field name="context">{'default_is_service_repair':True,'search_default_user':1}</field>
+			<field name="domain">[('is_service_repair','=',1)]</field>
+			<field name="help" type="html">
+				<p>
+					View And Schedule Task work for Service Repair.
+				</p>
+			</field>
+		</record>
 		<record id="service_repair_view_task_gantt" model="ir.ui.view">
 			<field name="name">project.task.gantt</field>
 			<field name="model">project.task</field>
@@ -391,7 +404,7 @@
 			<field name="name">Overpassed Tasks</field>
 			<field name="res_model">project.task</field>
 			<field name="view_type">form</field>
-			<field name="view_mode">tree,form,calendar,graph,kanban</field>
+			<field name="view_mode">tree,form,,graph,kanban</field>
 			<field name="domain">[('date_deadline','&lt;',time.strftime('%Y-%m-%d')),()]
 			</field>
 			<field name="filter" eval="True" />
@@ -421,7 +434,7 @@
 			model="ir.actions.act_window">
 			<field name="name">Tasks</field>
 			<field name="res_model">project.task</field>
-			<field name="view_mode">kanban,tree,form,calendar,gantt,graph</field>
+			<field name="view_mode">kanban,tree,form,,gantt,graph</field>
 			<field name="context">{
 				'search_default_project_id': [active_id],
 				'default_project_id': active_id,
@@ -541,6 +554,14 @@
 									</p>
 								</group>
 							</group>
+							<group colsspan="4" cols="4">
+							<field name="promised_date" colspan="2" />
+							<button class="oe_inline oe_stat_button" colspan="2" type="action"
+                                name="%(service_repair_orders.service_repair_action_view_calendar)d" icon="fa-calendar"
+                                context="{}">
+                                
+                            </button>
+                            </group>
 							<field name="related_unit" on_change="onchange_related_unit(related_unit)"
 								domain="[('is_service_repair','=',True),('driver_id','=',partner_id)]"
 								context="{'default_is_service_repair':1,'default_driver_id':partner_id,'form_view_ref': 'service_repair_management.service_repaired_fleet_vehicle_form'}" />
@@ -775,6 +796,22 @@
 					<field name="unit" />
 					<field name="make" />
 					<field name="model" />
+					<field name="name" string="Project Name"/>
+                    <filter string="Open" name="Current" domain="[('state', '=','open')]"/>
+                    <filter string="Pending" name="Pending" domain="[('state', '=','pending')]"/>
+                    <filter string="Template" name="Template" domain="[('state', '=','template')]"/>
+                    <separator/>
+                    <filter string="Member" domain="['|',('user_id', '=', uid),('members', '=', uid)]"/>
+                    <filter string="Manager" domain="[('user_id','=',uid)]"/>
+                    <separator/>
+                    <filter string="New Mail" name="message_unread" domain="[('message_unread','=',True)]"/>
+                    <field name="user_id" string="Project Manager"/>
+                    <field name="partner_id" string="Contact" filter_domain="[('partner_id', 'child_of', self)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Manager" name="Manager" context="{'group_by':'user_id'}"/>
+                        <filter string="Contact" name="Partner" context="{'group_by':'partner_id'}"/>
+                        <filter string="Parent" name="Parent" help="Parent" context="{'group_by':'parent_id'}"/>
+                    </group>
 					<separator />
 					<group expand="0" string="Group By">
 						<filter string="Unit" name="Unit" context="{'group_by':'unit'}" />
@@ -784,6 +821,8 @@
 				</search>
 			</field>
 		</record>
+		
+		
 		<record id="view_project_service_repair" model="ir.ui.view">
 			<field name="name">project.project.tree</field>
 			<field name="model">project.project</field>
@@ -882,7 +921,7 @@
 			<field name="view_id" ref="service_repair_edit_project" />
 			<field name="act_window_id" ref="open_view_project_all_service_repair" />
 		</record>
-
+		
 
 		<!-- Project .project -->
 
