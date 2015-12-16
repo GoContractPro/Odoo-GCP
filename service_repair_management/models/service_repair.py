@@ -131,7 +131,8 @@ class task(osv.osv):
                 defaults.update({
                      'partner_id':rec.partner_id and rec.partner_id.id or False,
                      'main_project_id':rec.project_id and rec.project_id.id or False,
-                     'job_id':rec.id
+                     'job_id':rec.id,
+                     'commitment_date':rec.promise_date
                      })
                 ctx = dict(context or {}, mail_create_nolog=True)
                 so_ids = sale_obj.create(cr, uid, defaults, context=ctx)

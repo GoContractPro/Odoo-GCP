@@ -555,10 +555,10 @@
 								</group>
 							</group>
 							<group colsspan="4" cols="4">
-							<field name="promised_date" colspan="2" />
+							<field name="promise_date" colspan="2" />
 							<button class="oe_inline oe_stat_button" colspan="2" type="action"
-                                name="%(service_repair_orders.service_repair_action_view_calendar)d" icon="fa-calendar"
-                                context="{}">
+                                name="%(service_repair_management.service_repair_action_view_calendar)d" icon="fa-calendar"
+                                context="{}" domain="[('project_id','=',active_id)]">
                                 
                             </button>
                             </group>
