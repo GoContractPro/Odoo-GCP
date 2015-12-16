@@ -1,0 +1,5 @@
+"id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
+access_import_data_header,access_import_data_header,model_import_data_header,group_npg_import,1,1,1,1
+access_import_data_file,access_import_data_file,model_import_data_file,group_npg_import,1,1,1,1
+access_import_m2o_substitutions,access_import_m2o_substitutions,model_import_m2o_substitutions,group_npg_import,1,1,1,1
+access_import_m2o_values,access_import_m2o_values,model_import_m2o_values,group_npg_import,1,1,1,1
