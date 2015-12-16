@@ -101,7 +101,7 @@
 				</form>
 			</field>
 		</record>
-		<record model='ir.ui.view' id='service_repaired_fleet_vehicle_tree'>
+		<record model='ir.ui.view' id='fleet.fleet_vehicle_tree'>
 			<field name="name">fleet.vehicle.tree</field>
 			<field name="model">fleet.vehicle</field>
 			<field name="arch" type="xml">
@@ -285,7 +285,7 @@
 		<record id="service_repair_fleet_tree" model="ir.actions.act_window.view">
 			<field name="sequence" eval="1" />
 			<field name="view_mode">tree</field>
-			<field name="view_id" ref="service_repaired_fleet_vehicle_tree" />
+			<field name="view_id" ref="fleet.fleet_vehicle_tree" />
 			<field name="act_window_id" ref="service_repaired_fleet_vehicle_act" />
 		</record>
 		<record id="service_repair_fleet_form" model="ir.actions.act_window.view">
@@ -330,7 +330,7 @@
 		<record id="service_repair_fleet_tree_new" model="ir.actions.act_window.view">
 			<field name="sequence" eval="0" />
 			<field name="view_mode">tree</field>
-			<field name="view_id" ref="service_repaired_fleet_vehicle_tree" />
+			<field name="view_id" ref="fleet.fleet_vehicle_tree" />
 			<field name="act_window_id" ref="service_repaired_fleet_vehicle_act_new" />
 		</record>
 		<record id="service_repair_fleet_form_new" model="ir.actions.act_window.view">

@@ -31,6 +31,8 @@
     'depends': ['npg_warning','account','base_external_dbsource'],
     'data': ['view/import_data_view.xml',
              'wizard/wiz_import_dbf_directory.xml',
+             'security/security.xml',
+             'security/ir.model.access.csv',
              'view/menus.xml',],
     'demo': [],
     'auto_install': False,
