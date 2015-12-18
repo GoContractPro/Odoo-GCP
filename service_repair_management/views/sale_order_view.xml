@@ -7,10 +7,25 @@
 			<field name="inherit_id" ref="sale.view_order_form" />
 			<field name="arch" type="xml">
 				<xpath expr="//field[@name='client_order_ref']" position="after">
-					<field name="service_repair_project_id" class="oe_inline"
-						domain="[('is_service_repair','=',True)]" />
+					<!--field name="service_repair_project_id" class="oe_inline"
+						domain="[('is_service_repair','=',True)]" /-->
+					<field name="requested_date"/>
+				</xpath>
+				<xpath expr="//page[@string='Order Lines']/field[@name='order_line']/tree[@string='Sales Order Lines']/field[@name='product_uom']" position="after">	
+					<field name="actual_time"/>
 				</xpath>
 			</field>
 		</record>
+		
+		 <record id="view_sale_orderfor_repair_inherit" model="ir.ui.view">
+            <field name="name">sale.order.form.repair_inherit</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale_order_dates.view_sale_orderfor"/>
+            <field name="arch" type="xml">
+            	<field name="effective_date" position="after">
+            		<field name="quotation_sent_date"/>
+            	</field>
+            </field>
+        </record>
 	</data>
 </openerp>

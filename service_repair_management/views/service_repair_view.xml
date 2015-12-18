@@ -322,7 +322,7 @@
 			<field name="model">project.task</field>
 			<field eval="2" name="priority" />
 			<field name="arch" type="xml">
-				<calendar color="user_id" date_start="date_deadline"
+				<calendar color="user_id" date_start="date_start" date_delay="planned_hours"
 					string="Service Tasks">
 					<field name="name" />
 					<field name="project_id" />
@@ -336,7 +336,7 @@
 			<field name="search_view_id" ref="service_repair_view_task_search_form" />
 			<field name="view_id" ref="service_repair_view_task_calendar" />
 			<field name="context">{'default_is_service_repair':True,'search_default_user':1}</field>
-			<field name="domain">[('is_service_repair','=',1)]</field>
+			<field name="domain">[('is_service_repair','=',1),('project_id','=',active_id),('user_id','!=',False)]</field>
 			<field name="help" type="html">
 				<p>
 					View And Schedule Task work for Service Repair.
@@ -396,6 +396,12 @@
 			<field name="sequence" eval="1" />
 			<field name="view_mode">form</field>
 			<field name="view_id" ref="service_repair_view_task_form2" />
+			<field name="act_window_id" ref="service_repair_action_view_task" />
+		</record>
+		<record id="service_service_repair_view_task_calendar_view" model="ir.actions.act_window.view">
+			<field name="sequence" eval="1" />
+			<field name="view_mode">calendar</field>
+			<field name="view_id" ref="service_repair_view_task_calendar" />
 			<field name="act_window_id" ref="service_repair_action_view_task" />
 		</record>
 
@@ -554,7 +560,7 @@
 									</p>
 								</group>
 							</group>
-							<group colsspan="4" cols="4">
+							<group colspan="4" col="4">
 							<field name="promise_date" colspan="2" />
 							<button class="oe_inline oe_stat_button" colspan="2" type="action"
                                 name="%(service_repair_management.service_repair_action_view_calendar)d" icon="fa-calendar"
@@ -985,6 +991,52 @@
 			<field name="view_mode">gantt</field>
 			<field name="view_id" ref="project.view_project_project_gantt" />
 			<field name="act_window_id" ref="project.open_view_project_all" />
+		</record>
+		
+		
+		<!-- Project .Task -->
+
+		<record id="project.action_view_task" model="ir.actions.act_window">
+            <field name="name">Tasks</field>
+            <field name="res_model">project.task</field>
+            <field name="view_mode">kanban,tree,form,calendar,gantt,graph</field>
+            <field name="domain">[('is_service_repair','=',False)]</field>
+            <field name="search_view_id" ref="project.view_task_search_form"/>
+            <field name="help" type="html">
+                <p>
+                    Odoo's project management allows you to manage the pipeline
+                    of tasks in order to get things done efficiently. You can
+                    track progress, discuss on tasks, attach documents, etc.
+                </p>
+            </field>
+        </record>
+        <record id="project.open_view_task_list_kanban" model="ir.actions.act_window.view">
+            <field name="sequence" eval="0"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="project.view_task_kanban" />
+            <field name="act_window_id" ref="project.action_view_task"/>
+        </record>
+        <record id="project.open_view_task_list_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="project.view_task_tree2" />
+            <field name="act_window_id" ref="project.action_view_task"/>
+        </record>
+
+
+		<record id="service_parent_inherit_tasks_form"
+			model="ir.actions.act_window.view">
+			<field name="sequence" eval="2" />
+			<field name="view_mode">form</field>
+			<field name="view_id" ref="project.view_task_form2" />
+			<field name="act_window_id" ref="project.action_view_task" />
+		</record>
+		<record id="service_parent_inherit_tasks_gantt"
+			model="ir.actions.act_window.view">
+			<field name="sequence" eval="3" />
+			<field name="view_mode">gantt</field>
+			<field name="view_id" ref="project.view_task_gantt" />
+			<field name="act_window_id" ref="project.action_view_task" />
 		</record>
 
 	</data>

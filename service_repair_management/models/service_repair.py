@@ -1,15 +1,10 @@
-###############################################################################################
-#Make sure the copyright information is correct (Copyright (C) 2011 NovaPoint Group LLC 
-#(<http://www.novapointgroup.com>) and placed on top of OpenERP certification line and reflects
-# Novapoint Group, Inc as the author 
-#
 #################################################################################################
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
-#
+#    (Copyright (C) 2011 NovaPoint Group LLC (<http://www.novapointgroup.com>)
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
 #    published by the Free Software Foundation, either version 3 of the
@@ -27,6 +22,9 @@
 
 from openerp.osv import osv,fields
 from openerp.tools.translate import _
+import time
+from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from openerp import exceptions
 
 class project(osv.osv):
     _inherit = 'project.project'
@@ -98,9 +96,58 @@ class sale_order(osv.osv):
     _inherit='sale.order'
     _columns={
               'job_id':fields.many2one('project.task','Task'),
+              'requested_date':fields.datetime('Requested Date'),
+              'quotation_sent_date':fields.datetime('Quotation Sent Date'),
               }
+    
+    def action_quotation_send(self, cr, uid, ids, context=None):
+        res = super(sale_order, self).action_quotation_send(cr, uid, ids, context=context)
+        self.write(cr,uid,ids,{'quotation_sent_date':time.strftime(DEFAULT_SERVER_DATETIME_FORMAT)})
+        return res
+    
+    def print_quotation(self, cr, uid, ids, context=None):
+        res = super(sale_order, self).print_quotation(cr, uid, ids, context=context)
+        self.write(cr,uid,ids,{'quotation_sent_date':time.strftime(DEFAULT_SERVER_DATETIME_FORMAT)})
+        return res
+    
+    def action_wait(self, cr, uid, ids, context=None):
+        res = super(sale_order, self).action_wait(cr, uid, ids, context=context)
+        task_pool = self.pool.get('project.task')
+        for o in self.browse(cr, uid, ids):
+            if o.main_project_id and o.main_project_id.need_quote and not o.quotation_sent_date:
+                raise exceptions.Warning(_("Please make sure the quotation is sent to the customer for his approval to proceed further"))
+            for line in o.order_line:
+                if line.product_id and line.product_id.type == 'service' and line.product_id.auto_create_task:
+                    task_vals={
+                               'name':o.name or '/',
+                               'project_id':o.main_project_id and o.main_project_id.id or False,
+                               'is_service_repair':True
+                               }
+        return res
+        
 
 sale_order()
+
+class sale_order_line(osv.osv):
+    _inherit='sale.order.line'
+    
+    def _get_time(self, cr, uid, ids, field_name, arg, context=None):
+        so_ids = []
+        res ={}
+        task_pool = self.pool.get('project.task')
+        for rec in self.browse(cr,uid,ids,context=None):
+            hours = 0.0
+            tasks_ids = task_pool.search(cr,uid,[('sale_line_id','=',rec.id)])
+            for task in task_pool.browse(cr,uid,tasks_ids):
+                hours += task.effective_hours
+            res[rec.id] = hours
+        return res
+    
+    _columns={
+              'actual_time':fields.function(_get_time,string="Actual Time",type='float'),
+              }
+    
+sale_order_line()
 class task(osv.osv):
     _inherit='project.task'
     
@@ -119,6 +166,7 @@ class task(osv.osv):
                'sale_order_ids':fields.one2many('sale.order','job_id','Sales Order'),
                'is_sale':fields.boolean('Is Sale Order'),
                'sale_count': fields.function(_sale_count, string='View Sales', type='integer'), 
+               'promise_date':fields.datetime('Promised Date'),
               }
     
     def convert_to_quotation(self,cr,uid,ids,context=None):
@@ -132,7 +180,7 @@ class task(osv.osv):
                      'partner_id':rec.partner_id and rec.partner_id.id or False,
                      'main_project_id':rec.project_id and rec.project_id.id or False,
                      'job_id':rec.id,
-                     'commitment_date':rec.promise_date
+                     'requested_date':rec.project_id and rec.project_id.promise_date or False
                      })
                 ctx = dict(context or {}, mail_create_nolog=True)
                 so_ids = sale_obj.create(cr, uid, defaults, context=ctx)

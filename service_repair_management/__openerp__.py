@@ -1,15 +1,10 @@
-###############################################################################################
-#Make sure the copyright information is correct (Copyright (C) 2011 NovaPoint Group LLC 
-#(<http://www.novapointgroup.com>) and placed on top of OpenERP certification line and reflects
-# Novapoint Group, Inc as the author 
-#
 #################################################################################################
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
-#
+#    (Copyright (C) 2011 NovaPoint Group LLC (<http://www.novapointgroup.com>)
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
 #    published by the Free Software Foundation, either version 3 of the
@@ -44,6 +39,7 @@ Service Repair Management.
         'views/fleet_view.xml',
         'views/partner_view.xml',
         'views/menu_view.xml',
+        'views/sale_order_view.xml'
     ],
     'qweb' : [
     ],
