@@ -118,11 +118,11 @@ class sale_order(osv.osv):
                 raise exceptions.Warning(_("Please make sure the quotation is sent to the customer for his approval to proceed further"))
             for line in o.order_line:
                 if line.product_id and line.product_id.type == 'service' and line.product_id.auto_create_task:
-                    task_vals={
+                    task_pool.create(cr,uid,{
                                'name':o.name or '/',
                                'project_id':o.main_project_id and o.main_project_id.id or False,
                                'is_service_repair':True
-                               }
+                               })
         return res
         
 

@@ -6,11 +6,11 @@
 			<field name="model">sale.order</field>
 			<field name="inherit_id" ref="sale.view_order_form" />
 			<field name="arch" type="xml">
-				<xpath expr="//field[@name='client_order_ref']" position="after">
+<!--				<xpath expr="//field[@name='client_order_ref']" position="after"-->
 					<!--field name="service_repair_project_id" class="oe_inline"
 						domain="[('is_service_repair','=',True)]" /-->
-					<field name="requested_date"/>
-				</xpath>
+<!--					<field name="requested_date"/-->
+<!--				</xpath-->
 				<xpath expr="//page[@string='Order Lines']/field[@name='order_line']/tree[@string='Sales Order Lines']/field[@name='product_uom']" position="after">	
 					<field name="actual_time"/>
 				</xpath>
