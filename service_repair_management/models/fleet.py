@@ -32,16 +32,16 @@ class fleet_vehicle(osv.osv):
                 res[record.id] = record.model_id.brand_id.name + '/' + record.model_id.modelname + ' / ' + record.license_plate
         else:
             for record in self.browse(cr, uid, ids, context=context):
-                res[record.id] = record.unit or ' '  + '/' + record.make or ' ' + ' / ' + record.model or ' '
+                res[record.id] = (record.unit or ' ')  + '/' + (record.make or ' ') + ' / ' + (record.model or ' ')
         return res
 
     _columns={
               'name': fields.function(_vehicle_name_get_fnc, type="char", string='Name'),
-               'license_plate': fields.char('License Plate', help='License plate number of the vehicle (ie: plate number for a car)'),
+              'license_plate': fields.char('License Plate', required=False, help='License plate number of the vehicle (ie: plate number for a car)'),
               'unit':fields.char('Unit',size=64),
                'make':fields.char('Make',size=64),
               'model':fields.char('Model',size=64),
               'is_service_repair':fields.boolean('Is Service Repair ?'),
-              'model_id': fields.many2one('fleet.vehicle.model', 'Model', help='Model of the vehicle'),
+              'model_id': fields.many2one('fleet.vehicle.model', 'Model', required=False, help='Model of the vehicle'),
               }
 fleet_vehicle()

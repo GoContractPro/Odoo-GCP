@@ -562,7 +562,7 @@
 							</group>
 							<group colspan="4" col="4">
 							<field name="promise_date" colspan="2" />
-							<button class="oe_inline oe_stat_button" colspan="2" type="action"
+							<button class="oe_inline oe_stat_button" colspan="2" type="action" string="View Schedule"
                                 name="%(service_repair_management.service_repair_action_view_calendar)d" icon="fa-calendar"
                                 context="{}" domain="[('project_id','=',active_id)]">
                                 
