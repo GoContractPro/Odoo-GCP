@@ -116,17 +116,29 @@ class sale_order(osv.osv):
         for o in self.browse(cr, uid, ids):
             if o.main_project_id and o.main_project_id.need_quote and not o.quotation_sent_date:
                 raise exceptions.Warning(_("Please make sure the quotation is sent to the customer for his approval to proceed further"))
-            for line in o.order_line:
-                if line.product_id and line.product_id.type == 'service' and line.product_id.auto_create_task:
-                    task_pool.create(cr,uid,{
-                               'name':o.name or '/',
-                               'project_id':o.main_project_id and o.main_project_id.id or False,
-                               'is_service_repair':True
-                               })
+#             for line in o.order_line:
+#                 if line.product_id and line.product_id.type == 'service' and line.product_id.auto_create_task:
+#                     task_pool.create(cr,uid,{
+#                                'name':o.name or '/',
+#                                'project_id':o.main_project_id and o.main_project_id.id or False,
+#                                'is_service_repair':True
+#                                })
         return res
         
 
 sale_order()
+
+class procurement_order(osv.osv):
+    _name = "procurement.order"
+    _inherit = "procurement.order"
+    
+    def _create_service_task(self, cr, uid, procurement, context=None):
+        task_id = super(procurement_order, self)._create_service_task(cr, uid, procurement, context=context)
+        project_task = self.pool.get('project.task')
+        project_task.write(cr,uid,task_id,{'project_id': procurement.sale_line_id and procurement.sale_line_id.order_id.main_project_id and procurement.sale_line_id.order_id.main_project_id.id or False, 'is_service_repair':True})
+        return task_id
+    
+procurement_order()
 
 class sale_order_line(osv.osv):
     _inherit='sale.order.line'

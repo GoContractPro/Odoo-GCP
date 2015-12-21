@@ -11,7 +11,7 @@
 						domain="[('is_service_repair','=',True)]" /-->
 <!--					<field name="requested_date"/-->
 <!--				</xpath-->
-				<xpath expr="//page[@string='Order Lines']/field[@name='order_line']/tree[@string='Sales Order Lines']/field[@name='product_uom']" position="after">	
+				<xpath expr="//page[@string='Order Lines']/field[@name='order_line']/tree[@string='Sales Order Lines']/field[@name='product_uom_qty']" position="after">	
 					<field name="actual_time"/>
 				</xpath>
 			</field>
