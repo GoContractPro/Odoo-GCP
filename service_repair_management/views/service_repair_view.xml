@@ -336,7 +336,7 @@
 			<field name="search_view_id" ref="service_repair_view_task_search_form" />
 			<field name="view_id" ref="service_repair_view_task_calendar" />
 			<field name="context">{'default_is_service_repair':True,'search_default_user':1}</field>
-			<field name="domain">[('is_service_repair','=',1),('project_id','=',active_id),('user_id','!=',False)]</field>
+			<field name="domain">[('is_service_repair','=',1),('user_id','!=',False)]</field>
 			<field name="help" type="html">
 				<p>
 					View And Schedule Task work for Service Repair.
