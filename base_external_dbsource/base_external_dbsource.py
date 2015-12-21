@@ -101,10 +101,8 @@ Sample connection strings:
                 connStr += ';PWD=%s'
             connStr = connStr % data.password
         # Try to connect
-        if data.connector == 'cx_Oracle':
-            os.environ['NLS_LANG'] = 'AMERICAN_AMERICA.UTF8'
-            conn = cx_Oracle.connect(connStr)
-        elif data.connector == 'pyodbc':
+
+        if data.connector == 'pyodbc':
             conn = pyodbc.connect(connStr)
         elif data.connector in ('sqlite', 'mysql', 'mssql'):
             conn = sqlalchemy.create_engine(connStr).connect()

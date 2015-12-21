@@ -571,11 +571,11 @@ class import_data_file(osv.osv):
         
         return False
                 
-    def create_related_record(self, cr, uid, ids,rec, field, field_val, row = None, context= None ):
+    def create_related_record(self, cr, uid, ids,rec,import_record, field, field_val, row = None, context= None ):
         
         vals = '{Empty}'
         try:
-            vals = self.set_related_vals(cr, uid, field_val, field, context)
+            vals = self.do_related_vals_mapping(cr, uid, ids, rec=rec, field=field, import_record=import_record, row=row, context=context)
             res_id =  self.pool.get(field.relation).create(cr,uid, vals,context = context) or False
             
             if not res_id:
@@ -704,7 +704,7 @@ class import_data_file(osv.osv):
             
             if not res_id and field.create_related: 
                 # If Success found the related record 
-                res_id = self.create_related_record(cr, uid, ids,rec=rec, field=field, field_val=field_val, row=row, context=context)
+                res_id = self.create_related_record(cr, uid, ids,rec=rec, import_record=import_record, field=field, field_val=field_val, row=row, context=context)
                 
             field_val = res_id
         
@@ -1082,7 +1082,8 @@ class import_data_file(osv.osv):
         if context is None:
             context = {}
         
-        list_size =0 
+        list_size =0
+        conn = False 
         
         try:
             
@@ -1139,7 +1140,8 @@ class import_data_file(osv.osv):
                 conn.close()
         except:
             cr.rollback()
-            conn.close()
+            if conn:
+                conn.close()
             rec.has_errors = True
             error_txt = _('Import Aborted')
             return self.update_log_error( cr, uid, ids, rec, error_txt, context)
