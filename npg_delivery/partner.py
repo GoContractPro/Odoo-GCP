@@ -67,8 +67,9 @@ class res_partner(osv.osv):
     def name_search(self, cr, uid, name='', args=None, operator='ilike', context=None, limit=100):
         if not args:
             args = []
+         
             
-        if context.get('search_transport_company', False):
+        if context and context.get('search_transport_company', False):
 
             positive_operators = ['=', 'ilike', '=ilike', 'like', '=like']
             cr.execute(

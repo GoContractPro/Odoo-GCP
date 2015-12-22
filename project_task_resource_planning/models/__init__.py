@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011 NovaPoint Group LLC (<http://www.novapointgroup.com>)
+#    Copyright (C) 2011-2015 NovaPoint Group INC (<http://www.novapointgroup.com>)
 #    Copyright (C) 2004-2010 OpenERP SA (<http://www.openerp.com>)
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,24 +18,6 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 ##############################################################################
-{
-    'name': 'Import Data',
-    'version': '1.0',
-    'category': 'Import',
-    'description': """
-    This module adds enhanced Tools to create and save Data Maps  to import or update records from csv files.
-    """,
-    'author': 'NovaPoint Group LLC, Stephen Levenhagen',
-    'website': ' http://www.novapointgroup.com',
-    'depends': ['npg_warning','account','base_external_dbsource'],
-    'data': ['view/import_data_view.xml',
-             'wizard/wiz_import_dbf_directory.xml',
-             'security/security.xml',
-             'security/ir.model.access.csv',
-             'view/menus.xml',],
-    'demo': [],
-    'auto_install': False,
-    'installable': True,
-    'qweb' : [],
-}
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+
+import res_users
+import project

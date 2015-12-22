@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011 NovaPoint Group LLC (<http://www.novapointgroup.com>)
+#    Copyright (C) 2014 NovaPoint Group INC (<http://www.novapointgroup.com>)
 #    Copyright (C) 2004-2010 OpenERP SA (<http://www.openerp.com>)
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -19,24 +19,21 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 ##############################################################################
-{
-    'name': 'Import Data',
-    'version': '1.0',
-    'category': 'Import',
-    'description': """
-    This module adds enhanced Tools to create and save Data Maps  to import or update records from csv files.
-    """,
-    'author': 'NovaPoint Group LLC, Stephen Levenhagen',
-    'website': ' http://www.novapointgroup.com',
-    'depends': ['npg_warning','account','base_external_dbsource'],
-    'data': ['view/import_data_view.xml',
-             'wizard/wiz_import_dbf_directory.xml',
-             'security/security.xml',
-             'security/ir.model.access.csv',
-             'view/menus.xml',],
-    'demo': [],
-    'auto_install': False,
-    'installable': True,
-    'qweb' : [],
-}
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+
+
+
+from openerp import models, fields, api,exceptions, _
+import time
+
+class task(models.Model):
+    _inherit = "project.task"
+     
+    @api.model
+    def user_groups(self, present_ids, domain, **kwargs):
+        users = self.env['res.users'].search([]).name_get()
+        return users, None
+
+    
+    _group_by_full = {
+                      'user_id':user_groups,
+                      }

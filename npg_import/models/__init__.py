@@ -19,24 +19,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>
 #
 ##############################################################################
-{
-    'name': 'Import Data',
-    'version': '1.0',
-    'category': 'Import',
-    'description': """
-    This module adds enhanced Tools to create and save Data Maps  to import or update records from csv files.
-    """,
-    'author': 'NovaPoint Group LLC, Stephen Levenhagen',
-    'website': ' http://www.novapointgroup.com',
-    'depends': ['npg_warning','account','base_external_dbsource'],
-    'data': ['view/import_data_view.xml',
-             'wizard/wiz_import_dbf_directory.xml',
-             'security/security.xml',
-             'security/ir.model.access.csv',
-             'view/menus.xml',],
-    'demo': [],
-    'auto_install': False,
-    'installable': True,
-    'qweb' : [],
-}
+import import_data_header
+import import_data
+
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

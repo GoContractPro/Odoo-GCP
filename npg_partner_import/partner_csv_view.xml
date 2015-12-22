@@ -56,7 +56,7 @@
             <field name="view_id" ref="view_import_partner_csv_tree" />
         </record> 
 
-        <menuitem action="action_import_partners" id="menu_import_partners" parent="base.menu_config"/>
+        <menuitem action="action_import_partners" id="menu_import_partners" parent="npg_import.menu_import"/>
 
     </data>
 </openerp>

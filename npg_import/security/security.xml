@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+  <data>
+
+    <!-- Groups - Make Deposits Preparer , Make Deposits Verifier -->
+
+    <record id="group_npg_import" model="res.groups">
+      <field name="name">Import Data</field>
+    </record>
+
+  
+
+  </data>
+</openerp>
