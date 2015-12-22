@@ -212,12 +212,15 @@ class partner_csv(osv.osv):
                     
             error_log = ''
             n = 1 # Start Counter at One for to Account for Column Headers
+
+	    	
             
             if (headers_dict.get('company_name') > -1) and data[headers_dict['company_name']]:
-                    search = [('name','=',data[headers_dict['company_name']]),('is_company','=',True)]
+                    company_name = data[headers_dict['company_name']]
+		    search = [('is_company','=',True),('name','=',company_name.strip())]
                     parent_id = partner_obj.search(cr,uid,search)
                     if not parent_id:
-                        vals = {'name':data[headers_dict['company_name']],
+                        vals = {'name':data[headers_dict['company_name']].strip(),
                                 'is_company': True,
                                 }
                         parent_id = partner_obj.create(cr,uid,vals,context)
@@ -233,7 +236,11 @@ class partner_csv(osv.osv):
                     external_id = ((headers_dict.get('external_id') > -1) and data[headers_dict['external_id']]) or None   
                     name = ((headers_dict.get('name') > -1) and data[headers_dict['name']]) or None                   
                     email = ((headers_dict.get('email') > -1) and data[headers_dict['email']]) or None 
-                    
+			
+		    if name: name = name.strip()
+		    if email: email = email.strip()
+		    if external_id: external_id = external_id.strip()                    
+
                     if external_id:
                         search = [('name','=', data[headers_dict['external_id']]),('model','=','res.partner')]                     
                         model_data_ids =  model_data_obj.search(cr,uid,search) or None
@@ -242,6 +249,7 @@ class partner_csv(osv.osv):
                         else:
                             partner_ids = None
                     else:  
+
                         search = [ ('name','=', name ),
                                   ('street','=',((headers_dict.get('street')> -1) and data[headers_dict['street']]) or None),
                                   ('zip','=',((headers_dict.get('zip') > -1) and data[headers_dict['zip']]) or None)]
@@ -255,7 +263,9 @@ class partner_csv(osv.osv):
                     if (headers_dict.get('related_company') > -1) and data[headers_dict['related_company']] and data[headers_dict['related_company']].lower() <> 'false':
                         
                         try:
-                            related_search = [('name','=',data[headers_dict['related_company']])]
+			    company_name = data[headers_dict['related_company']].strip()
+	                    related_search = [('name','=',company_name)]
+
                             parent_id = partner_obj.search(cr, uid , related_search)[0] or None
                         except:
                             msg = _('Error Related Company - %s - Not Found at row %s -- %s, %s \n' % (data[headers_dict['related_company']],n,name or '',email or'' ))
