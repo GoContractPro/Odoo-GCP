@@ -488,7 +488,7 @@ class import_data_file(osv.osv):
         else:
             return s
     
-    def get_field_val_from_record(self, import_record, name , rec):        
+    def get_field_val_from_record(self, import_record, name , rec, field):        
         
         if rec.src_type == 'dbf':
             field_raw =  import_record[name] or False
@@ -499,22 +499,29 @@ class import_data_file(osv.osv):
             field_raw =  name and getattr(import_record, name )  or False
         else: raise ValueError('Error! Source Data Type Not Set')
         
-         
-        if isinstance( field_raw, str):
-            return field_raw.strip()
-
-        elif isinstance(field_raw, unicode):
-            return field_raw.strip()
-
-        elif isinstance(field_raw, datetime.datetime):
-            return field_raw.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         
-        elif isinstance(field_raw , datetime.date):
-            return field_raw.strftime(DEFAULT_SERVER_DATE_FORMAT)
+        if not field_raw and field.default_val:
+            return field.default_val
+        elif not field_raw:
+            return False
+        else: 
+            if isinstance( field_raw, str):
+                field_val = field_raw.strip()
+    
+            elif isinstance(field_raw, unicode):
+                field_val =  field_raw.strip()
+    
+            elif isinstance(field_raw, datetime.datetime):
+                field_val =  field_raw.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+            
+            elif isinstance(field_raw , datetime.date):
+                field_val =  field_raw.strftime(DEFAULT_SERVER_DATE_FORMAT)
+    
+            elif isinstance(field_raw, bytearray):
+                field_val =  base64.b64encode(field_raw)
+            else: field_val =  str(field_raw)
 
-        elif isinstance(field_raw, bytearray):
-            return base64.b64encode(field_raw)
-        else: return str(field_raw)
+            return field_val
      
     def skip_current_row_filter(self, field_val, search_filter):
         
@@ -686,7 +693,7 @@ class import_data_file(osv.osv):
         for rel_field in field.m2o_values:
             
             if rel_field.source_field:
-                field_val = self.get_field_val_from_record(import_record, name =  rel_field.source_field.name, rec = rec)
+                field_val = self.get_field_val_from_record(import_record, name =  rel_field.source_field.name, rec = rec, field=field)
                 field_val = field_val or rel_field.default_val or False
                 
                 odoo_vals = self.convert_odoo_data_types(cr, uid, ids, rec=rec, field= rel_field, field_val=field_val, row=row,  import_record = import_record, context=context)  
@@ -778,7 +785,7 @@ class import_data_file(osv.osv):
         
         external_id_name = field_val
         if field.o2m_external_field2:
-            external_id_name += '--' + self.get_field_val_from_record(import_record, field.o2m_external_field2.name, rec)
+            external_id_name += '--' + self.get_field_val_from_record(import_record, field.o2m_external_field2.name, rec, field)
        
         res_id = self.search_external_id(cr, uid, external_id_name, model = field.relation , context=context)
         
@@ -870,14 +877,14 @@ class import_data_file(osv.osv):
                 field_val = False
 
                 # test  Clean and convert Raw incoming Data values to stings to allow comparing to search filters and substitutions         
-                field_val = self.get_field_val_from_record(import_record,field.name,rec)
+                field_val = self.get_field_val_from_record(import_record,field.name,rec, field)
+                if not field_val:continue
+                    
                 
                 # IF Field value not found in Filter Search list skip out to next import record row
                 if self.skip_current_row_filter(field_val,field.search_filter):
                     return False                            
                 
-                if not field_val and field.default_val:
-                    field_val = field.default_val
                
                 if not field.model_field: continue # Skip to next Field if no Odoo field set
                 
