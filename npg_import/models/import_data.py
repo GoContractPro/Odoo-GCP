@@ -665,10 +665,10 @@ class import_data_file(osv.osv):
     def update_log_error(self, cr, uid, ids,rec, error_txt = '', context = None):
 
         e = traceback.format_exc()
-        e = e[:1000]
-        _logger.error(error_txt + e)
-        if e:rec.error_log += e + '\n'
-        if  error_txt: rec.error_log += error_txt +'\n' 
+        e_msg = error_txt + '\n' + 'TraceBack: ' + e[:1000]
+        _logger.error(e_msg)
+        
+        rec.error_log += e_msg +'\n' 
         log_vals = {'error_log': rec.error_log,
                 'has_errors':rec.has_errors}
         self.write(cr,uid,ids,log_vals)
@@ -944,7 +944,7 @@ class import_data_file(osv.osv):
                     return False
 
             elif search_ids and not rec.do_update:
-                    error_txt = _('Error Duplicate on Uniquie %s  Found at Row %s record skipped' % (search_unique,row,))
+                    error_txt = _('Error Duplicate on Unique %s  Found at Row %s record skipped' % (search_unique,row,))
                     self.update_log_error( cr, uid, ids, rec, error_txt, context)
                     return False
                 
