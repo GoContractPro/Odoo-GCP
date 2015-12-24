@@ -665,7 +665,7 @@ class import_data_file(osv.osv):
     def update_log_error(self, cr, uid, ids,rec, error_txt = '', context = None):
 
         e = traceback.format_exc()
-        e_msg = error_txt + '\n' + 'TraceBack: ' + e[:1000]
+        e_msg = error_txt + '\n' + 'TraceBack: ' + e[:2000]
         _logger.error(e_msg)
         
         rec.error_log += e_msg +'\n' 
@@ -1132,6 +1132,7 @@ class import_data_file(osv.osv):
                         row+= 1
                         if row%10 == 0: # Update Statics every 10 records
                             self.update_statistics(cr,uid ,ids , rec, row, count)
+                            
                         
                         if not self.do_process_import_row(cr, uid, ids, rec, import_record, row, context):
                             continue
@@ -1143,10 +1144,10 @@ class import_data_file(osv.osv):
                             # Exit Import Records Loop  
                             return{'value':self.update_statistics(cr, uid, ids, rec=rec, processed_rows=row, count=count, remaining=False)}
                             
-                    if rec.rollback and context.get('test',False): 
-                        pass
-                    else:
-                        cr.commit() 
+                        if rec.rollback and context.get('test',False): 
+                            pass
+                        else:
+                            cr.commit() 
                             
                 conn.close()
         except:
