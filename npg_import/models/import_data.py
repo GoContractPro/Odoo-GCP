@@ -575,8 +575,12 @@ class import_data_file(osv.osv):
         
         vals = '{Empty}'
         try:
-            vals = self.do_related_vals_mapping(cr, uid, ids, rec=rec, field=field, import_record=import_record, row=row, context=context)
-            res_id =  self.pool.get(field.relation).create(cr,uid, vals,context = context) or False
+            odoo_vals = self.do_related_vals_mapping(cr, uid, ids, rec=rec, field=field, import_record=import_record, row=row, context=context)
+            if odoo_vals['required_missing']:
+                res_id = False
+            else:
+                vals = odoo_vals['field_val']
+                res_id =  self.pool.get(field.relation).create(cr,uid, vals ,context = context) or False
             
             if not res_id:
                 log = _('Warning!: Related record for  value \'%s\' Not Created for relation \'%s\' row %s' % (res_id, field_val, field.relation, row )) 
