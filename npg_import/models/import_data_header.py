@@ -40,7 +40,12 @@ class import_data_header(models.Model):
     _description = "Map Odoo Fields to Import Fields"
     
     name=fields.Char('Import Field Name', size=64)
-    import_data_id = fields.Many2one(comodel_name='import.data.file',string='Import Data',required=True, ondelete='cascade',)
+    field_label =fields.Char(string='Description', size=64,)
+    field_type =fields.Char(string='Data Type', size=64,)
+    field_val =fields.Char(string='Record Value', size=128)
+    field_selector = fields.Many2one('import.data.header', 'Select Source Field', domain="[('import_data_id','=',import_data_id)]")
+   
+    import_data_id = fields.Many2one(comodel_name='import.data.file',string='Import Source',required=True, ondelete='cascade',)
     is_unique = fields.Boolean(string='Is Unique', help ='Value for Field  Should be unique name or reference identifier and not Duplicated ')
     model = fields.Many2one(comodel_name='ir.model',string='Model')
     model_field = fields.Many2one(comodel_name='ir.model.fields',string='Odoo Field', domain="[('model_id','=',model)]")
@@ -56,12 +61,10 @@ class import_data_header(models.Model):
                       help="""Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import, \n
                       Can use mulitple values for filter,  format as python type list for values example 'value1','value2','value3', """)           
     create_related =fields.Boolean('Create Related', help = "Will create the related records using system default values if missing" )
-    field_label =fields.Char(string='Description', size=64,)
-    field_type =fields.Char(string='Data Type', size=64,)
-    field_val =fields.Char(string='Record Value', size=128)
+
     default_val =fields.Char(string='Default Import Val', size = 256, help = 'The Default if no values for field in imported Source')
     substitutions =fields.One2many('import.m2o.substitutions','header_map', string="Source Value Substitutions")
-    is_unique_external =fields.Boolean('External ID Field', readonly=True ,
+    is_unique_external =fields.Boolean('External ID Field', readonly=False ,
                                 help ='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID')
     m2o_values =fields.One2many('import.m2o.values','import_field_id', string="Default Values or source values to map to create related and parent records")
     m2o_create_external =fields.Boolean('Create External on Related')
@@ -87,8 +90,18 @@ class import_data_header(models.Model):
                  'search_related_external':True,
                  'import_data_id':_get_import_data_id
                  }
-    _order = 'sequence'
+    _order = 'model_field,sequence'
     
+    
+    @api.multi
+    @api.onchange('field_selector')
+    def onchange_field_selector(self):
+        if self.field_selector:
+            self.name = self.field_selector.name
+            self.field_label = self.field_selector.field_label 
+            self.field_val = self.field_selector.field_val
+            self.field_type = self.field_selector.field_type
+          
     @api.multi
     @api.onchange('model_field')
     def onchange_model_field(self, model_field = None):
@@ -102,7 +115,6 @@ class import_data_header(models.Model):
         else:
 
             self.o2m_external_field1 =  False 
-            vals =  {'o2m_external_field1':False}
 
 
-            return {'value':vals}
+
