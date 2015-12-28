@@ -37,7 +37,9 @@
 	                		<field name="relation" readonly="1"/>
 	                		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
 	                		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
-	        				<field name="search_related_external" attrs="{'invisible':[('model_field_type','not in',['many2one'])]}">
+	        				<!-- <field name="search_related_external"
+	        				 		attrs="{'invisible':[('model_field_type','not in',['many2one'])]}">
+	        				-->
 	        				</field>
 	        					           
 	        				<field name="o2m_external_field2"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/>

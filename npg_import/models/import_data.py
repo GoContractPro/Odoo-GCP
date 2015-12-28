@@ -876,7 +876,7 @@ class import_data_file(osv.osv):
         skip_record = False
         row_count += 1
        
-        if row%25 == 0: # Update Statics every 10 records
+        if row_count%25 == 0: # Update Statics every 10 records
             self.update_statistics(cr,uid ,ids ,  rec=rec, remaining=True)
                     
         for field in rec.header_ids:
