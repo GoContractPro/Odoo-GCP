@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+       <template id="layout" inherit_id="mobile_timesheet_timer.project_timereport">
+            <xpath expr='//table[@class="table table-striped"]' position="replace" >                 
+               <table class="table table-striped">
+								                <thead>
+								                    <tr>
+								                        <th>Todo List</th>
+								                        <th>Is service Repair</th>
+								                        <th>Customer</th>
+								                        <th></th>
+								                        
+								                    </tr>
+								               </thead>
+                                                
+                                            	<t t-foreach="tasks" t-as="t">                                       
+                                                <tr><td>
+                                                    <!--Todo list-->
+                                                    <a t-att-href="'/treport/%s/%s/0' %(user.id,t.id)">
+                                                    <t t-raw="t.name"/></a> 
+                                                     <td>
+                                                    	 <t t-raw="t.is_service_repair"/>
+                                                    </td>
+                                                    <td>
+                                                    	 <t t-raw="t.partner_id.name"/>
+                                                    </td>
+                                                    <td>
+                                                        
+                                                        <!--Done button-->
+                                                        <form t-att-action="'/treport/%s/%s/2' %(user.id, t.id)" method="POST">
+                                                        <t t-if="t.check_started_work()">
+                                                        <input name="done" type="submit" class="btn btn-default btn-xs pull-left mt8 " 
+                                                            value="Done"/>
+                                                        </t>
+                                                        </form>
+
+                                                        <!--Start/Stop buttons-->
+                                                        <form t-att-action="'/treport/%s/%s/1' %(user.id, t.id)" method="POST">
+                                                        <t t-if="t.check_started_work()">
+                                                        <input name="save" type="submit" class="btn btn-primary btn-xs pull-right mt8 " 
+                                                            value="Start"/>
+                                                        </t>
+                                                        <t t-if="t.check_started_work()==False">
+                                                        <input name="save" type="submit" class="btn btn-success btn-xs pull-right mt8 " 
+                                                            value="Stop"/>
+                                                        </t>
+                                                        </form>
+                                                        
+                                                    </td>
+                                                    </td>
+                                                </tr>
+                                                </t>
+                                            </table>          
+            </xpath>
+        </template>
+    </data>
+</openerp>
