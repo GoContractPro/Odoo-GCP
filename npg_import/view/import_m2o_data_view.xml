@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_import_m2o_related_data_form" model="ir.ui.view">
+            <field name="name">import.m20.related.data.form</field>
+            <field name="model">import.m2o.values</field>
+            <field name="arch" type="xml">
+            
+              	 <form string="Related Headers">
+              	 	<group  cols="4">
+              	 		<field name="import_data_id" invisible="0"/>
+              	 		<group string=" Source Info " cols="2">
+              	 			<field name="field_selector" />
+              	 			<field name="name" />
+              	 			<field name="field_label"/>
+	                		<field name="field_type"/>
+	                	 	<field name="field_val" />                    	
+                    	 	<field name="is_unique"/>
+                    	 	<field name="search_filter"/>
+                	 	</group>
+                	 	<group string="Odoo Record Creation Settings" cols="2">
+                	 		<field name="model" required="0" />
+                    		<field name="is_unique_external"/>
+                    		<field name="default_val"/>	
+            			</group>
+            			
+            			<group string="Odoo Field Information" cols="2" >
+                    		<field name="model_field" required="0" 
+                    				context = "{'manual':True, 'default_model_id':model}"/>	
+                    		<field name="model_field_name" invisible="0" readonly="1"/>
+                    		<field name="model_field_type" invisible="0" readonly="1"/>
+                    	</group>
+                    	<group string="Related Search Settings" cols="2" 
+								attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
+                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
+                    		<field name="relation" readonly="1"/>
+                    		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
+                    		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
+            				<field name="search_related_external" attrs="{'invisible':[('model_field_type','not in',['many2one'])]}">
+            				</field>
+            				
+            				<!--  <field name="o2m_external_field1"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/> -->
+   
+            				<field name="o2m_external_field2"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/>
+            				
+							
+							<field name="search_name"></field>
+							<field name="search_other_field"/>
+							<field name="create_related"/>
+							</group>
+							<group string="Map Source Field Values to Odoo values" cols="4" >
+			
+      							<field name="substitutions" 
+      				 			nolabel="1" colspan="4">
+          						<tree editable="bottom">
+          							<field name="src_value"/>	                    	
+          							<field name="odoo_value"/>
+          						</tree>
+          						</field>
+      						</group>
+						</group>
+					</form>
+			</field>
+        </record>
+				
+
+        <record id="view_import_m2o_related_data_tree" model="ir.ui.view">
+            <field name="name">import.m20.related.data.tree</field>
+            <field name="model">import.m2o.values</field>
+            <field name="arch" type="xml">
+      			<tree >
+      				<field name="sequence" widget="handle"/>
+      				<field name="import_data_id" invisible="1"/>
+      				<field name="model" invisible='1'/>
+      				<field name="name" readonly='1'/>	                    	
+      				<field name="model_field" />
+      			</tree>
+			</field>
+		</record>
+		
+		
+	</data>
+</openerp>
