@@ -29,7 +29,7 @@ class fleet_vehicle(osv.osv):
         res = {}
         if not context.get('default_is_service_repair',False):
             for record in self.browse(cr, uid, ids, context=context):
-                res[record.id] = record.model_id.brand_id.name + '/' + record.model_id.modelname + ' / ' + record.license_plate
+                res[record.id] = (record.model_id and record.model_id.brand_id.name or '') + '/' + (record.model_id and record.model_id.modelname or '') + ' / ' + (record.license_plate or '')
         else:
             for record in self.browse(cr, uid, ids, context=context):
                 res[record.id] = (record.unit or ' ')  + '/' + (record.make or ' ') + ' / ' + (record.model or ' ')

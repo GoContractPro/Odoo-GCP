@@ -48,6 +48,21 @@ class project(osv.osv):
     _defaults={
               'name':'/',
               }
+    
+    def copy(self, cr, uid, id, default=None, context={}):
+        if default is None:
+            default = {}
+        name = '/'
+        if context.get('default_is_service_repair',False):
+            name = self.pool.get('ir.sequence').get(cr, uid, 'project.project', context=context) or '/'
+        default.update({
+            'name': name,
+            'eval_job': False,
+            'promise_date': False,
+        })
+        return super(project, self).copy(
+            cr, uid, id, default=default, context=context)
+        
     def onchange_partner_id(self, cr, uid, ids, part=False, context=None):
         partner_obj = self.pool.get('res.partner')
         val = {}
