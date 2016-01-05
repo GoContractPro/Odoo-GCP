@@ -7,7 +7,7 @@
 								                <thead>
 								                    <tr>
 								                        <th>Todo List</th>
-								                        <th>Is service Repair</th>
+								                        <th>Service Repair</th>
 								                        <th>Customer</th>
 								                        <th></th>
 								                        
@@ -20,7 +20,7 @@
                                                     <a t-att-href="'/treport/%s/%s/0' %(user.id,t.id)">
                                                     <t t-raw="t.name"/></a> 
                                                      <td>
-                                                    	 <t t-raw="t.is_service_repair"/>
+                                                    	 <t t-raw="t.seq_no"/>
                                                     </td>
                                                     <td>
                                                     	 <t t-raw="t.partner_id.name"/>

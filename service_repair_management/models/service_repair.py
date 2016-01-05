@@ -59,9 +59,11 @@ class project(osv.osv):
             'name': name,
             'eval_job': False,
             'promise_date': False,
+            'tasks' : [(6, 0, [])],
+#             'analytic_account_id':False
         })
-        return super(project, self).copy(
-            cr, uid, id, default=default, context=context)
+        res = super(project, self).copy(cr, uid, id, default=default, context=context)
+        return res
         
     def onchange_partner_id(self, cr, uid, ids, part=False, context=None):
         partner_obj = self.pool.get('res.partner')

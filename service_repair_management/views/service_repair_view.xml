@@ -582,7 +582,7 @@
 								('project_id', '=', active_id)]" context="{'default_is_service_repair':1,'default_project_id':active_id,'default_name':'Evaluation','default_user_id':False}"/> -->
 							<field name="eval_job"
 								domain="[('is_service_repair','=',True), ('project_id', '=', active_id)]"
-								context="{'default_description':issue,'default_project_id':active_id,'default_name':name,'default_user_id':False,'form_view_ref': 'service_repair_management.service_repair_view_task_form2'}" />
+								context="{'default_is_service_repair':1,'default_description':issue,'default_project_id':active_id,'default_name':name,'default_user_id':False,'form_view_ref': 'service_repair_management.service_repair_view_task_form2'}" />
 						</group>
 						<notebook>
 							<page string="Issue">
