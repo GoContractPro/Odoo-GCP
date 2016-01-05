@@ -49,6 +49,11 @@ class project(osv.osv):
               'name':'/',
               }
     
+    def map_tasks(self, cr, uid, old_project_id, new_project_id, context=None):
+        if not context.get('default_is_service_repair',False):
+            return super(project, self).map_tasks(cr, uid, old_project_id, new_project_id, context)
+        return True
+    
     def copy(self, cr, uid, id, default=None, context={}):
         if default is None:
             default = {}
