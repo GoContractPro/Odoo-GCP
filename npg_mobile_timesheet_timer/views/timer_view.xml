@@ -20,7 +20,7 @@
                                                     <a t-att-href="'/treport/%s/%s/0' %(user.id,t.id)">
                                                     <t t-raw="t.name"/></a> 
                                                      <td>
-                                                    	 <t t-raw="t.seq_no"/>
+                                                    	 <t t-raw="t.project_id.name"/>
                                                     </td>
                                                     <td>
                                                     	 <t t-raw="t.partner_id.name"/>
