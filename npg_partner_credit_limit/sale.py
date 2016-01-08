@@ -58,7 +58,7 @@ class sale_order(models.Model):
             none_invoiced_amount - draft_invoices_amount
 
         if self.amount_total > available_credit:
-            msg = "No one can confirm the order as the customer has insufficient credit. You can spend the billing policy in order tab \"Other information\""
+            msg = "No one can confirm the order as the customer has insufficient credit."
             raise Warning(_(msg))
             return False
         return True
