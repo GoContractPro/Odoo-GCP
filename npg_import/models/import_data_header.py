@@ -94,7 +94,6 @@ class import_data_header(models.Model):
     _defaults = {
                  'model':_get_model,
                  'search_name':False,
-                 'search_related_external':True,
                  'import_data_id':_get_import_data_id
                  }
     _order = 'sequence,model_field'

@@ -46,10 +46,11 @@
 							<!--<field name="search_name"></field> -->
 							<field name="search_other_field"/>
 							
-							<field name="create_related"/>
+							
 						</group>
 
                   		<group string="Map Related Records" cols='4'>
+                  			<field name="create_related"/>
 	                  		<field name='m2o_create_external' cols="2" 
 	                  			attrs="{'invisible':[('create_related','=',False)]}" />
 	                  			
@@ -76,6 +77,7 @@
               	<tree>
               		
               		<field name="sequence" widget="handle"/>
+              		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
             		<field name="name"/>
             		<field name="field_label"/>
             		<field name="field_type"/>
@@ -83,7 +85,7 @@
             	 	<field name="default_val"/>
             	 	<field name="is_unique"/>
             	 	<field name="is_unique_external"/>
-            		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
+            		
             	</tree>  
             </field>
         </record> 

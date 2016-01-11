@@ -126,13 +126,13 @@ class import_data_file(models.Model):
             if record:
                 try:
                     record.ensure_one()
-                    
+                    return record.id
                 except:
                     error_txt = _('Error: Unique Record duplicates found in model %s, search on values %s' % (model.model, search_unique, ))
                     self.update_log_error( rec, error_txt)
                     return -1
                 
-                record.id
+                
             else:
                 return 0
         else:
@@ -397,16 +397,21 @@ class import_data_file(models.Model):
         else: raise ValueError('Error! Source Data Type Not Set')
         
         
-        if not field_raw and field.default_val:
+        if not field_raw  and field.default_val:
             return field.default_val
-        elif not field_raw:
+        if not field_raw:
             return False
         else: 
             if isinstance( field_raw, str):
+                
                 field_val = field_raw.strip()
+                if field_val == "" and field.default_val:
+                    field_val = field.default_val
     
             elif isinstance(field_raw, unicode):
                 field_val =  field_raw.strip()
+                if field_val == "" and field.default_val:
+                    field_val = field.default_val
     
             elif isinstance(field_raw, datetime.datetime):
                 field_val =  field_raw.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
@@ -440,7 +445,7 @@ class import_data_file(models.Model):
                 return   False 
             
             #if searching on related external IDs then create the related  external ID based on  field_val used to search 
-            if res_id and external_id_namel: 
+            if res_id and external_id_name: 
                 vals = {'name':field_val,
                     'model': field.relation,
                     'res_id':res_id,
