@@ -33,6 +33,7 @@
 	                				context = "{'manual':True, 'default_model_id':model}"/>	
 	                		<field name="model_field_name" invisible="0" readonly="1"/>
 	                		<field name="model_field_type" invisible="0" readonly="1"/>
+	                		<field name="substitute_sets"/>
 	                	</group>
 	                	<group string="Related Search Settings" cols="2" 
 								attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
@@ -44,7 +45,7 @@
 							
 							<!--<field name="search_name"></field> -->
 							<field name="search_other_field"/>
-							<field name="substitute_sets"/>
+							
 							<field name="create_related"/>
 						</group>
 
