@@ -22,7 +22,23 @@
 ##############################################################################
 
 from openerp import models, fields, api, exceptions, _
+import csv
+import os
+import cStringIO
+import datetime 
+import logging 
+import sys, traceback
+import contextlib
+from string import strip
 
+from __builtin__ import False
+from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT 
+from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
+import base64
+_logger = logging.getLogger(__name__)
+
+row_count = 0
+count = 0
 
 class import_data_file(models.Model): 
     
@@ -40,3 +56,623 @@ class import_data_file(models.Model):
                 fld.is_unique_external = True
             else: 
                 fld.is_unique_external = False
+                
+    @api.multi
+    def check_selection_field_value(self,model,field,field_val):
+        
+        sel_list = self.env[model]._fields[field]._column_selection
+        field_val_lower = field_val.lower()
+        try:
+            for select_val in sel_list:
+                for value in select_val:
+                    if value.lower() == field_val:
+                        return select_val[0]
+        except:
+            return field_val   
+        return False
+    
+    @api.multi
+    def check_external_id_name(self, external_id_name = False):  
+        rec = self  
+        #  When Using field for External ID 
+        if external_id_name:
+            return external_id_name 
+        #  When using Record Row External ID and No field External ID            
+        elif rec.record_external:         
+            return ('%s_%s' % ( rec.name,row_count,))
+        else:
+            return False    
+    
+    @api.multi
+    def get_external_name(self, import_record, fields = False):
+        rec =  self
+        external_name = False
+        for field in fields:
+            if field.is_unique_external:
+                field_val = self.get_field_val_from_record(import_record,  field)
+                field = self.convert_odoo_data_types(field, field_val, import_record)
+                if not external_name: external_name = field_val
+                else: external_name += '/' + field_val
+        return self.check_external_id_name(external_name)
+       
+    @api.multi
+    def search_external_id(self, external_id_name, model): 
+                
+        search = [('name','=',external_id_name),('model','=', model)]                     
+        record =  self.env['ir.model.data'].search(search) or None
+        if record:
+            return record.res_id or False
+        else:
+            return False  
+                 
+    @api.multi
+    def search_unique_id(self, fields, import_record, model  ):
+        
+        rec = self
+        search_unique = []
+        for field in fields:
+            if field.is_unique:
+                field_val = self.get_field_val_from_record(import_record,  field)
+                result = self.convert_odoo_data_types(field, field_val, import_record)
+                field_val = result and result.get('field_val',False)
+                if not field_val: 
+                    error_txt = _('Error: Required unique field %s is not set' % (field.model_field.name))
+                    self.update_log_error( rec, error_txt)
+                    return -1
+                search_unique.append((field.model_field.name,"=", field_val))
+        
+        if len(search_unique) > 0:      
+            record = self.env[model.model].search(search_unique)
+            if record:
+                try:
+                    record.ensure_one()
+                    
+                except:
+                    error_txt = _('Error: Unique Record duplicates found in model %s, search on values %s' % (model.model, search_unique, ))
+                    self.update_log_error( rec, error_txt)
+                    return -1
+                
+                record.id
+            else:
+                return 0
+        else:
+            return 0
+    
+    
+    @api.multi
+    def do_search_record(self, fields, import_record, model):
+        
+        ''' Search for existing records using external Id, name search, or search on specific fields
+        external id can be created from row number or based on field values, name search will use Odoo
+        standard name search method, search specific field searching on specific fields is base on unique settings on fields
+        '''
+        rec = self
+        search_unique_id = self.search_unique_id(fields=fields, import_record=import_record, model=model)
+        if search_unique_id == -1:
+            return {'res_id':-1}     
+        
+        external_id_name = self.get_external_name(import_record, fields) 
+        external_id = self.search_external_id(external_id_name, model.model)
+                
+        if search_unique_id and external_id and external_id != search_unique_id:
+            error_txt = _('Error: External Id and Unique Field not Id not matched  %s <> %s record skipped' % (external_id, search_unique_id, ))
+            self.update_log_error( rec, error_txt)
+            
+            return {'res_id':-1} 
+        
+        res_id = external_id or search_unique_id
+           
+        if res_id and not rec.do_update:
+                error_txt = _('Warning: Duplicate record  found, record skipped' )
+                self.update_log_error( rec, error_txt)
+                return {'res_id':-1} 
+        return {'res_id':res_id,
+                'external_id_name':external_id_name
+                }
+    
+    @api.multi
+    def do_search_related_records(self, field, import_record, field_val): 
+         
+                  
+        search_result = self.do_search_record(fields= field.m2o_values, import_record= import_record , model=field.relation_id)
+        res_id =  search_result.get('res_id', False)
+        if res_id == 0:
+            
+        #    if field.search_name:
+                
+         #       result = self.env[field.relation_id.model].name_search(name=field_val)
+                
+         #       if result: 
+         #           search_result['res_id'] = result[0][0]
+         #           return search_result
+           # Do Other Searches backward compatibility
+            model = field.relation_id.model
+            if field.search_related_external:
+                external_id_name = field_val
+                model
+                if field.o2m_external_field2:
+                    external_id_name += '--' + self.get_field_val_from_record(import_record, field.o2m_external_field2)
+                res_id = self.search_external_id(field_val, model) 
+                if res_id: 
+                    search_result['external_id_name'] = field_val
+                    search_result['res_id'] = res_id
+                    return search_result
+                
+            if field.search_other_field:    
+                search = [(field.search_other_field.name,'=',field_val)]
+                result = self.env[model].search(search)
+                if result:
+                    if result.ensure_one():
+                        search_result['res_id'] = result.id or False
+                        return search_result
+                    else:
+                         error_txt = _('Error: Unique Record duplicates found in model %s, search on %s' % (model, search, ))
+                         self.update_log_error( rec, error_txt)
+                         return -1
+                     
+        return search_result
+                
+    
+    @api.multi
+    def get_o2m_m2m_vals(self, field, field_val, import_record ): 
+        
+        rec = self
+               
+        search_result = self.do_search_related_records(field, import_record, field_val)
+        res_id = search_result.get('res_id', False)
+        external_id_name = search_result.get('external_id_name',False)
+        if res_id == 0 and not field.create_related:
+            return False
+        if res_id == -1:
+            return False
+        
+        if res_id == 0 and field.create_related:
+            odoo_vals = self.do_related_vals_mapping(field=field, import_record=import_record)
+            if not odoo_vals['required_missing']: 
+                res_id = self.create_import_record( vals=odoo_vals['field_val'], external_id_name=external_id_name, 
+                                                    model = field.relation) 
+                
+        if res_id:
+            
+            return {'field_val':(4,res_id)}
+        else: 
+            return False
+     
+    @api.multi
+    def do_related_vals_mapping(self, field, import_record):
+        
+        rec = self
+        vals={}
+        for rel_field in field.m2o_values:
+
+            if not rel_field.model_field:
+                continue
+            field_val = self.get_field_val_from_record(import_record, field=rel_field)
+           
+            odoo_vals = self.convert_odoo_data_types(field=rel_field, field_val=field_val, import_record=import_record)  
+            if odoo_vals['required_missing']:
+                vals = None
+                break 
+            
+            vals[rel_field.model_field.name] = odoo_vals['field_val']
+                                                 
+            #TODO add functionality to build other Relate values defaults from list or other Tables
+        return {'required_missing':odoo_vals['required_missing'], 'field_val': vals}
+
+    @api.multi    
+    def convert_odoo_data_types( self, field, field_val, import_record=None, current_fld_val=None):
+        rec = self
+        # Update Field value if Substitution Value Found. 
+        field_val = self.do_substitution_mapping(field_val,field)
+        
+        if field.model_field_type == 'many2one' and field_val:
+            
+            search_result = self.do_search_related_records(field, import_record, field_val)
+            if not search_result: res_id = False
+            else: 
+                res_id = search_result.get('res_id',False)
+                
+                external_id_name = search_result.get('external_id_name',False)
+            
+                if not res_id and field.create_related: 
+                    res_id = self.create_related_record(import_record=import_record, field=field, field_val=field_val, external_id_name=external_id_name)
+                
+                if res_id == -1: 
+                    res_id = False
+                
+            field_val = res_id
+        
+        elif field.model_field_type == 'boolean' and  field_val:
+            
+            try:
+                field_val = bool(field_val)
+            except:
+                rec.has_errors = True
+                field_val = False
+                error_txt = ('Error: Field %s -- %s is not required Boolean type' % (field.model_field.name,field_val,))
+                self.update_log_error(rec, error_txt)
+            
+        elif field.model_field_type == 'float' and  field_val:
+                
+            if field_val.lower() == 'false': field_val = '0.0'
+            
+            try:
+                field_val = float(field_val)
+            except:
+                rec.has_errors = True
+                field_val = 0.0
+                error_txt = _('Error: Field %s -- %s is not required  Floating Point type' % ( field.model_field.name,field_val))
+                self.update_log_error( rec, error_txt)
+
+        elif field.model_field_type == 'integer' and  field_val:
+              
+            if field_val.lower() == 'false': field_val = '0'
+            try:
+                field_val = int(field_val)
+            except:
+                rec.has_errors = True
+                field_val = 0
+                error_txt = _('Error:  Field %s -- not required Integer  type' % (field.model_field.name,field_val))
+                self.update_log_error( rec, error_txt)
+
+        elif field.model_field_type == 'selection' and  field_val:
+            
+            field_val = self.check_selection_field_value(field.model.model, field.model_field.name, field_val)
+            
+            if field_val:
+                pass
+            else:
+                rec.has_errors = True
+                field_val = False
+                error_txt = _('Error: Field %s -- %s is correct Selection Value' % ( field.model_field.name,field_val))
+                self.update_log_error(rec, error_txt)
+        
+        elif field.model_field_type in ['char', 'text','html'] and  field_val:
+            pass
+        elif field.model_field_type == 'binary' and  field_val:
+            
+            pass
+        elif field.model_field_type in ['one2many','many2many']:
+   
+            result = self.get_o2m_m2m_vals(field=field, field_val=field_val, import_record=import_record)
+            field_val = result and [result.get('field_val',False)] or False
+            
+        if current_fld_val:
+            
+            if field.model_field_type in ['one2many','many2many']:
+            
+                if field_val: 
+                    current_fld_val.append(field_val)
+                    field_val = current_fld_val
+                else:field_val = current_fld_val
+                
+            elif field.model_field_type in ['char', 'text','html']:
+                if field_val: field_val = field_val + current_fld_val
+            else:
+                if field_val and current_fld_val:
+                    error_txt = _('Warning: Odoo field has been Mapped to multiple source fields, Last value found used for import')
+         
+        # If field is marked as Unique in mapping append to search on unique to use to confirm no duplicates before creating new record    
+        if field.model_field.required and not field_val:
+            rec.has_errors = True
+            error_txt = _('Error: Required field %s  has no value ' % (field.model_field.name ))
+            self.update_log_error(rec, error_txt)
+            required_missing =  True
+        else: required_missing =  False
+        
+        return {'required_missing':required_missing,'field_val':field_val}
+     
+    @api.multi    
+    def do_substitution_mapping(self,field_val,field):
+        
+        substitutes = {}
+        #if field.substitutions:
+        #    for sub in field.substitutions:
+        #       substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
+        
+        for sub in field.substitute_sets.import_m2o_substitutions:
+            substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
+         
+        try:    
+            #see if m20 map exist
+            for sub in  field.substitution_m2o_ids:       
+                substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()}) 
+        except:
+            pass       
+        return substitutes.get(field_val, field_val)
+                    
+    def get_field_val_from_record(self, import_record,field): 
+               
+        src_type = field.import_data_id.src_type
+        
+        if not field.name:
+            return field.default_val
+                
+        if src_type == 'dbf':
+            field_raw =  import_record[field.name] or False
+        elif src_type == 'csv':
+            field_raw = field.name and import_record[field.name]  or False
+        elif src_type == 'odbc':
+            field_raw =  field.name and getattr(import_record, field.name )  or False
+        else: raise ValueError('Error! Source Data Type Not Set')
+        
+        
+        if not field_raw and field.default_val:
+            return field.default_val
+        elif not field_raw:
+            return False
+        else: 
+            if isinstance( field_raw, str):
+                field_val = field_raw.strip()
+    
+            elif isinstance(field_raw, unicode):
+                field_val =  field_raw.strip()
+    
+            elif isinstance(field_raw, datetime.datetime):
+                field_val =  field_raw.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+            
+            elif isinstance(field_raw , datetime.date):
+                field_val =  field_raw.strftime(DEFAULT_SERVER_DATE_FORMAT)
+    
+            elif isinstance(field_raw, bytearray):
+                field_val =  base64.b64encode(field_raw)
+            else: field_val =  str(field_raw)
+
+            return field_val                       
+
+    @api.multi
+    def create_related_record(self, import_record, field, field_val, external_id_name = False):
+        
+        rec = self
+        vals = False
+        try:
+            odoo_vals = self.do_related_vals_mapping( field=field, import_record=import_record)
+            if odoo_vals['required_missing']:
+                res_id = False
+            else:
+                vals = odoo_vals['field_val']
+                record_obj =  self.env[field.relation].create(vals) or False
+                res_id = record_obj and  record_obj.id or False
+            if not res_id:
+                log = _('Warning!: Related record for  value \'%s\' Not Created for relation \'%s\' row %s' % ( field_val, field.relation,row_count )) 
+                rec.error_log += '\n'+ log
+                _logger.info( log)
+                return   False 
+            
+            #if searching on related external IDs then create the related  external ID based on  field_val used to search 
+            if res_id and external_id_namel: 
+                vals = {'name':field_val,
+                    'model': field.relation,
+                    'res_id':res_id,
+                    'module':field.relation
+                    }
+
+                self.env['ir.model.data'].create(vals)
+            
+            log = _('Related record ID %s : value \'%s\' Created for relation \'%s\' row %s' % (res_id, field_val, field.relation,row_count )) 
+            rec.error_log += '\n'+ log
+            _logger.info( log)    
+            
+            return res_id
+            
+        except:
+            self.env.cr.rollback()
+            rec.has_errors = True
+            error_txt = _('Error: Related record vals \'%s\'  for model \'%s\'' % (vals or 'No Values Dictionary Created' ,field.relation))
+            self.update_log_error( rec, error_txt)
+            
+            return False
+     
+    def create_import_record(self,vals, external_id_name = False, model=False): 
+        
+        
+        rec = self
+        try:
+            res_id = False
+            
+            model = model or rec.model_id.model
+            
+            model_obj = self.env[model]
+
+            record_obj = model_obj.create(vals)
+            res_id = record_obj and  record_obj.id or False
+            if external_id_name:                   
+                external_vals = {'name':external_id_name,
+                                 'model':rec.model_id.model,
+                                 'res_id':res_id,
+                                 'module':rec.model_id.model
+                                 }
+                
+                self.env['ir.model.data'].create(external_vals)
+                
+            _logger.info(_('Created record %s ID: %s from Source row %s' % (external_id_name or '',res_id, row_count)))
+
+            return res_id
+
+        except:
+            self.env.cr.rollback()
+            rec.has_errors = True
+            error_txt = _('Error: Import vals %s not created for model \'%s\'' % (vals, model))
+            self.update_log_error( rec, error_txt)
+            
+            return False
+        
+    @api.multi    
+    def do_process_import_row(self, import_record):
+
+        global row_count
+        global count
+        rec = self
+        
+        vals = {}
+        search_unique =[]
+        
+        external_id_name = ''
+        skip_record = False
+        row_count += 1
+       
+        if row_count%25 == 0: # Update Statics every 10 records
+            self.update_statistics( rec=rec, remaining=True)
+                    
+        for field in rec.header_ids:
+
+            try:   # Building Vals DIctionary
+                if not field.model_field: continue                       
+                res_id = False
+                field_val = False
+                
+                # test  Clean and convert Raw incoming Data values to stings to allow comparing to search filters and substitutions         
+                field_val = self.get_field_val_from_record(import_record, field)
+                if not field_val:continue
+                    
+                
+                # IF Field value not found in Filter Search list skip out to next import record row
+                if self.skip_current_row_filter(field_val,field.search_filter):
+                    return False                          
+                
+               
+                if not field.model_field: continue # Skip to next Field if no Odoo field set
+                
+                #Convert to Odoo Data types and add field to Record Vals Dictionary
+                odoo_vals = self.convert_odoo_data_types( field=field, field_val=field_val, import_record=import_record,
+                                                                             current_fld_val=vals.get(field.model_field.name, False))
+                if odoo_vals and odoo_vals['required_missing']:
+                    return False                     
+                    
+                vals[field.model_field.name] = odoo_vals['field_val']
+                                                            
+            except: # Buidling Vals DIctionary
+                self.env.cr.rollback()
+                rec.has_errors = True
+                error_txt = _('Error: Building Vals Dict at Field: %s == %s \n Val Dict:  %s ' %(field.model_field.name, field_val, vals,))
+                self.update_log_error( rec, error_txt)
+                skip_record = True
+                return False
+        
+        if skip_record : # this Record does not match filter skip to next Record in import Source
+            return False
+        
+        try:  # Finding existing Records  
+
+            search_result = self.do_search_record( fields=rec.header_ids, import_record=import_record, model= rec.model_id)
+            res_id = search_result.get('res_id', False)
+            external_id_name = search_result.get('external_id_name', False)
+        except: # Finding Existing Records
+            self.env.cr.rollback()
+            rec.has_errors = True
+            error_txt = _('Error: Search for Existing records: %s-%s ' % (search_unique,external_id_name))
+            self.update_log_error( rec, error_txt)                    
+            return False
+        
+        try: # Writing or Create Records          
+            
+            if res_id == -1:
+                pass # Errors in UNique Search or Duplicated records found.
+  
+            elif res_id == 0: 
+                self.create_import_record(vals=vals, external_id_name=external_id_name)
+                
+            elif res_id and rec.do_update:
+                record_obj = self.env[rec.model_id.model].browse(res_id)
+                record_obj.write(vals)
+                _logger.info(_('Updated row %s Odoo Database ID: %s') % ( row_count, res_id,))    
+
+            count += 1
+            return count
+        
+        except: # Error Writing or Creating Records
+            self.env.cr.rollback()
+            rec.has_errors = True
+            error_txt = _('Writing or Creating vals %s ' % ( vals,))
+            self.update_log_error( rec, error_txt)
+            return False
+  
+    @api.multi
+    def exit_test_mode(self, test_mode):
+        
+        rec = self
+        
+        if  test_mode and (count >= rec.test_sample_size  or row_count >= rec.test_sample_size + 100) :
+            
+            if rec.rollback: self.env.cr.rollback()
+            # Exit Import Records Loop  
+            return True
+        elif not test_mode or not rec.rollback:
+            self.env.cr.commit()
+            return False
+        return False
+
+   
+    @api.multi
+    def update_log_error(self, rec= None, error_txt = ''):
+
+        if not rec: rec =  self
+        e = traceback.format_exc()
+        
+        if row_count:
+            error_txt = 'Row: ' + str(row_count) + ' ' + error_txt
+        logger_msg = error_txt + '\n' + 'TraceBack: ' + e[:2000]
+        _logger.error(logger_msg)
+        
+        e = sys.exc_info()
+        rec.error_log +=  error_txt + '\n'
+        if e[2]:
+            e = traceback.format_exception(e[0], e[1], e[2], 1)
+            error_msg = e[2]
+            rec.error_log +=  error_msg +'\n'
+             
+        log_vals = {'error_log': rec.error_log,
+                'has_errors':rec.has_errors}
+        self.write(log_vals)
+        self.env.cr.commit()
+        return log_vals
+    
+    @api.multi
+    def update_statistics(self, rec, remaining=True):   
+        '''params:
+        rec: The main record set for import File
+        processed_rows: Current number of Rows processed from Data Source
+        count: Total number of Rows actually imported without Skipped
+        
+        '''
+
+        estimate_time = self.estimate_import_time( rec, processed_rows=row_count, remaining=remaining)    
+            
+        stats_vals = {'start_time':rec.start_time,
+                    'end_time': False,
+                    'error_log': rec.error_log,
+                    'time_estimate': estimate_time,
+                    'row_count': row_count,
+                    'count': count}
+        
+        if not remaining:
+            stats_vals['end_time'] =  datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)  
+            if rec.has_errors:stats_vals['state'] = 'map'
+            else: stats_vals['state'] = 'ready'
+            
+                        
+        self.write(stats_vals) 
+        
+        return stats_vals
+    
+    @api.multi   
+    def estimate_import_time(self, rec, processed_rows, remaining = True):
+        '''params:
+        start_time: Time in string format YYYY-MM-DD HH:MM:SS when import started
+        processed_rows: Current number of Rows processed from Data Source
+        tot_record_num: Total number of Rows in data Source
+        remaining: Boolean if Tru return time left in import if false return total Estimated time
+        '''
+        t2 = datetime.datetime.now()
+        time_delta = (t2 - datetime.datetime.strptime(rec.start_time, DEFAULT_SERVER_DATETIME_FORMAT))
+        if processed_rows > 0:
+            time_each = time_delta / processed_rows
+            time_each = time_each.total_seconds()
+        else: time_each = 0.0
+        
+        if remaining:
+            
+            return (time_each * (rec.tot_record_num - processed_rows)) / 3600 # return time in hours
+                          
+        else:
+            return (time_each * rec.tot_record_num) / 3600 

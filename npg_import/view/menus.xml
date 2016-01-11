@@ -42,6 +42,19 @@
             
         <menuitem action="action_import_dbf_directory" id="menu_dbf_directory" groups="group_npg_import" parent="menu_import" sequence="30"/>
 		
+		<record id="action_import_substitute_maps" model="ir.actions.act_window">
+            <field name="name">Import Substitutions</field>
+            <field name="res_model">import.substitute.sets</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="npg_view_import_data_substitute_set_tree" />
+
+        </record> 
+        
+            
+        <menuitem action="action_import_substitute_maps" id="menu_import_substitute_maps" groups="group_npg_import" parent="menu_import" sequence="40"/>
+		
    </data>
  </openerp>       
         

@@ -42,7 +42,6 @@
 	                        <field name="base_external_dbsource" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
 	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
 	                        <newline/>
-	                        <field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" attrs="{'invisible':[('src_type', '!=', 'odbc')]}"/>
 	                        <field name="schedule_import" invisible="1"/>
                         </group>
                     	
@@ -83,6 +82,9 @@
                     </group>  
                     
                     	<notebook>
+                    	<page string="ODBC SQL" name="odbc_sql" attrs="{'invisible':[('src_type', '!=', 'odbc')]}">
+                    	 	<field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" />
+                    	</page>
                     	<page string="Field Map" name="field_map" >
                     	
                           <field name="header_ids" context="{'model':model_id,'default_import_data_id':active_id}" nolabel="1"> 
@@ -105,6 +107,7 @@
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
                 <tree string="Import Data Files" version="7.0">
+                		<field name="sequence" widget="handle"/>
                     	<field name="name"/>
                         <field name="tot_record_num" />
                         <field name="row_count" />

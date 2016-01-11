@@ -10,17 +10,20 @@
 
 	          	 	<group  cols="4">
 	          	 		<field name="import_data_id" invisible="0" readonly="1"/>
+	          	 		
 	          	 		<group string=" Source Info " cols="2">
 	          	 			<field name="field_selector"/>	
 	                		<field name="name" />                   	
 	                		<field name="field_label"/>
 	                		<field name="field_type"/>
 	                	 	<field name="field_val" />
-	                	 	<field name="is_unique"/>
+	                	 	
 	                	 	<field name="search_filter"/>
 	            	 	</group>
 	            	 	<group string="Odoo Record Creation Settings" cols="2">
+	            	 		<field name="sequence"/>
 	            	 		<field name="model" required="0" />
+	            	 		<field name="is_unique"/>
 	                		<field name="is_unique_external"/>
 	                		<field name="default_val"/>	
 	        			</group>
@@ -37,39 +40,28 @@
 	                		<field name="relation" readonly="1"/>
 	                		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
 	                		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
-	        				<!-- <field name="search_related_external"
-	        				 		attrs="{'invisible':[('model_field_type','not in',['many2one'])]}">
-	        				-->
-	        				</field>
-	        					           
-	        				<field name="o2m_external_field2"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/>
-	        				
+
 							
-							<field name="search_name"></field>
+							<!--<field name="search_name"></field> -->
 							<field name="search_other_field"/>
+							<field name="substitute_sets"/>
 							<field name="create_related"/>
-							</group>
-							<group string="Map Source Field Values to Odoo values" cols="4" >
-							
-	                  			<field name="substitutions" 
-	                  				 nolabel="1" colspan="4">
-		                  			<tree editable="bottom">
-		                  				<field name="src_value"/>	                    	
-		                  				<field name="odoo_value"/>
-		                  			</tree>
-		                  		</field>
-	                  		</group>
-	                  		<group string="Map Creating Odoo Related Records" cols='4'
-	                  			attrs="{'invisible':[('create_related','=',False)]}">
+						</group>
+
+                  		<group string="Map Related Records" cols='4'>
 	                  		<field name='m2o_create_external' cols="2" 
-	                  			attrs="{'invisible':[('model_field_type','not in',['many2one'])]}" />
+	                  			attrs="{'invisible':[('create_related','=',False)]}" />
 	                  			
 	              		  	<field name="m2o_values" 
 	              				nolabel="1" colspan="4" context="{'default_model':relation_id, 
 	              				'default_import_id':import_data_id,'model':model}">
 	                  		</field>
 	                  	</group>
-						
+						<group string="Depricated Ext Search" help="Use external flags on Related Maps">
+			        				<field name="search_related_external" />        
+			        				<field name="o2m_external_field2" />
+			        				    
+		        		</group>
 	                </group>
             	</form> 
             </field>
@@ -88,6 +80,7 @@
             		<field name="field_type"/>
             	 	<field name="field_val" />
             	 	<field name="default_val"/>
+            	 	<field name="is_unique"/>
             	 	<field name="is_unique_external"/>
             		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
             	</tree>  
@@ -113,6 +106,40 @@
             	</search> 
            	</field>
         </record>
+        
+        <record id="npg_view_import_data_substitution_tree" model="ir.ui.view">
+            <field name="name">import.data.substitution.tree</field>
+            <field name="model">import.m2o.substitutions</field>
+            <field name="arch" type="xml">           	
+              	<tree editable="bottom">
+					<field name="src_value" />
+					<field name="odoo_value" />
+            	</tree>  
+            </field>
+        </record> 
+        
+        <record id="npg_view_import_data_substitute_set_form" model="ir.ui.view">
+            <field name="name">import.data.substitute_set.form</field>
+            <field name="model">import.substitute.sets</field>
+            <field name="arch" type="xml">           	
+              	<form>
+					<group>
+					<field name="name" />
+					<field name="import_m2o_substitutions" />
+					</group>
+            	</form>  
+            </field>
+        </record>
 
+	    <record id="npg_view_import_data_substitute_set_tree" model="ir.ui.view">
+            <field name="name">import.data.substitute_set.tree</field>
+            <field name="model">import.substitute.sets</field>
+            <field name="arch" type="xml">           	
+              	<tree >
+					<field name="name" />
+					<field name="import_m2o_substitutions" />
+            	</tree>  
+            </field>
+        </record>
     </data>
 </openerp>	                          

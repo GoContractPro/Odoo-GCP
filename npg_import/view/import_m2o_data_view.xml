@@ -9,17 +9,20 @@
               	 <form string="Related Headers">
               	 	<group  cols="4">
               	 		<field name="import_data_id" invisible="0"/>
+              	 		
               	 		<group string=" Source Info " cols="2">
               	 			<field name="field_selector" />
               	 			<field name="name" />
               	 			<field name="field_label"/>
 	                		<field name="field_type"/>
 	                	 	<field name="field_val" />                    	
-                    	 	<field name="is_unique"/>
+                    	 	
                     	 	<field name="search_filter"/>
                 	 	</group>
                 	 	<group string="Odoo Record Creation Settings" cols="2">
+                	 		<field name="sequence" />
                 	 		<field name="model" required="0" />
+                	 		<field name="is_unique"/>
                     		<field name="is_unique_external"/>
                     		<field name="default_val"/>	
             			</group>
@@ -32,34 +35,33 @@
                     	</group>
                     	<group string="Related Search Settings" cols="2" 
 								attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
-                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
+                    				                    		
                     		<field name="relation" readonly="1"/>
                     		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
                     		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
-            				<field name="search_related_external" attrs="{'invisible':[('model_field_type','not in',['many2one'])]}">
-            				</field>
-            				
-            				<!--  <field name="o2m_external_field1"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/> -->
-   
+            				<field name="search_related_external" attrs="{'invisible':[('model_field_type','not in',['many2one'])]}"/>
             				<field name="o2m_external_field2"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/>
             				
 							
-							<field name="search_name"></field>
+							<!--<field name="search_name"></field> -->
 							<field name="search_other_field"/>
+							<field name="substitute_sets"/>
 							<field name="create_related"/>
-							</group>
-							<group string="Map Source Field Values to Odoo values" cols="4" >
-			
-      							<field name="substitutions" 
-      				 			nolabel="1" colspan="4">
-          						<tree editable="bottom">
-          							<field name="src_value"/>	                    	
-          							<field name="odoo_value"/>
-          						</tree>
-          						</field>
-      						</group>
+							
 						</group>
-					</form>
+							
+                  		<group string="Map Related Records" cols='4'>
+	                  		<field name='m2o_create_external' cols="2" 
+	                  			attrs="{'invisible':[('create_related','=',False)]}" />
+	                  			
+	              		  	<field name="m2o_values" 
+	              				nolabel="1" colspan="4" context="{'default_model':relation_id, 
+	              				'default_import_id':import_data_id,'model':model,
+	              				}">
+	                  		</field>
+	                  	</group>
+					</group>
+				</form>
 			</field>
         </record>
 				
@@ -74,6 +76,8 @@
       				<field name="model" invisible='1'/>
       				<field name="name" readonly='1'/>	                    	
       				<field name="model_field" />
+      				<field name="is_unique_external" />
+      				<field name="is_unique" />
       			</tree>
 			</field>
 		</record>
