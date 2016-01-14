@@ -132,7 +132,7 @@ class import_related_header(osv.osv):
 class import_m2o_values(osv.osv): 
     # The Model Is a map from Odoo Data to CSV Sheet Data
     _name = "import.m2o.values"
-    _description = "Create new value Substitutions functionality in Fields mapping"
+    _description = "Deprecated now using Parent Child on import.data.header (Create new value Substitutions functionality in Fields mapping)"
     _inherit = 'import.data.header'
     
     _columns = { 

@@ -117,7 +117,7 @@ class import_data_file(models.Model):
                 field_val = result and result.get('field_val',False)
                 if not field_val: 
                     error_txt = _('Error: Required unique field %s is not set' % (field.model_field.name))
-                    self.update_log_error( rec, error_txt)
+                    self.update_log_error(error_txt=error_txt)
                     return -1
                 search_unique.append((field.model_field.name,"=", field_val))
         
@@ -129,7 +129,7 @@ class import_data_file(models.Model):
                     return record.id
                 except:
                     error_txt = _('Error: Unique Record duplicates found in model %s, search on values %s' % (model.model, search_unique, ))
-                    self.update_log_error( rec, error_txt)
+                    self.update_log_error(error_txt=error_txt)
                     return -1
                 
                 
@@ -147,70 +147,57 @@ class import_data_file(models.Model):
         standard name search method, search specific field searching on specific fields is base on unique settings on fields
         '''
         rec = self
-        search_unique_id = self.search_unique_id(fields=fields, import_record=import_record, model=model)
-        if search_unique_id == -1:
-            return {'res_id':-1}     
-        
         external_id_name = self.get_external_name(import_record, fields) 
         external_id = self.search_external_id(external_id_name, model.model)
-                
-        if search_unique_id and external_id and external_id != search_unique_id:
-            error_txt = _('Error: External Id and Unique Field not Id not matched  %s <> %s record skipped' % (external_id, search_unique_id, ))
-            self.update_log_error( rec, error_txt)
-            
-            return {'res_id':-1} 
+        search_result = {'external_id_name': external_id_name
+                         }
         
-        res_id = external_id or search_unique_id
+        search_unique_id = self.search_unique_id(fields=fields, import_record=import_record, model=model)
+        if not external_id and  search_unique_id == -1 :
+            search_result['res_id'] = -1
+            return search_result 
+              
+        if search_unique_id and external_id and external_id != search_unique_id:
+            error_txt = _('Warning: External Id and Unique Field not Id not matched  %s <> %s external Id will be used' % (external_id, search_unique_id, ))
+            self.update_log_error( rec, error_txt)
+            search_result['res_id'] = external_id
+            return search_result
+       
+        search_result['res_id'] = external_id or search_unique_id
            
-        if res_id and not rec.do_update:
-                error_txt = _('Warning: Duplicate record  found, record skipped' )
-                self.update_log_error( rec, error_txt)
-                return {'res_id':-1} 
-        return {'res_id':res_id,
-                'external_id_name':external_id_name
-                }
-    
+        return search_result
     @api.multi
     def do_search_related_records(self, field, import_record, field_val): 
-         
-                  
-        search_result = self.do_search_record(fields= field.m2o_values, import_record= import_record , model=field.relation_id)
-        res_id =  search_result.get('res_id', False)
-        if res_id == 0:
-            
-        #    if field.search_name:
-                
-         #       result = self.env[field.relation_id.model].name_search(name=field_val)
-                
-         #       if result: 
-         #           search_result['res_id'] = result[0][0]
-         #           return search_result
-           # Do Other Searches backward compatibility
-            model = field.relation_id.model
-            if field.search_related_external:
-                external_id_name = field_val
-                model
-                if field.o2m_external_field2:
-                    external_id_name += '--' + self.get_field_val_from_record(import_record, field.o2m_external_field2)
-                res_id = self.search_external_id(field_val, model) 
-                if res_id: 
-                    search_result['external_id_name'] = field_val
-                    search_result['res_id'] = res_id
+        
+        model = field.relation_id.model
+        
+        search_result = self.do_search_record(fields= field.child_ids, import_record= import_record , model=field.relation_id)                     
+        if search_result['external_id_name']: 
+            return search_result
+        
+        if field.search_related_external:
+            external_id_name = field_val
+            if field.o2m_external_field2:
+                external_id_name += '--' + self.get_field_val_from_record(import_record, field.o2m_external_field2)
+            res_id = self.search_external_id(field_val, model) 
+            if res_id: 
+                search_result['external_id_name'] = field_val
+                search_result['res_id'] = res_id
+                return search_result   
+        
+        if field.search_other_field:    
+            search = [(field.search_other_field.name,'=',field_val)]
+            result = self.env[model].search(search)
+            if result:
+                if result.ensure_one():
+                    search_result['res_id'] = result.id or False
                     return search_result
-                
-            if field.search_other_field:    
-                search = [(field.search_other_field.name,'=',field_val)]
-                result = self.env[model].search(search)
-                if result:
-                    if result.ensure_one():
-                        search_result['res_id'] = result.id or False
-                        return search_result
-                    else:
-                         error_txt = _('Error: Unique Record duplicates found in model %s, search on %s' % (model, search, ))
-                         self.update_log_error( rec, error_txt)
-                         return -1
-                     
-        return search_result
+                else:
+                     error_txt = _('Warning: duplicate records found in model %s, search on %s' % (model, search, ))
+                     self.update_log_error(error_txt=error_txt)      
+        
+        # If not found then do  New External and Search unique Using the Child Map Related Fields settings
+
                 
     
     @api.multi
@@ -302,7 +289,7 @@ class import_data_file(models.Model):
                 rec.has_errors = True
                 field_val = 0.0
                 error_txt = _('Error: Field %s -- %s is not required  Floating Point type' % ( field.model_field.name,field_val))
-                self.update_log_error( rec, error_txt)
+                self.update_log_error(error_txt=error_txt)
 
         elif field.model_field_type == 'integer' and  field_val:
               
@@ -313,7 +300,7 @@ class import_data_file(models.Model):
                 rec.has_errors = True
                 field_val = 0
                 error_txt = _('Error:  Field %s -- not required Integer  type' % (field.model_field.name,field_val))
-                self.update_log_error( rec, error_txt)
+                self.update_log_error(error_txt=error_txt)
 
         elif field.model_field_type == 'selection' and  field_val:
             
@@ -383,7 +370,7 @@ class import_data_file(models.Model):
                     
     def get_field_val_from_record(self, import_record,field): 
                
-        src_type = field.import_data_id.src_type
+        src_type = self.src_type
         
         if not field.name:
             return field.default_val
@@ -436,27 +423,13 @@ class import_data_file(models.Model):
                 res_id = False
             else:
                 vals = odoo_vals['field_val']
-                record_obj =  self.env[field.relation].create(vals) or False
-                res_id = record_obj and  record_obj.id or False
+                res_id = self.create_or_update_record(res_id, vals, external_id_name, field.relation)
+
             if not res_id:
                 log = _('Warning!: Related record for  value \'%s\' Not Created for relation \'%s\' row %s' % ( field_val, field.relation,row_count )) 
                 rec.error_log += '\n'+ log
                 _logger.info( log)
-                return   False 
-            
-            #if searching on related external IDs then create the related  external ID based on  field_val used to search 
-            if res_id and external_id_name: 
-                vals = {'name':field_val,
-                    'model': field.relation,
-                    'res_id':res_id,
-                    'module':field.relation
-                    }
-
-                self.env['ir.model.data'].create(vals)
-            
-            log = _('Related record ID %s : value \'%s\' Created for relation \'%s\' row %s' % (res_id, field_val, field.relation,row_count )) 
-            rec.error_log += '\n'+ log
-            _logger.info( log)    
+                return   False    
             
             return res_id
             
@@ -464,18 +437,16 @@ class import_data_file(models.Model):
             self.env.cr.rollback()
             rec.has_errors = True
             error_txt = _('Error: Related record vals \'%s\'  for model \'%s\'' % (vals or 'No Values Dictionary Created' ,field.relation))
-            self.update_log_error( rec, error_txt)
+            self.update_log_error(error_txt=error_txt)
             
             return False
      
     def create_import_record(self,vals, external_id_name = False, model=False): 
         
-        
-        rec = self
         try:
             res_id = False
             
-            model = model or rec.model_id.model
+            model = model or self.model_id.model
             
             model_obj = self.env[model]
 
@@ -483,25 +454,61 @@ class import_data_file(models.Model):
             res_id = record_obj and  record_obj.id or False
             if external_id_name:                   
                 external_vals = {'name':external_id_name,
-                                 'model':rec.model_id.model,
+                                 'model':model,
                                  'res_id':res_id,
-                                 'module':rec.model_id.model
+                                 'module':model
                                  }
                 
                 self.env['ir.model.data'].create(external_vals)
                 
-            _logger.info(_('Created record %s ID: %s from Source row %s' % (external_id_name or '',res_id, row_count)))
+            _logger.info(_('Created Record in %s with ID: %s %s from Source row %s' % (model, external_id_name ,res_id, row_count)))
 
             return res_id
 
         except:
             self.env.cr.rollback()
-            rec.has_errors = True
+            self.has_errors = True
             error_txt = _('Error: Import vals %s not created for model \'%s\'' % (vals, model))
-            self.update_log_error( rec, error_txt)
+            self.update_log_error(error_txt=error_txt)
             
             return False
         
+    def create_or_update_record(self, res_id, vals, external_id_name, model):        
+        
+        try: # Update or Create Records          
+            
+            if res_id == -1:
+                # Errors in UNique Search or Duplicated records found.
+                return False
+  
+            elif res_id == 0: 
+                record = self.create_import_record(vals=vals, external_id_name=external_id_name)
+                if record:return record.id
+                else: return False
+                
+            elif res_id and self.do_update:
+                record_obj = self.env[model].browse(res_id)
+                record_obj.write(vals)
+                if record_obj: 
+                    res_id = record_obj.id
+                    _logger.info(_('Source row %s Updated Odoo Model %s ID: %s %s') % (  row_count,model, external_id_name or '', res_id,)) 
+                    return res_id
+                else:
+                    _logger.info(_('Source row %s Update Failed Odoo Model %s ID: %s %s') % (  row_count,model, external_id_name or '', res_id,)) 
+                    return False
+            
+            elif res_id and not self.do_update:
+                error_txt = _(('Warning: %s Duplicate found in Odoo Model %s ID: %s %s, record skipped' )% (  row_count,model, external_id_name or '', res_id,)) 
+                self.update_log_error(error_txt=error_txt)
+                return False   
+       
+        except: # Error Writing or Creating Records
+            self.env.cr.rollback()
+            self.has_errors = True
+            error_txt = _('Writing or Creating vals %s ' % ( vals,))
+            self.update_log_error(error_txt=error_txt)
+            return False
+       
     @api.multi    
     def do_process_import_row(self, import_record):
 
@@ -550,7 +557,7 @@ class import_data_file(models.Model):
                 self.env.cr.rollback()
                 rec.has_errors = True
                 error_txt = _('Error: Building Vals Dict at Field: %s == %s \n Val Dict:  %s ' %(field.model_field.name, field_val, vals,))
-                self.update_log_error( rec, error_txt)
+                self.update_log_error(error_txt=error_txt)
                 skip_record = True
                 return False
         
@@ -566,30 +573,13 @@ class import_data_file(models.Model):
             self.env.cr.rollback()
             rec.has_errors = True
             error_txt = _('Error: Search for Existing records: %s-%s ' % (search_unique,external_id_name))
-            self.update_log_error( rec, error_txt)                    
+            self.update_log_error(error_txt=error_txt)                    
             return False
         
-        try: # Writing or Create Records          
-            
-            if res_id == -1:
-                pass # Errors in UNique Search or Duplicated records found.
-  
-            elif res_id == 0: 
-                self.create_import_record(vals=vals, external_id_name=external_id_name)
-                
-            elif res_id and rec.do_update:
-                record_obj = self.env[rec.model_id.model].browse(res_id)
-                record_obj.write(vals)
-                _logger.info(_('Updated row %s Odoo Database ID: %s') % ( row_count, res_id,))    
-
+        if self.create_or_update_record(res_id, vals, external_id_name, rec.model_id.model):
             count += 1
             return count
-        
-        except: # Error Writing or Creating Records
-            self.env.cr.rollback()
-            rec.has_errors = True
-            error_txt = _('Writing or Creating vals %s ' % ( vals,))
-            self.update_log_error( rec, error_txt)
+        else:
             return False
   
     @api.multi

@@ -7,7 +7,7 @@
             <field name="model">import.data.header</field>
             <field name="arch" type="xml">
                 <form string="Import Header" version="7.0">   
-
+					
 	          	 	<group  cols="4">
 	          	 		<field name="import_data_id" invisible="0" readonly="1"/>
 	          	 		
@@ -45,26 +45,28 @@
 							
 							<!--<field name="search_name"></field> -->
 							<field name="search_other_field"/>
+							<field name="search_related_external"/>        
+			        				
 							
 							
 						</group>
-
-                  		<group string="Map Related Records" cols='4'>
+					</group>		
+                  	<group string="Map Related Fields" cols='8'>
                   			<field name="create_related"/>
 	                  		<field name='m2o_create_external' cols="2" 
 	                  			attrs="{'invisible':[('create_related','=',False)]}" />
 	                  			
-	              		  	<field name="m2o_values" 
-	              				nolabel="1" colspan="4" context="{'default_model':relation_id, 
+	              		  	<field name="child_ids" 
+	              				nolabel="1" colspan="8" context="{'default_model':relation_id, 
 	              				'default_import_id':import_data_id,'model':model}">
 	                  		</field>
-	                  	</group>
-						<group string="Depricated Ext Search" help="Use external flags on Related Maps">
-			        				<field name="search_related_external" />        
-			        				<field name="o2m_external_field2" />
-			        				    
-		        		</group>
 	                </group>
+
+					<group string="Deprecated Searches" help="Use Map Related Fields instead and set External flags on fields">
+			        				<field name="o2m_external_field2" help="Use Map Related Fields instead and set External flags on fields"/>
+			        				    
+		        	</group>
+	               
             	</form> 
             </field>
          </record>
