@@ -36,7 +36,7 @@ class sale_order(models.Model):
     @api.one
     def check_limit(self):
 
-        if self.order_policy == 'prepaid':
+        if self.order_policy == 'prepaid' or self.partner_id.credit_limit == 0.0:
             return True
 
         # We sum from all the sale orders that are aproved, the sale order
