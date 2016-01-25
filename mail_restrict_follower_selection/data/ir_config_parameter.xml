@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record id="parameter_domain" model="ir.config_parameter">
+            <field name="key">mail_restrict_follower_selection.domain</field>
+            <field name="value">[('customer', '=', False),('supplier', '=', False)]</field>
+        </record>
+    </data>
+</openerp>
