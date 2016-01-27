@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+ 
+        <record id="npg_view_import_data_header_form" model="ir.ui.view">
+            <field name="name">import.data.header.form</field>
+            <field name="model">import.data.header</field>
+            <field name="arch" type="xml">
+                <form string="Import Header" version="7.0">   
+					
+	          	 	<group  cols="4">
+	          	 		<field name="import_data_id" invisible="0" readonly="1"/>
+	          	 		
+	          	 		<group string=" Source Info " cols="2">
+	          	 			<field name="field_selector"/>	
+	                		<field name="name" />                   	
+	                		<field name="field_label"/>
+	                		<field name="field_type"/>
+	                	 	<field name="field_val"/>
+	                	 	<field name="sub_string"/>
+	                	 	<field name="search_filter"/>
+	            	 	</group>
+	            	 	<group string="Odoo Record Creation Settings" cols="2">
+	            	 		<field name="sequence"/>
+	            	 		<field name="model" required="0" />
+	            	 		<field name="is_unique"/>
+	                		<field name="is_unique_external"/>
+	                		<field name="default_val"/>	
+	        			</group>
+	        			
+	        			<group string="Odoo Field Information" cols="2" >
+	                		<field name="model_field" required="0" 
+	                				context = "{'manual':True, 'default_model_id':model}"/>	
+	                		<field name="model_field_name" invisible="0" readonly="1"/>
+	                		<field name="model_field_type" invisible="0" readonly="1"/>
+	                		<field name="substitute_sets"/>
+	                		
+	                	</group>
+	                	<group string="Related Search Settings" cols="2" 
+								attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
+										                    		
+	                		<field name="relation" readonly="1"/>
+	                		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
+	                		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
+
+							
+							<!--<field name="search_name"></field> -->
+							<field name="search_other_field"/>
+							<field name="search_related_external"/>        
+			        				
+							
+							
+						</group>
+					</group>		
+                  	<group string="Map Related Fields" cols='8'>
+                  			<field name="create_related"/>
+	                  		<field name='m2o_create_external' cols="2" 
+	                  			attrs="{'invisible':[('create_related','=',False)]}" />
+	                  			
+	              		  	<field name="child_ids" 
+	              				nolabel="1" colspan="8" context="{'default_model':relation_id, 
+	              				'default_import_id':import_data_id,'model':model}">
+	                  		</field>
+	                </group>
+
+					<group string="Deprecated Searches" help="Use Map Related Fields instead and set External flags on fields">
+			        				<field name="o2m_external_field2" help="Use Map Related Fields instead and set External flags on fields"/>
+			        				    
+		        	</group>
+	               
+            	</form> 
+            </field>
+         </record>
+         
+        
+         <record id="npg_view_import_data_header_tree" model="ir.ui.view">
+            <field name="name">import.data.header.tree</field>
+            <field name="model">import.data.header</field>
+            <field name="arch" type="xml">           	
+              	<tree>
+              		
+              		<field name="sequence" widget="handle"/>
+              		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
+            		<field name="name"/>
+            		<field name="field_label"/>
+            		<field name="field_type"/>
+            	 	<field name="field_val" />
+            	 	<field name="default_val"/>
+            	 	<field name="is_unique"/>
+            	 	<field name="is_unique_external"/>
+            		
+            	</tree>  
+            </field>
+        </record> 
+        
+        	    
+	    <record id="npg_view_import_data_header_search" model="ir.ui.view">
+            <field name="name">import.data.header.search</field>
+            <field name="model">import.data.header</field>
+            <field name="arch" type="xml">
+            	<search>
+            		<field name="name"></field>
+            		<field name="model_field"></field>
+            		<field name="import_data_id"/>
+            		<filter string="Odoo Field Not Set" domain="[('model_field','=',False)]" name="no_model_field_filter"/>
+                	<filter string="Odoo Field Set" domain="[('model_field','!=',False)]" name="yes_model_field_filter"/>
+                	<group string="Group By" expand="0">
+                		
+                		<filter string="Model" domain="[]" context="{'group_by':'model'}" name="group_by_model"/>
+                		<filter string="Data Source" domain="[]" context="{'group_by':'import_data_id'}" name="group_by_import_data_id"/>
+                	</group>
+            	</search> 
+           	</field>
+        </record>
+        
+        <record id="npg_view_import_data_substitution_tree" model="ir.ui.view">
+            <field name="name">import.data.substitution.tree</field>
+            <field name="model">import.m2o.substitutions</field>
+            <field name="arch" type="xml">           	
+              	<tree editable="bottom">
+					<field name="src_value" />
+					<field name="odoo_value" />
+            	</tree>  
+            </field>
+        </record> 
+        
+        <record id="npg_view_import_data_substitute_set_form" model="ir.ui.view">
+            <field name="name">import.data.substitute_set.form</field>
+            <field name="model">import.substitute.sets</field>
+            <field name="arch" type="xml">           	
+              	<form>
+					<group>
+					<field name="name" />
+					<field name="import_m2o_substitutions" />
+					</group>
+            	</form>  
+            </field>
+        </record>
+
+	    <record id="npg_view_import_data_substitute_set_tree" model="ir.ui.view">
+            <field name="name">import.data.substitute_set.tree</field>
+            <field name="model">import.substitute.sets</field>
+            <field name="arch" type="xml">           	
+              	<tree >
+					<field name="name" />
+					<field name="import_m2o_substitutions" />
+            	</tree>  
+            </field>
+        </record>
+    </data>
+</openerp>	                          

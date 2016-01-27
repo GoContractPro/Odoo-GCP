@@ -14,7 +14,8 @@
                     	 		type="object" class="oe_highlight"
                     	 		confirm="???Are you Sure??? This will overwrite any changes made to Field Mappings"/>
                     		<button name="action_import" string="Run Test" states="map,ready" type="object" class="oe_highlight" context="{'test':True}"/>
-                    		<button name="action_import" string="Import Data" states="ready" type="object" class="oe_highlight" />
+                    		<button name="action_set_confirmed" string="Confirm" states="map" type="object" class="oe_highlight" />
+                    		<button name="action_import_cron" string="Import Data" states="ready" type="object" class="oe_highlight" />
                     		<button name="import_schedule" states="ready" string="Schedule Import" type="object" icon="gtk-paste"/>
                     		<field name="state" widget="statusbar" statusbar_visible="draft,map,ready,importing" readonly="0" clickable="True"/>
 
@@ -41,7 +42,6 @@
 	                        <field name="base_external_dbsource" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
 	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
 	                        <newline/>
-	                        <field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" attrs="{'invisible':[('src_type', '!=', 'odbc')]}"/>
 	                        <field name="schedule_import" invisible="1"/>
                         </group>
                     	
@@ -60,7 +60,7 @@
                         	<field name="do_update" />
                           	<field name="record_external" string="External Id from Row #" on_change="onchange_record_external(record_external)"/>
                           	<field name="external_id_field" string="External Id from Field"
-                          		attrs="{'invisible':[('record_external','=',True)]}" on_change="onchange_external_id_field(external_id_field)"/>
+                          		attrs="{'invisible':[('record_external','=',True)]}" />
                           	
                          </group>
                          <group col = "4">
@@ -82,148 +82,13 @@
                     </group>  
                     
                     	<notebook>
+                    	<page string="ODBC SQL" name="odbc_sql" attrs="{'invisible':[('src_type', '!=', 'odbc')]}">
+                    	 	<field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" />
+                    	</page>
                     	<page string="Field Map" name="field_map" >
                     	
                           <field name="header_ids" context="{'model':model_id,'default_import_data_id':active_id}" nolabel="1"> 
-                          	 <form string="Headers">
-                          	 	<group  cols="4">
-                          	 		<field name="import_data_id" invisible="0" readonly="1"/>
-                          	 		<group string=" Source Info " cols="2">
-			                    		<field name="name"/>	                    	
-			                    		<field name="field_label"/>
-			                    		<field name="field_type"/>
-			                    	 	<field name="field_val" />
-			                    	 	<field name="is_unique"/>
-			                    	 	<field name="search_filter"/>
-		                    	 	</group>
-		                    	 	<group string="Odoo Record Creation Settings" cols="2">
-		                    	 		<field name="model" required="0" />
-			                    		<field name="is_unique_external"/>
-			                    		<field name="default_val"/>	
-	                    			</group>
-	                    			
-	                    			<group string="Odoo Field Information" cols="2" >
-			                    		<field name="model_field" required="0" 
-			                    				context = "{'manual':True, 'default_model_id':model}"
-			                    				on_change="onchange_model_field(model_field)"/>	
-			                    		<field name="model_field_name" invisible="0" readonly="1"/>
-			                    		<field name="model_field_type" invisible="0" readonly="1"/>
-			                    	</group>
-			                    	<group string="Related Search Settings" cols="2" 
-											attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
-			                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
-			                    		<field name="relation" readonly="1"/>
-			                    		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
-			                    		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
-	                    				<field name="search_related_external" attrs="{'invisible':[('model_field_type','not in',['many2one'])]}">
-	                    				</field>
-	                    				
-	                    				<!--  <field name="o2m_external_field1"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/> -->
-	           
-	                    				<field name="o2m_external_field2"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/>
-	                    				
-										
-										<field name="search_name"></field>
-										<field name="search_other_field"/>
-										<field name="create_related"/>
-										</group>
-										<group string="Map Source Field Values to Odoo values" cols="4" >
-										
-			                      			<field name="substitutions" 
-			                      				 nolabel="1" colspan="4">
-					                  			<tree editable="bottom">
-					                  				<field name="src_value"/>	                    	
-					                  				<field name="odoo_value"/>
-					                  			</tree>
-					                  		</field>
-				                  		</group>
-				                  		<group string="Map Creating Odoo Related Records" cols='4'
-				                  			attrs="{'invisible':[('create_related','=',False)]}">
-				                  		<field name='m2o_create_external' cols="2" 
-				                  			attrs="{'invisible':[('model_field_type','not in',['many2one'])]}" />
-				                  			
-		                      		  	<field name="m2o_values" 
-		                      				nolabel="1" colspan="4" context="{'default_model':relation_id, 
-		                      				'default_import_id':import_data_id,'model':model}">
-		                      				
 
-				                          	 <form string="Related Headers">
-				                          	 	<group  cols="4">
-				                          	 		<field name="import_data_id" invisible="0"/>
-				                          	 		<group string=" Source Info " cols="2">
-				                          	 			<field name="source_field"/>                    	
-							                    	 	<field name="is_unique"/>
-							                    	 	<field name="search_filter"/>
-						                    	 	</group>
-						                    	 	<group string="Odoo Record Creation Settings" cols="2">
-						                    	 		<field name="model" required="0" />
-							                    		<field name="is_unique_external"/>
-							                    		<field name="default_val"/>	
-					                    			</group>
-					                    			
-					                    			<group string="Odoo Field Information" cols="2" >
-							                    		<field name="model_field" required="0" 
-							                    				context = "{'manual':True, 'default_model_id':model}"
-							                    				on_change="onchange_model_field(model_field)"/>	
-							                    		<field name="model_field_name" invisible="0" readonly="1"/>
-							                    		<field name="model_field_type" invisible="0" readonly="1"/>
-							                    	</group>
-							                    	<group string="Related Search Settings" cols="2" 
-															attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
-							                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
-							                    		<field name="relation" readonly="1"/>
-							                    		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
-							                    		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
-					                    				<field name="search_related_external" attrs="{'invisible':[('model_field_type','not in',['many2one'])]}">
-					                    				</field>
-					                    				
-					                    				<!--  <field name="o2m_external_field1"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/> -->
-					           
-					                    				<field name="o2m_external_field2"  attrs="{'invisible':[('model_field_type','not in',['one2many','many2many'])]}"/>
-					                    				
-														
-														<field name="search_name"></field>
-														<field name="search_other_field"/>
-														<field name="create_related"/>
-														</group>
-														<group string="Map Source Field Values to Odoo values" cols="4" >
-										
-			                      							<field name="substitutions" 
-			                      				 			nolabel="1" colspan="4">
-					                  						<tree editable="bottom">
-					                  							<field name="src_value"/>	                    	
-					                  							<field name="odoo_value"/>
-					                  						</tree>
-					                  						</field>
-				                  						</group>
-													</group>
-												</form>
-			                      		
-					                  			<tree >
-					                  				<field name="sequence" widget="handle"/>
-					                  				<field name="import_data_id" invisible="1"/>
-					                  				<field name="model" invisible='1'/>
-					                  				<field name="source_field" />	                    	
-					                  				<field name="model_field" />
-					                  			</tree>
-				                  			</field>-->
-				                 <!--  	<field name='related_header_ids' context="{'model':relation_id}"/> --> 	
-
-				                  		</group>
-									
-				                </group>
-		                    </form> 
-	                          
-		                  	<tree>
-		                  		<field name="sequence" widget="handle"/>
-	                    		<field name="name"/>
-	                    		<field name="field_label"/>
-	                    		<field name="field_type"/>
-	                    	 	<field name="field_val" />
-	                    	 	<field name="default_val"/>
-	                    	 	
-	                    		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
-	                    	</tree>  
 	                    </field> 
 					
 	                </page>   
@@ -242,6 +107,7 @@
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
                 <tree string="Import Data Files" version="7.0">
+                		<field name="sequence" widget="handle"/>
                     	<field name="name"/>
                         <field name="tot_record_num" />
                         <field name="row_count" />
@@ -255,8 +121,9 @@
             </field>
         </record>
 
-        <record id="view_import_data_filter" model="ir.ui.view">
-            <field name="name">import.data.filter</field>
+         
+        <record id="search_import_data" model="ir.ui.view">
+            <field name="name">search.import.data</field>
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
                 <search string="Search Import Data">
@@ -266,113 +133,8 @@
                 	<filter string="Has Errors" domain="[('has_errors','=',True)]" name="has_errors_filter"/>
                 </search>
             </field>
-        </record>
-        
-       <record id="npg_view_import_data_header_form" model="ir.ui.view">
-            <field name="name">import.data.header.form</field>
-            <field name="model">import.data.header</field>
-            <field name="arch" type="xml">
-                <form string="Import Header" version="7.0">   
-                      
-                          	 	<group  cols="4">
-                          	 		<group string=" Source Info " cols="2">
-			                    		<field name="name"/>	                    	
-			                    		<field name="field_label"/>
-			                    		<field name="field_type"/>
-			                    	 	<field name="field_val" />
-			                    	 	<field name="is_unique"/>
-			                    	 	<field name="search_filter"/>
-		                    	 	</group>
-		                    	 	<group string="Odoo Record Creation Settings" cols="2">
-		                    	 		<field name="model" required="0" />
-			                    		<field name="is_unique_external"/>
-			                    		<field name="default_val"/>	
-	                    			</group>
-	                    			
-	                    			<group string="Odoo Field Information" cols="2" >
-			                    		<field name="model_field" required="0" 
-			                    				context = "{'manual':True, 'default_model_id':model}"
-			                    				on_change="onchange_model_field(model_field)"/>	
-			                    		<field name="model_field_name"  readonly="1" invisible="0" />
-			                    		<field name="model_field_type"  readonly="1" invisible="0" />
-			                    		
-			                    	</group>
-			                    	
-			                    	<group string="Related Search Settings" cols="2" 
-											attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
-			                    	<!--		attrs="{'invisible':[('model_field_type','!=','many2one')]}"  -->			                    		
-			                    		<field name="relation" readonly="1"/>
-			                    		<field name="relation_id"  readonly="1" invisible="0" nolabel='1' colspan='2'/>
-			                    		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
-										<field name="search_related_external"></field>
-										<field name="search_name"></field>
-										<field name="search_other_field"/>
-										<field name="create_related"/>
-										</group>
-										<group string="Map Source Field Values to Odoo values" cols="4" >
-										
-			                      			<field name="substitutions" 
-			                      				 nolabel="1" colspan="4">
-					                  			<tree editable="bottom">
-					                  				<field name="src_value"/>	                    	
-					                  				<field name="odoo_value"/>
-					                  			</tree>
-					                  		</field>
-				                  		</group>
-				                  		<group string="Map Creating Odoo Related Records" cols='4'
-				                  			attrs="{'invisible':[('create_related','=',False)]}">
-				                  		<field name='m2o_create_external' cols="2"
-				                  		attrs="{'invisible':[('model_field_type','not in',['many2one'])]}" />
-		                      			<field name="m2o_values" attrs="{'invisible':[('model_field_type','!=','many2one')]}" 
-		                      				nolabel="1" colspan="4">
-				                  			<tree editable="bottom">
-				                  				<field name="default_val"/>
-				                  				<field name="source_field"/>	                    	
-				                  				<field name="model"/>
-				                  			</tree>
-				                  		</field>
-				                  		</group>
-									
-				                </group>
-                </form>
-            </field>
-        </record>   
-        
-        <record id="npg_view_import_data_header_tree" model="ir.ui.view">
-            <field name="name">import.data.header.tree</field>
-            <field name="model">import.data.header</field>
-            <field name="arch" type="xml">  
-              	    <tree string= "Header Mappings" >
-                 		<field name="name"/>
-                 		<field name="field_label"/>
-                 		<field name="field_type"/>
-                 	 	<field name="field_val" />
-                 	 	<field name="default_val"/>
-                 	 	<field name="model" required="0" readonly="0" invisible='1'/>
-                 		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
-                 	</tree> 
-                 	
-            </field>
-        </record> 	
-	    
-	    <record id="npg_view_import_data_header_search" model="ir.ui.view">
-            <field name="name">import.data.header.search</field>
-            <field name="model">import.data.header</field>
-            <field name="arch" type="xml">
-            	<search>
-            		<field name="name"></field>
-            		<field name="model_field"></field>
-            		<field name="import_data_id"/>
-            		<filter string="Odoo Field Not Set" domain="[('model_field','=',False)]" name="no_model_field_filter"/>
-                	<filter string="Odoo Field Set" domain="[('model_field','!=',False)]" name="yes_model_field_filter"/>
-                	<group string="Group By" expand="0">
-                		
-                		<filter string="Model" domain="[]" context="{'group_by':'model'}" name="group_by_model"/>
-                		<filter string="Data Source" domain="[]" context="{'group_by':'import_data_id'}" name="group_by_import_data_id"/>
-                	</group>
-            	</search> 
-           	</field>
-        </record>
+        </record>	
+
 
     </data>
 </openerp>
