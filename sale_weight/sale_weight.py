@@ -48,13 +48,6 @@ class sale_order(osv.osv):
         'total_weight_net': fields.function(_total_weight_net, method=True,
             readonly=True, string='Total Weight',
             help="The cumulated net weight of all the order lines.",
-            store={
-                # Low priority to compute this before fields in other modules
-                'sale.order': (lambda self, cr, uid, ids, c={}: ids,
-                     ['order_line'], -10),
-                'sale.order.line': (_get_order,
-                     ['product_uom_qty', 'product_id'], -10),
-            },
         ),
     }
 
@@ -70,13 +63,14 @@ class sale_order_line(osv.osv):
         for line in self.browse(cr, uid, ids, context=context):
             result[line.id] = 0.0
 
-            if line.product_id:
+            if line.th_weight:
+                result[line.id] += (line.th_weight
+                        * line.product_uom_qty / line.product_uom.factor)
+                
+            elif line.product_id:
                 
                 if line.product_id.weight_net:
                     result[line.id] += (line.product_id.weight_net
-                        * line.product_uom_qty / line.product_uom.factor)
-                else:
-                    result[line.id] += (line.th_weight
                         * line.product_uom_qty / line.product_uom.factor)
         
         return result
@@ -85,11 +79,6 @@ class sale_order_line(osv.osv):
 #         'weight_net':fields.function(_weight_net, string='Net Weight'),
         'weight_net': fields.function(_weight_net, method=True,
             readonly=True, string='Net Weight', help="The net weight",
-            store={
-                # Low priority to compute this before fields in other modules
-               'sale.order.line': (lambda self, cr, uid, ids, c={}: ids,
-                   ['product_uom_qty', 'product_id'], -11),
-            },
         ),
     }
 

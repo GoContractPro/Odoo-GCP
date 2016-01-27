@@ -88,6 +88,7 @@ class import_data_header(models.Model):
     related_import_source = fields.Many2one(comodel_name='import.data.file',string='Related Import Source',
                                            help='Secondary Table or file Source to provide Values for related Records')
     sequence = fields.Integer('Sequence')
+    sub_string = fields.Char('Substring',size=8)
     
     
         

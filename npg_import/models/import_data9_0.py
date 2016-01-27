@@ -230,7 +230,7 @@ class import_data_file(models.Model):
         
         rec = self
         vals={}
-        for rel_field in field.m2o_values:
+        for rel_field in field.child_ids:
 
             if not rel_field.model_field:
                 continue
@@ -270,13 +270,21 @@ class import_data_file(models.Model):
             field_val = res_id
         
         elif field.model_field_type == 'boolean' and  field_val:
-            
+
             try:
-                field_val = bool(field_val)
+                field_val = field_val.lower()
+                if field_val in ('1','t','true','y','yes'):
+                    field_val = True
+                elif field_val in ('0','f','false','n','no',''):
+                    field_val = False
+                else:
+                    field_val = False
+                    error_txt = ('Error: Field value %s -- %s is not Boolean type value set False' % (field.model_field.name,field_val,))
+                    self.update_log_error(rec, error_txt)
+                
             except:
-                rec.has_errors = True
                 field_val = False
-                error_txt = ('Error: Field %s -- %s is not required Boolean type' % (field.model_field.name,field_val,))
+                error_txt = ('Error: Converting Field %s -- %s to Boolean value set False' % (field.model_field.name,field_val,))
                 self.update_log_error(rec, error_txt)
             
         elif field.model_field_type == 'float' and  field_val:
@@ -408,22 +416,33 @@ class import_data_file(models.Model):
     
             elif isinstance(field_raw, bytearray):
                 field_val =  base64.b64encode(field_raw)
+            elif isinstance(field_raw, bool):
+                field_val = str(field_raw)
             else: field_val =  str(field_raw)
 
-            return field_val                       
+        if field.sub_string:
+            sub_str_split = field.sub_string.split(":")
+            start = sub_str_split[0] or None
+            end = sub_str_split[1] or None 
+            start = int(start)
+            end = int(end)
+            field_val = field_val[start:end]
+        
+        return field_val                       
 
     @api.multi
     def create_related_record(self, import_record, field, field_val, external_id_name = False):
         
         rec = self
         vals = False
+        res_id = False
         try:
             odoo_vals = self.do_related_vals_mapping( field=field, import_record=import_record)
             if odoo_vals['required_missing']:
                 res_id = False
             else:
                 vals = odoo_vals['field_val']
-                res_id = self.create_or_update_record(res_id, vals, external_id_name, field.relation)
+                res_id = self.create_or_update_record(0, vals, external_id_name, field.relation)
 
             if not res_id:
                 log = _('Warning!: Related record for  value \'%s\' Not Created for relation \'%s\' row %s' % ( field_val, field.relation,row_count )) 
