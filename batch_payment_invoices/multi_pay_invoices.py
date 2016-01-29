@@ -100,6 +100,26 @@ class account_multi_pay_invoice(osv.Model):
             else: 
                 result[r['id']] = 'Paid'
         return result
+    
+    def _get_total(self, cr, uid, ids, field_name, arg, context=None):
+        res = {}
+        for order in self.browse(cr, uid, ids, context=context):
+            res[order.id] = {
+                'total_residual': 0.0,
+                'total_credit_available': 0.0,
+                'total_amount_paid': 0.0,
+            }
+            total_residual = total_credit_available = total_amount_paid = 0.0
+            for inv in order.invoice_ids:
+                if inv.pay:
+                    total_residual += inv.residual
+                    total_credit_available += inv.credit_available
+                    total_amount_paid += inv.amount_paid
+
+            res[order.id]['total_residual'] = total_residual
+            res[order.id]['total_credit_available'] = total_credit_available
+            res[order.id]['total_amount_paid'] = total_amount_paid
+        return res
 
     _columns = {
                 'amount_due_by': fields.date('Amount Due By', required=1),
@@ -120,7 +140,11 @@ class account_multi_pay_invoice(osv.Model):
                                            ('printed','Checks Printed'),
                                            ('cancel', 'Cancelled'),
                                            ]
-                                          , 'Status', readonly=True, track_visibility='onchange',)
+                                          , 'Status', readonly=True, track_visibility='onchange',),
+                
+                'total_residual':fields.function(_get_total,type='float',multi='tot',string="Total Residual Amount"),
+                'total_credit_available':fields.function(_get_total,type='float',multi='tot',string="Total Use Credits"),
+                'total_amount_paid':fields.function(_get_total,type='float',multi='tot',string="Total Paid Amount"),
                 }
 
     _defaults = {
