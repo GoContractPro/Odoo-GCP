@@ -27,6 +27,10 @@ from openerp import models, fields, api, exceptions, _
 class import_data_header(models.Model): 
 
     @api.one
+    def _get_import_source(self):
+        self.import_source_filter = self.env.context.get('default_import_data_id',False)
+
+    @api.one
     @api.depends('model_field')
     def _get_relation_id(self):
         
@@ -43,11 +47,11 @@ class import_data_header(models.Model):
     field_label =fields.Char(string='Description', size=64,)
     field_type =fields.Char(string='Data Type', size=64,)
     field_val =fields.Char(string='Record Value', size=128)
-    field_selector = fields.Many2one('import.data.header', 'Select Source Field', domain="[('import_data_id','=',import_data_id)]")
+    field_selector = fields.Many2one('import.data.header', 'Select Source Field', domain="[('import_data_id','=',import_source_filter)]")
    
     import_data_id = fields.Many2one(comodel_name='import.data.file',string='Import Source',required=False, ondelete='cascade',)
     parent_id = fields.Many2one(comodel_name='import.data.header', string='Parent Header Field', required=False, ondelete='cascade')
-    child_ids = fields.One2many('import.data.header', 'parent_id', string="Related Field Map", copy=True, 
+    child_ids = fields.One2many('import.data.header', 'parent_id', string="Child Field Map", copy=True, 
                                  help="Default Values or source values to map to create related and parent records")
     is_unique = fields.Boolean(string='Use in Unique Search', help ='Value for Field  Should be unique name or reference identifier and not Duplicated ')
     model = fields.Many2one(comodel_name='ir.model',string='Model')
@@ -73,7 +77,7 @@ class import_data_header(models.Model):
                                       help='Allows mapping and Converting values from Source Data into correct values for ODoo data ')
     is_unique_external =fields.Boolean('Use in External ID', readonly=False ,
                                 help ='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID')
-    m2o_values = fields.One2many('import.m2o.values', 'import_field_id', string="Related Map", copy=True, 
+    m2o_values = fields.One2many('import.m2o.values', 'import_field_id', string="(Depricated)Related Map", copy=True, 
                                  help="Deprecated (Default Values or source values to map to create related and parent records)")
     m2o_create_external =fields.Boolean('Create External on Related')
     o2m_external_field2 =fields.Many2one(comodel_name='import.data.header',string='[Deprecated]O2M External' , domain="[('import_data_id','=',import_data_id')]",
@@ -84,11 +88,12 @@ class import_data_header(models.Model):
                                  this allows combining multiple fields to create External ID search value. ''')
     search_name = fields.Boolean(string='Name Search')
     search_other_field = fields.Many2one(comodel_name='ir.model.fields',string='Other Search Field', domain="[('model_id','=',relation_id)]", 
-                                help='Select field  to match in related record othe than Name or External ID')
+                                help='Select field  to match in related record other than Name or External ID')
     related_import_source = fields.Many2one(comodel_name='import.data.file',string='Related Import Source',
                                            help='Secondary Table or file Source to provide Values for related Records')
     sequence = fields.Integer('Sequence')
     sub_string = fields.Char('Substring',size=8)
+    import_source_filter = fields.Many2one(comodel_name='import.data.file',string='Import Source ID',compute='_get_import_source',store=False,readonly=False)
     
     
         
