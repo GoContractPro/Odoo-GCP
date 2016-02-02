@@ -10,9 +10,14 @@
 					
 	          	 	<group  cols="4">
 	          	 		<field name="import_data_id" invisible="0" readonly="1"/>
-	          	 		
-	          	 		<group string=" Source Info " cols="2">
+	          	 		<group String="Search Source Fields" cols="2">
+	          	 		    <field name="import_source_filter"/>
 	          	 			<field name="field_selector"/>	
+	          	 		</group>
+	          	 		<newline/>
+	          	 		<group string=" Source Info " cols="2">
+	          	 		    
+	          	 			
 	                		<field name="name" />                   	
 	                		<field name="field_label"/>
 	                		<field name="field_type"/>

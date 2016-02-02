@@ -501,9 +501,8 @@ class import_data_file(models.Model):
                 return False
   
             elif res_id == 0: 
-                res_id = self.create_import_record(vals=vals, external_id_name=external_id_name,model=model)
-                return res_id
-                
+                 res_id = self.create_import_record(vals=vals, external_id_name=external_id_name, model=model)
+                 return res_id
                 
             elif res_id and self.do_update:
                 record_obj = self.env[model].browse(res_id)
