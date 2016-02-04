@@ -52,8 +52,18 @@
 
         </record> 
         
+        <record id="action_import_substitute_map_values" model="ir.actions.act_window">
+            <field name="name">Import Substitutions Values</field>
+            <field name="res_model">import.m2o.substitutions</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="npg_view_import_data_substitution_tree" />
+
+        </record> 
             
         <menuitem action="action_import_substitute_maps" id="menu_import_substitute_maps" groups="group_npg_import" parent="menu_import" sequence="40"/>
+		<menuitem action="action_import_substitute_map_values" id="menu_import_substitute_map_values" groups="group_npg_import" parent="menu_import" sequence="50"/>
 		
    </data>
  </openerp>       

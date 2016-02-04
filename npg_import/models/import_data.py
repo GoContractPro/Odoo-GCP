@@ -545,26 +545,40 @@ class import_data_file(osv.osv):
     
     
      
-    def skip_current_row_filter(self, field_val, search_filter):
+    def skip_current_row_filter(self, field_val, search_filter, skip_filter = False):
         
-        if not  search_filter or search_filter == '[]':
+        if (not  search_filter or search_filter == '[]') and (not  skip_filter or skip_filter == '[]'):
             return False
         
+        skip_list = []
+        search_list = []
         
-        search_filter =  search_filter.replace('[','')
-        search_filter =  search_filter.replace(']','')
+        if skip_filter:
+            skip_filter =  skip_filter.replace('[','')
+            skip_filter =  skip_filter.replace(']','')
+            
+            skip_list = tuple(skip_filter.split(','))
+            
+            if not skip_list:
+                skip_list.append(skip_filter)
         
-        search_list = tuple(search_filter.split(','))
-        if not search_list:
-            search_list.append(search_filter)
+        if search_filter:
+        
+            search_filter =  search_filter.replace('[','')
+            search_filter =  search_filter.replace(']','')
+            
+            search_list = tuple(search_filter.split(','))
+            
+            if not search_list:
+                search_list.append(search_filter)
             
         if field_val in search_list:
             return False
             
+        elif field_val not in skip_list:
+            return False
         else:
             return True
-
-
           
     def get_row_count_odbc(self,qry,cur):
         
@@ -641,6 +655,10 @@ class import_data_file(osv.osv):
         if context is None:
             context = {}
         
+        global row_count
+        global count
+        row_count = 0
+        count = 0
         try:
            
             dbf_table = dbf.Table(rec.dbf_path)
@@ -664,7 +682,10 @@ class import_data_file(osv.osv):
     def action_import_odbc(self, cr, uid, ids, rec, test_mode = False, context={}):
         
         conn = False 
-        
+        global row_count
+        global count
+        row_count = 0
+        count = 0
         try:
             qry = self.odbc_import_query(rec, test_mode)
                             
@@ -711,6 +732,10 @@ class import_data_file(osv.osv):
     
     def action_import_csv(self, cr, uid, ids, rec, test_mode, context={}):
 
+        global row_count
+        global count
+        row_count = 0
+        count = 0
         try:    
             csv_data = self.get_csv_data_file(cr, uid, ids, rec, context)
             header_dict = self.get_csv_header_dict(rec, csv_data)
@@ -784,8 +809,8 @@ class import_data_file(osv.osv):
         warn_obj = self.pool.get( 'warning.warning')
         return warn_obj.info(cr, uid, title='Import Information',message = msg)
     
-    def onchange_model(self, cr, uid, ids, model_id=False,  context=None):
-        if not ids:
+    def onchange_model(self, cr, uid, ids, model_id=False, state=None,  context=None):
+        if not ids or not state == 'draft' :
             return {}
         if model_id:
             header_ids_vals = []

@@ -65,9 +65,13 @@ class import_data_header(models.Model):
     import_child_ids = fields.One2many('import.data.header','parent_id', string= 'Related Field', required=True, ondelete='cascade')
     relation_field = fields.Char(related='model_field.relation_field', string='Odoo Related Field', size = 128,
                     help="For one2many fields, the field on the target model that implement the opposite many2one relationship")
-    search_filter =fields.Char('Filter Source', size=256,
+    search_filter =fields.Char('Filter Include', size=256,
                       help='''Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import,
-                           Can use mulitple values for filter,  format as python type list for values example "value1","value2","value3". ''')           
+                           Can use multiple values for filter,  format as python type list for values example "value1","value2","value3". ''')           
+    skip_filter =fields.Char('Filter Skip', size=256,
+                      help='''Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import,
+                           Can use multiple values for filter,  format as python type list for values example "value1","value2","value3". ''')           
+
     create_related =fields.Boolean('Create Related', help = "Will create the related records using system default values if missing" )
 
     default_val =fields.Char(string='Default Import Val', size = 256, help = 'The Default if no values for field in imported Source')
@@ -77,7 +81,7 @@ class import_data_header(models.Model):
                                       help='Allows mapping and Converting values from Source Data into correct values for ODoo data ')
     is_unique_external =fields.Boolean('Use in External ID', readonly=False ,
                                 help ='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID')
-    m2o_values = fields.One2many('import.m2o.values', 'import_field_id', string="(Depricated)Related Map", copy=True, 
+    m2o_values = fields.One2many('import.m2o.values', 'import_field_id', string="(Deprecated)Related Map", copy=True, 
                                  help="Deprecated (Default Values or source values to map to create related and parent records)")
     m2o_create_external =fields.Boolean('Create External on Related')
     o2m_external_field2 =fields.Many2one(comodel_name='import.data.header',string='[Deprecated]O2M External' , domain="[('import_data_id','=',import_data_id')]",

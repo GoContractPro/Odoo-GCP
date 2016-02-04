@@ -196,6 +196,7 @@ class import_data_file(models.Model):
                      error_txt = _('Warning: duplicate records found in model %s, search on %s' % (model, search, ))
                      self.update_log_error(error_txt=error_txt)      
         
+        return search_result
         # If not found then do  New External and Search unique Using the Child Map Related Fields settings
 
                 
@@ -244,7 +245,7 @@ class import_data_file(models.Model):
             vals[rel_field.model_field.name] = odoo_vals['field_val']
                                                  
             #TODO add functionality to build other Relate values defaults from list or other Tables
-        return {'required_missing':odoo_vals['required_missing'], 'field_val': vals}
+            return {'required_missing':odoo_vals['required_missing'], 'field_val': vals}
 
     @api.multi    
     def convert_odoo_data_types( self, field, field_val, import_record=None, current_fld_val=None):
@@ -319,7 +320,7 @@ class import_data_file(models.Model):
             else:
                 rec.has_errors = True
                 field_val = False
-                error_txt = _('Error: Field %s -- %s is correct Selection Value' % ( field.model_field.name,field_val))
+                error_txt = _('Error: Field %s -- %s is correct Selection Value' % ( field.model.model,field.model_field.name,field_val))
                 self.update_log_error(rec, error_txt)
         
         elif field.model_field_type in ['char', 'text','html'] and  field_val:
@@ -350,7 +351,7 @@ class import_data_file(models.Model):
         # If field is marked as Unique in mapping append to search on unique to use to confirm no duplicates before creating new record    
         if field.model_field.required and not field_val:
             rec.has_errors = True
-            error_txt = _('Error: Required field %s  has no value ' % (field.model_field.name ))
+            error_txt = _('Error: %s Required field %s  has no value ' % (field.model.model,field.model_field.name ))
             self.update_log_error(rec, error_txt)
             required_missing =  True
         else: required_missing =  False
@@ -438,16 +439,15 @@ class import_data_file(models.Model):
         res_id = False
         try:
             odoo_vals = self.do_related_vals_mapping( field=field, import_record=import_record)
-            if odoo_vals['required_missing']:
+            if not odoo_vals or odoo_vals['required_missing']:
                 res_id = False
             else:
                 vals = odoo_vals['field_val']
                 res_id = self.create_or_update_record(0, vals, external_id_name, field.relation)
 
             if not res_id:
-                log = _('Warning!: Related record for  value \'%s\' Not Created for relation \'%s\' row %s' % ( field_val, field.relation,row_count )) 
-                rec.error_log += '\n'+ log
-                _logger.info( log)
+                error_txt = _('Warning: Relation: %s record Not Created for Value: %s'  % (  field.relation,field_val)) 
+                self.update_log_error(error_txt=error_txt)
                 return   False    
             
             return res_id
@@ -455,7 +455,7 @@ class import_data_file(models.Model):
         except:
             self.env.cr.rollback()
             rec.has_errors = True
-            error_txt = _('Error: Related record vals \'%s\'  for model \'%s\'' % (vals or 'No Values Dictionary Created' ,field.relation))
+            error_txt = _('Error: Related record Vals: %s   Model: %s' % (vals or 'No Values Dictionary Created' ,field.relation))
             self.update_log_error(error_txt=error_txt)
             
             return False
@@ -557,7 +557,7 @@ class import_data_file(models.Model):
                     
                 
                 # IF Field value not found in Filter Search list skip out to next import record row
-                if self.skip_current_row_filter(field_val,field.search_filter):
+                if self.skip_current_row_filter(field_val,field.search_filter, field.skip_filter):
                     return False                          
                 
                
