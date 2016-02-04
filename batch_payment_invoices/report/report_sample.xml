@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <openerp>
-<data noupdate="1">
+<data noupdate="0">
 <!--    <record id="aeroo_multi_pay_invoice_report_id" model="ir.actions.report.xml">-->
 <!--        <field name="name">Multi Pay Invoice Report</field>-->
 <!--        <field name="type">ir.actions.report.xml</field>-->
@@ -26,7 +26,7 @@
 <!--
 
     <report id="account_check_writing.account_print_check_top1"
-            string="Print Check (Topdfdf)"
+            string="Print Check (Top)"
             model="account.voucher"
             name="account.print.check.top.multi"
             rml="batch_payment_invoices/report/check_print_top.rml"
