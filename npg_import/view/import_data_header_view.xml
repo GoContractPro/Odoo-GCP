@@ -16,14 +16,13 @@
 	          	 		</group>
 	          	 		<newline/>
 	          	 		<group string=" Source Info " cols="2">
-	          	 		    
-	          	 			
 	                		<field name="name" />                   	
 	                		<field name="field_label"/>
 	                		<field name="field_type"/>
 	                	 	<field name="field_val"/>
 	                	 	<field name="sub_string"/>
 	                	 	<field name="search_filter"/>
+	                	 	<field name="skip_filter" />
 	            	 	</group>
 	            	 	<group string="Odoo Record Creation Settings" cols="2">
 	            	 		<field name="sequence"/>
