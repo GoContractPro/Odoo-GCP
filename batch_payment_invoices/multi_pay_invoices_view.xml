@@ -26,7 +26,7 @@
                     <field name="reference" invisible="1"/>
                     <field name="name" invisible="1"/>
                     <field name="journal_id" invisible="1"/>
-                    <field name="period_id" invisible="1" groups="account.group_account_user"/>
+<!--                    <field name="period_id" invisible="1" groups="account.group_account_user"/-->
                     <field name="company_id" groups="base.group_multi_company" widget="selection"/>
                     <field name="user_id"/>
                     <field name="date_due"/>
@@ -105,10 +105,10 @@
 						<field name="date_due" />
 						<field name="partner_id" groups="base.group_user" />
 		                <field name="number"/>
-		                <field name="supplier_invoice_number"/>
+<!--		                <field name="supplier_invoice_number"/-->
 		                <field name="name" invisible="1"/>
 		                <field name="journal_id" invisible="1"/>
-		                <field name="period_id" invisible="1" groups="account.group_account_user"/>
+<!--		                <field name="period_id" invisible="1" groups="account.group_account_user"/-->
 		                <field name="company_id" invisible="1" groups="base.group_multi_company" widget="selection"/>
 		                <field name="user_id" invisible="1"/>
 		                <field name="origin" />
@@ -176,7 +176,7 @@
 		                <field name="number" string="Invoice Number"/>
 		                <field name="name" invisible="1"/>
 		                <field name="journal_id" invisible="1"/>
-		                <field name="period_id" invisible="1" groups="account.group_account_user"/>
+<!--		                <field name="period_id" invisible="1" groups="account.group_account_user"/-->
 		                <field name="company_id" invisible="1" groups="base.group_multi_company" widget="selection"/>
 		                <field name="user_id" invisible="1"/>
 		                <field name="origin" />
@@ -300,9 +300,9 @@
         <menuitem action="action_multi_payment" id="menu_action_multi_payment" parent="account.menu_finance_payables" />
         <menuitem action="action_multi_payment_cust" id="menu_action_multi_payment1" parent="account.menu_finance_receivables" />
 <!--        <menuitem action="action_multi_invoice_payment_tree_wizard" id="menu_action_invoice_tree5" parent="account.menu_finance_payables" sequence="9" /-->
-		<menuitem action="account.action_invoice_tree4" id="account.menu_action_invoice_tree4" parent="account.menu_finance_payables" sequence="10"/>
+<!--		<menuitem action="account.action_invoice_tree4" id="account.menu_action_invoice_tree4" parent="account.menu_finance_payables" sequence="10"/-->
 		<menuitem action="account.action_invoice_tree2" id="account.menu_action_invoice_tree2" parent="account.menu_finance_payables" sequence="8"/>
-		<menuitem action="account_check_writing.action_write_check" icon="STOCK_JUSTIFY_FILL" sequence="12"
-            id="account_check_writing.menu_action_write_check"  parent="account.menu_finance_payables" string="adasdasdas" groups="group_hide_menu"/>
+<!--		<menuitem action="account_check_writing.action_write_check" icon="STOCK_JUSTIFY_FILL" sequence="12-->
+<!--            id="account_check_writing.menu_action_write_check"  parent="account.menu_finance_payables" string="adasdasdas" groups="group_hide_menu"/-->
 	</data>
 </openerp>

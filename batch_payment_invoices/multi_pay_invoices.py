@@ -1,52 +1,49 @@
-from openerp.osv import osv,fields
-import time
-from openerp import netsvc
-from openerp.tools.translate import _
-from openerp import SUPERUSER_ID
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-class account_invoice(osv.Model):
+import time
+import openerp
+from openerp import SUPERUSER_ID
+from openerp import api, fields, models, _
+from openerp.exceptions import UserError, RedirectWarning, ValidationError
+
+class account_invoice(models.Model):
     _inherit = 'account.invoice'
 
-    _columns = {
-                'amount_paid': fields.float('Amount paid'),
-                'check_log_ref': fields.char("Check-log Reference",size=128),
-                'payment_method': fields.selection([('on_due_date', 'On Due Date'), ('before_due_date', 'Before Due Date')],'Payment Method'),
-                'end_balance':fields.float('Payment Account Ending Balance', readonly=1),
-                'apply_credit':fields.boolean('Apply Credits'),
-                'term_discount':fields.boolean('Apply Terms Discounts'),
-                'payment_date':fields.datetime('Payment Date'),
-                'pay': fields.boolean('Pay'),
-                'print_check': fields.boolean('Print'),
-                'credit_available':fields.float(string='Credit Available'),
-                'use_credit_available':fields.float(string='Use Credit Available'),
-                'use_credit_available_dummy':fields.float(string='Dummy Credit Available'),
-                'voucher_id':fields.many2one('account.voucher', 'Voucher'),
-                'dummy_id':fields.many2one('account.multi.pay.invoice', 'Dummy'),
-#                'multi_pay_id':fields.many2many('account.multi.pay.invoice', 'multi_pay_invoice_rel', 'invoice_id','multi_invoice_id', 'Multi-pay ID'),
-                'state_for_readonly' : fields.related("dummy_id", "state", type="char", string="Dummy State"),
-    }
+    amount_paid = fields.Monetary(string='Amount paid',default=0.0)
+    end_balance = fields.Monetary(string='Payment Account Ending Balance', readonly=True,)
+    credit_available = fields.Monetary(string='Credit Available')
+    use_credit_available = fields.Monetary(string='Use Credit Available')
+    use_credit_available_dummy = fields.Monetary(string='Dummy Credit Available')
+    
+    dummy_id = fields.Many2one('account.multi.pay.invoice', string='Dummy')
+    voucher_id = fields.Many2one('account.voucher', string='Voucher')
+    
+    check_log_ref = fields.Char(string='Check-log Reference')
+    state_for_readonly = fields.Selection(string='Dummy State',related='dummy_id.state')
+    
+    print_check = fields.Boolean(string='Print')
+    pay = fields.Boolean(string='Pay')
+    apply_credit = fields.Boolean(string='Apply Credits')
+    term_discount = fields.Boolean(string='Apply Terms Discounts')
+    payment_method = fields.Selection([('on_due_date', 'On Due Date'), ('before_due_date', 'Before Due Date')],string='Payment Method')
+    payment_date = fields.Datetime(string='Payment Date',default=lambda *args: time.strftime('%Y-%m-%d %H:%M:%S'))
 
-    _defaults = {
-        'amount_paid': 0.0,
-        'payment_date': lambda *args: time.strftime('%Y-%m-%d %H:%M:%S'),
-        'pay':False,
-        'print_check':False,
-    }
+    @api.onchange('total_balance', 'credit')
+    def onchange_credit(self):
+        self.amount_paid = self.cal_amount_paid(self.total_balance,self.credit)
 
-    def onchange_credit(self, cr, uid, ids, total_balance, credit , context=None):
-        result = {'amount_paid' : self.cal_amount_paid(total_balance,credit)}
-        return {}
-
-    def cal_amount_paid(self, total_balance, credit ):
+    def cal_amount_paid(self, total_balance, credit):
         if credit:
             total = total_balance - credit
         else:
             total = total_balance
         return total
 
-    def pay_print_button(self, cr, uid, ids, context=None):
-        vals = {}
-        for inv in self.browse(cr, uid, ids, context=context):
+    @api.multi
+    def pay_print_button(self):
+        for inv in self:
+            vals = {}
             if inv.type == 'in_invoice':
                 if not inv.pay and not inv.print_check:
                     vals = {'pay': True, 'print_check':True, 'amount_paid':inv.residual or 0.0}
@@ -61,27 +58,10 @@ class account_invoice(osv.Model):
                     vals = {'pay': True, 'amount_paid':inv.residual or 0.0}
                 elif inv.pay :
                     vals = {'pay': False, 'amount_paid':0.0}
-#                 if not inv.pay:
-#                     vals = {'pay': True, 'amount_paid':inv.residual or 0.0 ,'use_credit_available': inv.use_credit_available_dummy}
-#                 elif inv.pay:
-#                     vals = {'pay': False, 'amount_paid':0.0, 'use_credit_available': 0.0,'use_credit_available_dummy' :inv.use_credit_available}
-        return self.write(cr, uid, ids, vals)
+            inv.write(vals)        
+        return            
 
-#    def cal_end_balance(self, cr, uid, ids, context=None):
-#        multi_pay = self.pool.get('account.multi.pay.invoice')
-#        total = 0.0
-#        for invoice in self.read(cr, uid, ids, context=context):
-#            multi = invoice.multi_pay_id
-#            if multi:   
-#                invoice_ids = multi_pay.read(cr,uid,multi,['invoice_ids'], context=context)
-#                for invoice in invoice_ids:
-#                    if invoice.pay:
-#                        total = total + invoice.amount_paid or 0.0
-#            if multi.multi_pay_id.payment_journal.default_debit_account_id or multi.multi_pay_id.payment_journal.default_debit_account_id.balance == 0.0:
-#                total = (multi.payment_journal.multi_pay_id.default_debit_account_id.balance) - total 
-#        return self.write(cr, uid, ids, {'end_balance':total}, context=context)
-
-class account_multi_pay_invoice(osv.Model):
+class account_multi_pay_invoice(models.Model):
     _name = 'account.multi.pay.invoice'
 
     def _state_get(self, cr, uid, ids, field_name, arg=None, context=None):
@@ -101,82 +81,69 @@ class account_multi_pay_invoice(osv.Model):
                 result[r['id']] = 'Paid'
         return result
     
-    def _get_total(self, cr, uid, ids, field_name, arg, context=None):
-        res = {}
-        for order in self.browse(cr, uid, ids, context=context):
-            res[order.id] = {
-                'total_residual': 0.0,
-                'total_credit_available': 0.0,
-                'total_amount_paid': 0.0,
-            }
-            total_residual = total_credit_available = total_amount_paid = 0.0
-            for inv in order.invoice_ids:
-                if inv.pay:
-                    total_residual += inv.residual
-                    total_credit_available += inv.credit_available
-                    total_amount_paid += inv.amount_paid
-
-            res[order.id]['total_residual'] = total_residual
-            res[order.id]['total_credit_available'] = total_credit_available
-            res[order.id]['total_amount_paid'] = total_amount_paid
-        return res
-
-    _columns = {
-                'amount_due_by': fields.date('Amount Due By', required=1),
-                'payment_method': fields.selection([('on_due_date', 'On Due Date'), ('before_due_date', 'Before Due Date')],'Payment Due'),
-                'end_balance':fields.float('Ending Balance', readonly=1),
-                'apply_credit':fields.boolean('Apply Credits'),
-                'term_discount':fields.boolean('Apply Terms Discounts'),
-                'payment_date':fields.date('Payment Date'),
-                'invoice_ids': fields.many2many('account.invoice', 'multi_pay_invoice_rel', 'multi_invoice_id', 'invoice_id', 'Created Invoices'),
-                'pay':fields.boolean('Pay'),
-                'inv_type': fields.selection([('in', 'In Invoice'),('out', 'Out Invoice')], 'Invoice Type'),
-                'print': fields.boolean('Print'),
-                'payment_journal': fields.many2one('account.journal', string='Payment Method', domain=[('type', 'in', ['bank', 'cash'])],required=True),
-                'state': fields.selection([
+    @api.one
+    @api.depends('invoice_ids.residual', 'invoice_ids.credit_available')
+    def _get_total(self):
+        total_residual = total_credit_available = total_amount_paid = 0.0
+        for inv in self.invoice_ids:
+            if inv.pay:
+                total_residual += inv.residual
+                total_credit_available += inv.credit_available
+                total_amount_paid += inv.amount_paid
+        self.total_residual = total_residual
+        self.total_credit_available =total_credit_available
+        self.total_amount_paid =total_amount_paid
+        
+    
+    amount_due_by = fields.Date(string='Amount Due By', required=True)
+    payment_method = fields.Selection([('on_due_date', 'On Due Date'), ('before_due_date', 'Before Due Date')],string='Payment Due',default='before_due_date')
+    end_balance = fields.Float('Ending Balance', readonly=True)
+    apply_credit = fields.Boolean('Apply Credits')
+    term_discount = fields.Boolean('Apply Terms Discounts')   
+    payment_date = fields.Date(string='Payment Date', default=lambda *args: time.strftime('%Y-%m-%d %H:%M:%S'))
+    invoice_ids = fields.Many2many('account.invoice', 'multi_pay_invoice_rel', 'multi_invoice_id', 'invoice_id', string='Created Invoices', copy=False)
+    pay = fields.Boolean('Pay')
+    inv_type = fields.Selection([('in', 'In Invoice'),('out', 'Out Invoice')], string='Invoice Type')
+#    print = fields.boolean('Print')
+    payment_journal = fields.Many2one('account.journal', string='Payment Method', domain=[('type', 'in', ['bank', 'cash'])],required=True)
+    state = fields.Selection([
                                            ('new', 'Create Batch'),
                                            ('draft', 'Draft'),
                                            ('posted','Payments Created'),
                                            ('printed','Checks Printed'),
                                            ('cancel', 'Cancelled'),
-                                           ]
-                                          , 'Status', readonly=True, track_visibility='onchange',),
+                                           ], string='Status', readonly=True, default='new',track_visibility='onchange',)
                 
-                'total_residual':fields.function(_get_total,type='float',multi='tot',string="Total Residual Amount"),
-                'total_credit_available':fields.function(_get_total,type='float',multi='tot',string="Total Use Credits"),
-                'total_amount_paid':fields.function(_get_total,type='float',multi='tot',string="Total Paid Amount"),
-                }
+    total_residual = fields.Float(string="Total Residual Amount",compute='_get_total')
+    total_credit_available = fields.Float(string="Total Use Credits",compute='_get_total')
+    total_amount_paid = fields.Float(string="Total Paid Amount",compute='_get_total')
 
-    _defaults = {
-        'payment_date': lambda *args: time.strftime('%Y-%m-%d %H:%M:%S'),
-        'state':'new',
-        'payment_method': 'before_due_date',
-    }
 
-    def search(self, cr, uid, args, offset=0, limit=None, order=None,
-                                        context=None, count=False):
-        return super(account_multi_pay_invoice, self).search(cr, uid, args, offset=0, limit=limit, order='payment_date desc',
-                                        context=context, count=count)
-
-    def cal_end_balance(self, cr, uid, ids, context=None):
-        account_invoice = self.pool.get('account.invoice')
+#     def search(self, cr, uid, args, offset=0, limit=None, order=None,
+#                                         context=None, count=False):
+#         return super(account_multi_pay_invoice, self).search(cr, uid, args, offset=0, limit=limit, order='payment_date desc',
+#                                         context=context, count=count)
+    @api.multi
+    def cal_end_balance(self):
+        account_invoice = self.env['account.invoice']
         total = 0.0
-        for multi in self.browse(cr, uid, ids, context=context):
+        for multi in self:
             if multi.invoice_ids:
                 for invoice in multi.invoice_ids:
                     if invoice.pay:
                         total = (total + invoice.amount_paid) or 0.0
             if multi.payment_journal.default_debit_account_id or multi.payment_journal.default_debit_account_id.balance == 0.0:
-                if context.get('default_inv_type',False) == 'in':
+                if self._context.get('default_inv_type',False) == 'in':
                     total = (multi.payment_journal.default_debit_account_id.balance) - total
                 else: 
                     total = (multi.payment_journal.default_debit_account_id.balance) + total
-        return self.write(cr, uid, ids, {'end_balance':total}, context=context)
-
-    def do_post_or_nothing(self, cr, uid, voucher_id, inv_type='out'):
-        self.pool.get('account.voucher').button_proforma_voucher(cr, uid, [voucher_id], context= None)
-        return True
+            multi.write({'end_balance':total})
     
+    @api.multi
+    def do_post_or_nothing(self, voucher_id, inv_type='out'):
+        self.env['account.voucher'].button_proforma_voucher([voucher_id])
+        
+    @api.cr_uid_ids_context
     def pay_bills(self, cr, uid, ids, context=None):
         voucher_obj = self.pool.get('account.voucher')
         vouchers = []
@@ -187,9 +154,9 @@ class account_multi_pay_invoice(osv.Model):
             vouchers = []
             temp_invoices_ids = [invoice.id for invoice in multi.invoice_ids]
             if not multi.payment_method:
-                raise osv.except_osv(_('Error!'),_("You need Payment Method."))
+                raise UserError(_("You need Payment Method."))
             if not multi.invoice_ids:
-                raise osv.except_osv(_('Error!'),_("Please Get Invoices first."))
+                raise UserError(_("Please Get Invoices first."))
             inv_ids = []
             MOVE_LINES = {}
             if multi.invoice_ids:
@@ -249,7 +216,7 @@ class account_multi_pay_invoice(osv.Model):
                                  'origin'       : invoice.origin or '',
                             }
                             if amt < 0:
-                                raise osv.except_osv(_('Error!'),_("Pay Amount should not be negative!"))
+                                raise UserError(_("Pay Amount should not be negative!"))
                             ttype = invoice.type in ['in_invoice', 'out_refund'] and 'payment' or 'receipt'
                             ctx.update({'inv_ids' : MOVE_LINES[partner],'batch_pay_credit':CREDIT ,'MOVE_CONN': MOVE_CONN})
                             lines = []
@@ -357,20 +324,22 @@ class account_multi_pay_invoice(osv.Model):
                             self.do_post_or_nothing(cr, uid, voucher_id, context.get('default_inv_type','out'))
                             self.write(cr, uid, ids, {'state':'posted'}, context=context)
         return True
-    
-    def cancel(self,cr, uid, ids, context=None):
+    @api.multi
+    def cancel(self):
         res = {}
-        voucher_obj = self.pool.get('account.voucher')
-        for multi in self.browse(cr, uid, ids, context=context):
+        voucher_obj = self.env['account.voucher']
+        for multi in self:
             for invoice in multi.invoice_ids:
                 if invoice.voucher_id:
-                    res = voucher_obj.cancel_voucher(cr, uid, [invoice.voucher_id.id], context=context)
-        self.write(cr, uid, ids, {'state':'cancel'}, context=context)
+                    res = voucher_obj.cancel_voucher([invoice.voucher_id.id])
+        self.write({'state':'cancel'})
         return res
-
-    def set_to_open(self,cr, uid, ids, context=None):
-        self.write(cr, uid, ids, {'state':'new'}, context=context)
-
+    
+    @api.multi
+    def set_to_open(self):
+        self.write({'state':'new'})
+        
+    @api.cr_uid_ids_context
     def print_checks(self, cr, uid, ids, context=None):
         voucher_obj = self.pool.get('account.voucher')
         vouchers = []
@@ -379,7 +348,7 @@ class account_multi_pay_invoice(osv.Model):
         vouchers = []
         for multi in self.browse(cr, uid, ids, context=context):
             if not multi.invoice_ids:
-                raise osv.except_osv(_('Error!'),_("Please Get Invoices first."))
+                raise UserError(_("Please Get Invoices first."))
             if multi.invoice_ids:
                 for invoice in multi.invoice_ids:
                     total_paid_amt = 0.0
@@ -391,7 +360,7 @@ class account_multi_pay_invoice(osv.Model):
             context.update({'active_ids':voucher_list})
             self.write(cr, uid, ids, {'state':'printed'}, context=context)
             if not vouchers:
-                raise osv.except_osv(_('Error!'),_("Minimum one invoice should be checked as 'Print'."))
+                raise UserError(_("Minimum one invoice should be checked as 'Print'."))
             return {
                    'type': 'ir.actions.act_window',
                    'name': 'Print Checks',
@@ -405,6 +374,7 @@ class account_multi_pay_invoice(osv.Model):
                    }
         return True
 
+    @api.cr_uid_ids_context
     def get_invoice(self, cr, uid, ids, context=None):
         # Method use for open invoices to be paid
         if context is None:
@@ -582,21 +552,20 @@ class account_multi_pay_invoice(osv.Model):
 
             invoice_obj.write(cr, uid, [inv.id], vals, context=context)
         if not invoice_ids:
-            raise osv.except_osv(_('Error!'),_("There is no any invoices in this criteria "))
+            raise UserError(_("There is no any invoices in this criteria "))
         self.write(cr, uid, ids, {'invoice_ids':[( 6,0, invoice_ids),],'state':'draft'}, context=context)
         self.cal_end_balance( cr, uid, ids, context=context)
         return True
-
+    @api.cr_uid_ids_context
     def on_change_invoice(self, cr, uid, ids, context=None):
         self.cal_end_balance( cr, uid, ids, context=context)
         return
 
-class check_log(osv.Model):
+class check_log(models.Model):
     _name = 'check.log'
     _description=""" This model use for check record"""
     
-    _columns = {
-                'name': fields.char('Check Number'),
-                'voucher_id': fields.many2one('account.voucher', 'Voucher'),
-                'state': fields.selection([('void','Voided'),('print','Printed'),('re_print','Re-printed')])
-            }
+    name = fields.Char(string='Check Number')
+    voucher_id = fields.Many2one('account.voucher', string='Voucher')
+    state = fields.Selection([('void','Voided'),('print','Printed'),('re_print','Re-printed')], string='State')
+        

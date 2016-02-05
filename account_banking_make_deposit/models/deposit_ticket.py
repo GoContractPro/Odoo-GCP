@@ -1,32 +1,14 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011 NovaPoint Group LLC (<http://www.novapointgroup.com>)
-#    Copyright (C) 2004-2010 OpenERP SA (<http://www.openerp.com>)
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>
-#
-##############################################################################
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
+
 import time
 
-from openerp.osv import fields, orm
+from openerp.osv import osv, fields
 from openerp.tools.translate import _
 import openerp.addons.decimal_precision as dp
 
 
-class deposit_ticket(orm.Model):
+class deposit_ticket(osv.osv):
     _name = "deposit.ticket"
     _description = "Deposit Ticket"
 
@@ -59,7 +41,7 @@ class deposit_ticket(orm.Model):
                 )
                 group_user_ids = [user.id for user in group_verifier.users]
                 if deposit.state != 'draft' and uid not in group_user_ids:
-                    raise orm.except_orm(
+                    raise osv.except_orm(
                         _('User Error !'),
                         _(
                             "Only a member of '%s' group may delete/edit "
@@ -111,12 +93,12 @@ class deposit_ticket(orm.Model):
         move_lines = []
         for deposit in self.browse(cr, uid, ids, context=context):
             if not deposit.journal_id.sequence_id:
-                raise orm.except_orm(
+                raise osv.except_orm(
                     _('Error !'),
                     _('Please define sequence on deposit journal')
                 )
             if deposit.journal_id.centralisation:
-                raise orm.except_orm(
+                raise osv.except_orm(
                     _('UserError'),
                     _('Cannot create move on centralised journal')
                 )
@@ -213,9 +195,9 @@ class deposit_ticket(orm.Model):
         }, context=context)
         return True
 
-    def _get_period(self, cr, uid, context=None):
-        periods = self.pool.get('account.period').find(cr, uid)
-        return periods and periods[0] or False
+#     def _get_period(self, cr, uid, context=None):
+#         periods = self.pool.get('account.period').find(cr, uid)
+#         return periods and periods[0] or False
 
     def _get_amount(self, cr, uid, ids, name, args, context=None):
         res = {}
@@ -275,13 +257,13 @@ class deposit_ticket(orm.Model):
             readonly=True,
             help="The Company for which the deposit ticket is made to"
         ),
-        'period_id': fields.many2one(
-            'account.period',
-            'Force Period',
-            required=True,
-            states={'done': [('readonly', True)]},
-            help="Keep empty to use the period of the validation date.",
-        ),
+#         'period_id': fields.many2one(
+#             'account.period',
+#             'Force Period',
+#             required=True,
+#             states={'done': [('readonly', True)]},
+#             help="Keep empty to use the period of the validation date.",
+#         ),
         'deposit_method_id': fields.many2one(
             'deposit.method',
             'Deposit Method',
@@ -393,7 +375,7 @@ class deposit_ticket(orm.Model):
 
     _defaults = {
         'state': 'draft',
-        'period_id': _get_period,
+#         'period_id': _get_period,
         'date': time.strftime('%Y-%m-%d'),
         'company_id': (
             lambda self, cr, uid, c:

@@ -4,7 +4,7 @@ from openerp.osv import fields
 from openerp import netsvc
 from openerp.tools.translate import _
 
-class invoice_payment_wizard(osv.TransientModel):
+class invoice_payment_wizard(osv.osv_memory):
     """
         A wizard to manage the invoice payment
     """
@@ -32,7 +32,7 @@ class invoice_payment_wizard(osv.TransientModel):
                      'journal_id': invoice.journal_id.id,
                      'different_amount': invoice.residual - invoice.amount_paid,
                      'date': time.strftime('%Y-%m-%d'),
-                     'period_id': invoice.period_id.id,
+#                      'period_id': invoice.period_id.id,
                      'memo': "Pay for %s " % (invoice.reference or None) ,
                      'state': invoice.state,
                      }))
@@ -46,7 +46,7 @@ class invoice_payment_wizard(osv.TransientModel):
             'type': 'ir.actions.act_window_close',
         }
         
-class account_invoice_payment(osv.TransientModel):
+class account_invoice_payment(osv.osv_memory):
     """
         A wizard to show the invoices payment
     """
@@ -61,7 +61,7 @@ class account_invoice_payment(osv.TransientModel):
         'journal_id': fields.many2one('account.journal', string='Journal'),
         'different_amount': fields.float('Different Amount'),
         'date': fields.date('Date'),
-        'period_id': fields.many2one('account.period', string='Period'),
+#         'period_id': fields.many2one('account.period', string='Period'),
         'memo': fields.char('Memo'),
         'state': fields.char('State'),
         'payment_method': fields.many2one('account.journal', string='Payment Method', domain=[('type', 'in', ['bank', 'cash'])],)

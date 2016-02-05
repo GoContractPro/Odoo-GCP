@@ -1,23 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-#
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from openerp.osv import osv,fields
 import time
@@ -29,7 +11,7 @@ from openerp.tools.translate import _
 from openerp.tools import float_compare
 from openerp.report import report_sxw
 
-class account_voucher(osv.Model):
+class account_voucher(osv.osv):
     _inherit = 'account.voucher'
 
     _columns = {
@@ -44,8 +26,8 @@ class account_voucher(osv.Model):
 
     def print_checks(self, cr, uid, ids, context=None):
         check_state = self.browse(cr, uid, ids[0],context=None).check_status
-        view_ref = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_check_writing', 'view_account_check_write')
-        view_id = view_ref and view_ref[1] or False,
+#         view_ref = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'account_check_printing', 'view_account_check_write')
+#         view_id = view_ref and view_ref[1] or False,
         context.update({'active_ids':ids, 'check_state': check_state})
         return {
                'type': 'ir.actions.act_window',
