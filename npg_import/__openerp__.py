@@ -30,7 +30,7 @@
     'website': ' http://www.novapointgroup.com',
     'depends': ['npg_warning','account','base_external_dbsource'],
     'data': ['view/import_data_header_view.xml',
-             'view/import_m2o_data_view.xml',
+#             'view/import_m2o_data_view.xml',
              'view/import_data_view.xml',
              'wizard/wiz_import_dbf_directory.xml',
              'security/security.xml',
