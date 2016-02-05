@@ -25,7 +25,7 @@ from openerp.osv import fields, osv
 
 class account_check_write(osv.TransientModel):
     _inherit = 'account.check.write'
-    _description = 'Prin Check in Batch'
+    _description = 'Print Check in Batch'
 
     _columns = {
             'printed': fields.boolean('Printed'),
