@@ -15,7 +15,7 @@
     <menuitem
       id="menu_deposit_methods"
       name="Deposit Methods"
-      parent="account.menu_configuration_misc"
+      parent="account.menu_finance_configuration"
       action="action_deposit_method"
       sequence="8" />
 

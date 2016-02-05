@@ -40,7 +40,7 @@
               <field name="deposit_from_account_id" placeholder="Enter Account Name (from)"/>
               <field name="deposit_to_account_id" placeholder="Enter Account Name (to)"/>
               <field name="journal_id" placeholder="Enter journal name"/>
-              <field name="period_id" placeholder="Enter period"/>
+<!--              <field name="period_id" placeholder="Enter period"/-->
               <field name="date" placeholder="Enter deposite date"/>
               <field name="name" />
               <field name="deposit_bag_no" placeholder="Enter deposit bag no."/>
@@ -138,7 +138,7 @@
     <menuitem
       id="menu_make_deposit_tickets"
       name="Make Deposits"
-      parent="account.menu_finance_bank_and_cash"
+      parent="account.menu_finance_configuration"
       groups="group_make_deposits_preparer,group_make_deposits_verifier"
       action="action_deposit_ticket"
       sequence="8" />
