@@ -253,109 +253,109 @@ class import_data_file(models.Model):
         # Update Field value if Substitution Value Found. 
         field_val = self.do_substitution_mapping(field_val,field)
         
-        if field.model_field_type == 'many2one' and field_val:
-            
-            search_result = self.do_search_related_records(field, import_record, field_val)
-            if not search_result: res_id = False
-            else: 
-                res_id = search_result.get('res_id',False)
-                
-                external_id_name = search_result.get('external_id_name',False)
-            
-                if not res_id and field.create_related: 
-                    res_id = self.create_related_record(import_record=import_record, field=field, field_val=field_val, external_id_name=external_id_name)
-                
-                if res_id == -1: 
-                    res_id = False
-                
-            field_val = res_id
-        
-        elif field.model_field_type == 'boolean' and  field_val:
-
-            try:
-                field_val = field_val.lower()
-                if field_val in ('1','t','true','y','yes'):
-                    field_val = True
-                elif field_val in ('0','f','false','n','no',''):
-                    field_val = False
-                else:
-                    field_val = False
-                    error_txt = ('Error: Field value %s -- %s is not Boolean type value set False' % (field.model_field.name,field_val,))
-                    self.update_log_error(rec, error_txt)
-                
-            except:
-                field_val = False
-                error_txt = ('Error: Converting Field %s -- %s to Boolean value set False' % (field.model_field.name,field_val,))
-                self.update_log_error(rec, error_txt)
-            
-        elif field.model_field_type == 'float' and  field_val:
-                
-            if field_val.lower() == 'false': field_val = '0.0'
-            
-            try:
-                field_val = float(field_val)
-            except:
-                rec.has_errors = True
-                field_val = 0.0
-                error_txt = _('Error: Field %s -- %s is not required  Floating Point type' % ( field.model_field.name,field_val))
-                self.update_log_error(error_txt=error_txt)
-
-        elif field.model_field_type == 'integer' and  field_val:
-              
-            if field_val.lower() == 'false': field_val = '0'
-            try:
-                field_val = int(field_val)
-            except:
-                rec.has_errors = True
-                field_val = 0
-                error_txt = _('Error:  Field %s -- not required Integer  type' % (field.model_field.name,field_val))
-                self.update_log_error(error_txt=error_txt)
-
-        elif field.model_field_type == 'selection' and  field_val:
-            
-            field_val = self.check_selection_field_value(field.model.model, field.model_field.name, field_val)
-            
-            if field_val:
-                pass
-            else:
-                rec.has_errors = True
-                field_val = False
-                error_txt = _('Error: Field %s -- %s is correct Selection Value' % ( field.model.model,field.model_field.name,field_val))
-                self.update_log_error(rec, error_txt)
-        
-        elif field.model_field_type in ['char', 'text','html'] and  field_val:
-            pass
-        elif field.model_field_type == 'binary' and  field_val:
-            
-            pass
-        elif field.model_field_type in ['one2many','many2many']:
-   
-            result = self.get_o2m_m2m_vals(field=field, field_val=field_val, import_record=import_record)
-            field_val = result and [result.get('field_val',False)] or False
-            
-        if current_fld_val:
-            
-            if field.model_field_type in ['one2many','many2many']:
-            
-                if field_val: 
-                    current_fld_val.append(field_val)
-                    field_val = current_fld_val
-                else:field_val = current_fld_val
-                
-            elif field.model_field_type in ['char', 'text','html']:
-                if field_val: field_val = field_val + current_fld_val
-            else:
-                if field_val and current_fld_val:
-                    error_txt = _('Warning: Odoo field has been Mapped to multiple source fields, Last value found used for import')
-         
-        # If field is marked as Unique in mapping append to search on unique to use to confirm no duplicates before creating new record    
+                # If field is marked as Unique in mapping append to search on unique to use to confirm no duplicates before creating new record    
         if field.model_field.required and not field_val:
             rec.has_errors = True
             error_txt = _('Error: %s Required field %s  has no value ' % (field.model.model,field.model_field.name ))
             self.update_log_error(rec, error_txt)
             required_missing =  True
-        else: required_missing =  False
-        
+        else: 
+            required_missing =  False
+            if field.model_field_type == 'many2one' and field_val:
+                
+                search_result = self.do_search_related_records(field, import_record, field_val)
+                if not search_result: res_id = False
+                else: 
+                    res_id = search_result.get('res_id',False)
+                    
+                    external_id_name = search_result.get('external_id_name',False)
+                
+                    if not res_id and field.create_related: 
+                        res_id = self.create_related_record(import_record=import_record, field=field, field_val=field_val, external_id_name=external_id_name)
+                    
+                    if res_id == -1: 
+                        res_id = False
+                    
+                field_val = res_id
+            
+            elif field.model_field_type == 'boolean' and  field_val:
+    
+                try:
+                    field_val = field_val.lower()
+                    if field_val in ('1','t','true','y','yes'):
+                        field_val = True
+                    elif field_val in ('0','f','false','n','no',''):
+                        field_val = False
+                    else:
+                        field_val = False
+                        error_txt = ('Error: Field value %s -- %s is not Boolean type value set False' % (field.model_field.name,field_val,))
+                        self.update_log_error(rec, error_txt)
+                    
+                except:
+                    field_val = False
+                    error_txt = ('Error: Converting Field %s -- %s to Boolean value set False' % (field.model_field.name,field_val,))
+                    self.update_log_error(rec, error_txt)
+                
+            elif field.model_field_type == 'float' and  field_val:
+                    
+                if field_val.lower() == 'false': field_val = '0.0'
+                
+                try:
+                    field_val = float(field_val)
+                except:
+                    rec.has_errors = True
+                    field_val = 0.0
+                    error_txt = _('Error: Field %s -- %s is not required  Floating Point type' % ( field.model_field.name,field_val))
+                    self.update_log_error(error_txt=error_txt)
+    
+            elif field.model_field_type == 'integer' and  field_val:
+                  
+                if field_val.lower() == 'false': field_val = '0'
+                try:
+                    field_val = int(field_val)
+                except:
+                    rec.has_errors = True
+                    field_val = 0
+                    error_txt = _('Error:  Field %s -- not required Integer  type' % (field.model_field.name,field_val))
+                    self.update_log_error(error_txt=error_txt)
+    
+            elif field.model_field_type == 'selection' and  field_val:
+                
+                field_val = self.check_selection_field_value(field.model.model, field.model_field.name, field_val)
+                
+                if field_val:
+                    pass
+                else:
+                    rec.has_errors = True
+                    field_val = False
+                    error_txt = _('Error: Field %s -- %s is correct Selection Value' % ( field.model.model,field.model_field.name,field_val))
+                    self.update_log_error(rec, error_txt)
+            
+            elif field.model_field_type in ['char', 'text','html'] and  field_val:
+                pass
+            elif field.model_field_type == 'binary' and  field_val:
+                
+                pass
+            elif field.model_field_type in ['one2many','many2many']:
+       
+                result = self.get_o2m_m2m_vals(field=field, field_val=field_val, import_record=import_record)
+                field_val = result and [result.get('field_val',False)] or False
+                
+            if current_fld_val:
+                
+                if field.model_field_type in ['one2many','many2many']:
+                
+                    if field_val: 
+                        current_fld_val.append(field_val)
+                        field_val = current_fld_val
+                    else:field_val = current_fld_val
+                    
+                elif field.model_field_type in ['char', 'text','html']:
+                    if field_val: field_val = field_val + current_fld_val
+                else:
+                    if field_val and current_fld_val:
+                        error_txt = _('Warning: Odoo field has been Mapped to multiple source fields, Last value found used for import')
+                     
         return {'required_missing':required_missing,'field_val':field_val}
      
     @api.multi    
@@ -608,6 +608,7 @@ class import_data_file(models.Model):
         if  test_mode and (count >= rec.test_sample_size  or row_count >= rec.test_sample_size + 100) :
             
             if rec.rollback: self.env.cr.rollback()
+            
             # Exit Import Records Loop  
             return True
         elif not test_mode or not rec.rollback:
@@ -648,7 +649,9 @@ class import_data_file(models.Model):
         count: Total number of Rows actually imported without Skipped
         
         '''
-
+        global count
+        global row_count
+        
         estimate_time = self.estimate_import_time( rec, processed_rows=row_count, remaining=remaining)    
             
         stats_vals = {'start_time':rec.start_time,
@@ -662,7 +665,8 @@ class import_data_file(models.Model):
             stats_vals['end_time'] =  datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)  
             if rec.has_errors:stats_vals['state'] = 'map'
             else: stats_vals['state'] = 'ready'
-            
+            count = 0
+            row_count = 0
                         
         self.write(stats_vals) 
         
