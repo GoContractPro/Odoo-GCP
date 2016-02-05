@@ -75,8 +75,7 @@ class import_data_header(models.Model):
     create_related =fields.Boolean('Create Related', help = "Will create the related records using system default values if missing" )
 
     default_val =fields.Char(string='Default Import Val', size = 256, help = 'The Default if no values for field in imported Source')
-    substitutions =fields.One2many('import.m2o.substitutions','header_map', string="Deprecated Source Value Substitutions", copy=True)
-    substitution_ids =fields.Many2many('import.m2o.substitutions','import_substitution_rel','header_field_id','substitutions_id', string="Deprecated Source Value Substitutions", copy=True)
+    substitution_ids =fields.Many2many('import.substitution.values','import_substitution_rel','header_field_id','substitutions_id', string="Deprecated Source Value Substitutions", copy=True)
     substitute_sets = fields.Many2one(comodel_name='import.substitute.sets', string='Substitution Sets',
                                       help='Allows mapping and Converting values from Source Data into correct values for ODoo data ')
     is_unique_external =fields.Boolean('Use in External ID', readonly=False ,

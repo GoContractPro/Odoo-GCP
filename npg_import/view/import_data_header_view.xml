@@ -119,7 +119,7 @@
         
         <record id="npg_view_import_data_substitution_tree" model="ir.ui.view">
             <field name="name">import.data.substitution.tree</field>
-            <field name="model">import.m2o.substitutions</field>
+            <field name="model">import.substitution.values</field>
             <field name="arch" type="xml">           	
               	<tree editable="bottom">
 					<field name="src_value" />

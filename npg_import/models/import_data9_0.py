@@ -44,18 +44,6 @@ class import_data_file(models.Model):
     
     _inherit = "import.data.file"
     
-    external_id_field = fields.Many2one('import.data.header', string='External Id Field', domain="[('import_data_id','=',active_id)]")
-           
-    @api.multi
-    @api.onchange('external_id_field')
-    def _onchange_external_id_field(self):
-        
-        for fld in self.header_ids:
-            
-            if self.external_id_field.id ==  fld.id:
-                fld.is_unique_external = True
-            else: 
-                fld.is_unique_external = False
                 
     @api.multi
     def check_selection_field_value(self,model,field,field_val):
@@ -336,7 +324,7 @@ class import_data_file(models.Model):
             elif field.model_field_type == 'binary' and  field_val:
                 
                 pass
-            elif field.model_field_type in ['one2many','many2many']:
+            elif field.model_field_type in ['one2many','many2many'] and  field_val:
        
                 result = self.get_o2m_m2m_vals(field=field, field_val=field_val, import_record=import_record)
                 field_val = result and [result.get('field_val',False)] or False

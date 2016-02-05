@@ -68,9 +68,9 @@ def index_get(L, i, v=None):
     try: return L.index(i)
     except: return v
      
-class import_m2o_substitutions(osv.osv): 
+class import_substitution_values(osv.osv): 
     # The Model Is a map from Odoo Data to CSV Sheet Data
-    _name = "import.m2o.substitutions"
+    _name = "import.substitution.values"
     _description = "Create new value Substitutions functionality in Fields mapping"
     
     def _substitute_name_get_fnc(self, cr, uid, ids, prop, unknow_none, context=None):
@@ -81,9 +81,7 @@ class import_m2o_substitutions(osv.osv):
         return res
 
     
-    _columns = { 'header_map':fields.many2one('import.data.header',"Header Map",  ondelete='cascade'),
-                'name': fields.function(_substitute_name_get_fnc, type="char", string='Name'),
-                #'header_map_ids':fields.many2many('import.data.header', 'import_substitution_rel', 'substitutions_id','header_field_id', 'Header Map', ),
+    _columns = {'name': fields.function(_substitute_name_get_fnc, type="char", string='Name'),
                 'src_value':fields.char('Source field value', size=64,required=True),
                 'odoo_value':fields.char('Corresponding odoo value', size=64,required=True),
                 }
@@ -93,16 +91,14 @@ class import_m2o_substitutions(osv.osv):
     _defaults = {
                  'header_map':_get_import_header_map_id
                  }
-    
-    
-    
+       
 class import_substitute_sets(osv.osv):
     
     _name = "import.substitute.sets"
     _description = "Import Substitution maps"
     
     _columns = { 'name':fields.char('Name', size=64, required=True),
-                  'import_m2o_substitutions':fields.many2many('import.m2o.substitutions', 'import_substitute_sets_rel', 'substitutions_id','substitute_set_id', 'Substitution Set' )
+                  'import_m2o_substitutions':fields.many2many('import.substitution.values', 'import_substitute_sets_rel', 'substitutions_id','substitute_set_id', 'Substitution Set' )
                   }
     
 class import_related_header(osv.osv): 
@@ -149,12 +145,10 @@ class import_m2o_values(osv.osv):
                  'import_data_id':_get_import_id,
                  }
          
-
-         
 class import_data_file(osv.osv):
     
     _name = "import.data.file"
-    _description = "Holds import Data file information"
+    _description = "Holds import Data Source information"
 
    
     def _get_external_id_field(self, cr, uid, ids, fields, arg, context=None):
@@ -179,8 +173,8 @@ class import_data_file(osv.osv):
             'test_sample_size': fields.integer('Test Sample Size'),
             'do_update': fields.boolean('Allow Update', 
                     help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
-            'header_ids': fields.one2many('import.data.header','import_data_id','Fields Map',limit=300, copy=True),
-            'index':fields.integer("Index"),
+            'header_ids': fields.one2many('import.data.header','import_data_id','Import Fields ',limit=300, copy=True),
+#            'index':fields.integer("Index"),
             'dbf_path':fields.char('DBF Path',size=256),
             'record_num':fields.integer('Current Record'),
             'tot_record_num':fields.integer("Total Records"),
@@ -241,15 +235,6 @@ class import_data_file(osv.osv):
             'res_id': cron_id,
             'type': 'ir.actions.act_window',
         }
-    
-    
-    
-
-    def onchange_record_external(self,cr,uid, ids, record_external, context=None):
-        
-        if record_external:
-            return {'value': {'external_id_field': False}}
-        
 
     def action_set_confirmed(self,cr, uid,ids,context=None):
         vals = {'state':'ready'}
@@ -294,8 +279,6 @@ class import_data_file(osv.osv):
         
         return index.search(match=table_name.ljust(10))
                 
- 
-    
     def action_get_headers_dbf(self, cr, uid, ids, context=None):
         if context is None:
             context = {}
@@ -404,7 +387,7 @@ class import_data_file(osv.osv):
             for header in headers_list:
                 row+= 1
                 fids = self.pool.get('ir.model.fields').search(cr,uid,['|',('field_description','ilike',header),('name','ilike',header), ('model_id', '=', rec.model_id.id)])
-                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header,'index': row, 'csv_id':rec.id, 'model_field':fids and fids[0] or False, 'model':rec.model_id.id},context=context)
+                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header, 'csv_id':rec.id, 'model_field':fids and fids[0] or False, 'model':rec.model_id.id},context=context)
                 
         return True
     
@@ -462,7 +445,6 @@ class import_data_file(osv.osv):
                     'tot_record_num':tot_records, 
                     }
             self.write(cr,uid,ids[0],vals)    
-                
                 
         return True
  
@@ -665,13 +647,16 @@ class import_data_file(osv.osv):
             dbf_table = dbf.Table(rec.dbf_path)
             dbf_table.open()
             rec.tot_record_num = len(dbf_table)
-   
-            for import_record in dbf_table:
+            n = (rec.start_row and rec.start_row > 1 and rec.start_row - 1) or 0
+            while n < rec.tot_record_num:
+                 
+                import_record = dbf_table[n]
                 
                 self.do_process_import_row(cr, uid, ids, import_record, context)
                 
                 if self.exit_test_mode(cr, uid, ids, test_mode, context):
                     return{'value':self.update_statistics(cr, uid, ids, rec=rec, remaining=False)}
+                n += 1
         except:
             cr.rollback()
             rec.has_errors = True
@@ -697,8 +682,13 @@ class import_data_file(osv.osv):
             cur.execute(qry)
             
             all_data = True
+            if rec.start_row and rec.start_row > 0:
+                cur.skip(rec.start_row)
+                
             while all_data:
+                
                 all_data = cur.fetchmany(500)
+                
                 if not all_data:
                     break
                 for import_record in all_data:
