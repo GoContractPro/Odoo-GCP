@@ -81,7 +81,7 @@
                     </group>
                     </group>  
                     
-                    	<notebook>
+                    <notebook>
                     	<page string="ODBC SQL" name="odbc_sql" attrs="{'invisible':[('src_type', '!=', 'odbc')]}">
                     	 	<field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" />
                     	</page>
@@ -91,13 +91,18 @@
 
 	                    </field> 
 					
-	                </page>   
-	        		<page string="Error Log" name="error_log">
-	                    <group colspan="1">
-	                    	<field name="error_log"/>  
-	                    </group>
- 					</page>
- 				</notebook>
+		                </page>   
+		        		<page string="Error Log" name="error_log">
+		                    <group colspan="1">
+		                    	<field name="error_log"/>  
+		                    </group>
+	 					</page>
+	 					<page string="Import Record values" name="import_values">
+	 						<group colspan="1">
+		                    	<field name="import_values"/>  
+		                    </group>
+	 					</page>
+ 					</notebook>
                 </form>
             </field>
         </record>

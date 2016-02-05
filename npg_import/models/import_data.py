@@ -201,7 +201,8 @@ class import_data_file(osv.osv):
             'schedule_import': fields.many2one('ir.cron','Related Source Table'),
             
             'state': fields.selection([('draft','Draft'),('map','Mapping Fields'),('ready','Map Confirmed'),('importing','Import Running')], "Status"),
-            'sequence': fields.integer("Sequence")
+            'sequence': fields.integer("Sequence"),
+            'import_values':fields.text("Import Record Values")
             }
     
     _defaults = {
@@ -839,8 +840,7 @@ class import_data_file(osv.osv):
         if rec.record_num >1:
             rec.record_num -= 1
             self.onchange_record_num(cr, uid, ids, rec.record_num)
-            return {"value":{"record_num":rec.record_num}}
-        return
+        
                 
     def onchange_record_num(self,cr,uid,ids,record_num, context=None):
         
@@ -853,6 +853,7 @@ class import_data_file(osv.osv):
 
         for rec in self.browse(cr, uid, ids, context=context):
             header_ids_vals = []
+            rec_vals = []
             if rec.src_type == 'odbc':
                 raise   osv.except_osv('Warning', "Record set Values  is not available on ODBC")
                 return {}        
@@ -873,28 +874,22 @@ class import_data_file(osv.osv):
                 dbf_table.open()
                 dbf_table_rec = dbf_table[record_num-1]   
         
-                header_ids_vals = []
-                header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0]),('name','!=',False)])
-                for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
-        
-                    vals = {  'field_val':dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False}
-                    header_ids_vals.append((1,header_rec.id, vals))
-                header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})
+#                header_ids_vals = [('Row',record_num)]
+                rec_vals.append(['Row',record_num])
                 
+                for header_rec in rec.header_ids:
+                    field_val = dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False
+                    rec_vals.append([ str(header_rec.name), str(header_rec.field_label), field_val] )
+                    vals = {  'field_val': field_val}
+                    header_ids_vals.append((1,header_rec.id, vals))
+                    header_rec.field_val = field_val
+ #               header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})             
                 
             else:
                 return {}    
-    
-            header_ids_vals = []
-            header_ids = self.pool('import.data.header').search(cr,uid,[('import_data_id','=',ids[0]),('name','!=',False)])
-            for header_rec in self.pool('import.data.header').browse(cr,uid, header_ids, context = context):
-
-                    vals = {  'field_val':dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False}
-                    header_ids_vals.append((1,header_rec.id, vals))
-        
-            header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})
-    
-            return{'value':{'header_ids':header_ids_vals}}
+            import_values = str(rec_vals)
+            rec.import_values = import_values
+            return {"value":{"header_ids":header_ids_vals,"import_values":import_values,"record_num":record_num}}
 
      
 class ir_model_fields(osv.osv):
