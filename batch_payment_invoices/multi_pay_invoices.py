@@ -461,7 +461,7 @@ class account_multi_pay_invoice(osv.Model):
             if inv.partner_id.id in partners:
                 vals ={'use_credit_available' : 0,
                        'credit_available': 0.0,
-                       'amount_paid': inv.residual or 0.0,
+                       'amount_paid': 0.0,
 #                        'pay':True,
                        'pay':False,
                        'print_check':False}
@@ -493,7 +493,7 @@ class account_multi_pay_invoice(osv.Model):
                             partners[partner] = remain_credit_amount
                             vals ={'credit_available':  0.0,
                                    'use_credit_available':remain_credit_amount or 0.0,
-                               'amount_paid': inv.residual or 0.0,
+                               'amount_paid': 0.0,
 #                                'pay':True,
                                'pay':False,
 #                                'print_check':True
@@ -513,7 +513,7 @@ class account_multi_pay_invoice(osv.Model):
                         else:
                             vals ={'credit_available': 0.0,
                                    'use_credit_available':0.0,
-                                   'amount_paid': inv.residual or 0.0,
+                                   'amount_paid': 0.0,
 #                                    'pay':True,
                                    'pay':False,
 #                                    'print_check':True
@@ -527,7 +527,7 @@ class account_multi_pay_invoice(osv.Model):
                    else:
                             vals ={'credit_available': 0.0,
                                    'use_credit_available': 0.0,
-                                   'amount_paid': inv.residual  or 0.0,
+                                   'amount_paid': 0.0,
 #                                    'pay':True,
                                    'pay':False,
 #                                    'print_check':True
@@ -550,7 +550,7 @@ class account_multi_pay_invoice(osv.Model):
                                 partners[partner] = remain_credit_amount
                                 vals ={'credit_available':  0.0,
                                        'use_credit_available':remain_credit_amount or 0.0,
-                                   'amount_paid': inv.residual or 0.0,
+                                   'amount_paid': 0.0,
 #                                    'pay':True,
                                    'pay':False,
                                    'print_check':False}
@@ -563,13 +563,13 @@ class account_multi_pay_invoice(osv.Model):
 #                            else:
 #                                vals ={'credit_available': 0.0,
 #                                   'use_credit_available':remain_credit_amount or 0.0,
-#                               'amount_paid': inv.residual or 0.0,
+#                               'amount_paid': 0.0,
 #                               'pay':True,
 #                               'print_check':True}
                         else:
                             vals ={'credit_available':  0.0,
                                    'use_credit_available': 0.0,
-                                   'amount_paid': inv.residual or 0.0,
+                                   'amount_paid': 0.0,
 #                                    'pay':True,
                                    'pay':False,
                                    'print_check':False}
@@ -582,7 +582,7 @@ class account_multi_pay_invoice(osv.Model):
                     else:
                             vals ={'credit_available': 0.0,
                                    'use_credit_available': 0.0,
-                                   'amount_paid': inv.residual  or 0.0,
+                                   'amount_paid': 0.0,
 #                                    'pay':True,
                                    'pay':False,
                                    'print_check':False}
