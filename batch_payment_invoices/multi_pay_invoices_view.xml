@@ -125,11 +125,11 @@
 <!--		                <field name="payment_method"/>-->
                 	</tree>
                 </field>
-                <group>
+<!--                 <group>
 	                <field name="total_residual"/>
 	                <field name="total_credit_available"/>
 	                <field name="total_amount_paid"/>
-                </group>
+                </group--> 
                 </form>
             </field>
         </record>
@@ -193,11 +193,11 @@
 <!--		                <field name="payment_method"/>-->
                 	</tree>
                 </field>
-                 <group>
+<!--                 <group>
 	                <field name="total_residual"/>
 	                <field name="total_credit_available"/>
 	                <field name="total_amount_paid"/>
-                </group>
+                </group--> 
                 </form>
             </field>
         </record>
