@@ -58,16 +58,16 @@ class account_invoice(osv.Model):
                     vals = {'pay': False, 'print_check':True,'amount_paid':0.0}
             else:
                 if not inv.pay:
-                    amount_paid=use_credit_available=0.0
-                    if inv.credit_available > 0.0 and inv.credit_available>=inv.residual:
+                    amount_paid=credit_available=0.0
+                    if inv.use_credit_available > 0.0 and inv.use_credit_available>=inv.residual:
                         amount_paid = inv.residual or 0.0
-                        use_credit_available = amount_paid
-                    elif inv.credit_available > 0.0 and inv.credit_available<inv.residual:
-                        use_credit_available = inv.credit_available or 0.0
-                        amount_paid = inv.residual - use_credit_available
-                    vals = {'pay': True, 'amount_paid':amount_paid,'use_credit_available':use_credit_available}
+                        credit_available = amount_paid
+                    elif inv.use_credit_available > 0.0 and inv.use_credit_available<inv.residual:
+                        credit_available = inv.use_credit_available or 0.0
+                        amount_paid = inv.residual - credit_available
+                    vals = {'pay': True, 'amount_paid':amount_paid,'credit_available':credit_available}
                 elif inv.pay :
-                    vals = {'pay': False, 'amount_paid':0.0,'use_credit_available':0.0}
+                    vals = {'pay': False, 'amount_paid':0.0,'credit_available':0.0}
 #                 if not inv.pay:
 #                     vals = {'pay': True, 'amount_paid':inv.residual or 0.0 ,'use_credit_available': inv.use_credit_available_dummy}
 #                 elif inv.pay:
