@@ -183,12 +183,12 @@
 		                <field name="currency_id" groups="base.group_multi_currency" />
 						<field name="currency_id" groups="base.group_multi_currency" />
 		                <field name="residual" sum="Residual Amount" />
-		                <field name="use_credit_available" string="Available Credit" readonly="1"/>
+		                <field name="use_credit_available" string="Available Credit" sum="Total Available Credit" readonly="1"/>
 		                <field name="use_credit_available_dummy" string="Available" invisible="1"/>
 		                <field name="credit_available" string="Use Credits" on_change="onchange_credit(residual, credit_available)" attrs="{'readonly':[('state_for_readonly','in',('printed','posted'))]}" sum="total"/>
 <!--		                <field name="amount_untaxed" sum="Untaxed Amount"/>-->
 <!--		                <field name="amount_total" sum="Total Amount"/>-->
-		                <field name="amount_paid" attrs="{'readonly':[('state_for_readonly','=','posted')]}"/>
+		                <field name="amount_paid" sum="Total paid" attrs="{'readonly':[('state_for_readonly','=','posted')]}"/>
 		                <field name="state" />
 		                <field name="state_for_readonly" invisible="1"/>
 <!--		                <field name="payment_method"/>-->
