@@ -26,7 +26,7 @@
                     	<field name="name" colspan="4"/>
                     	<newline/>
                     	<group colspan="2">
-	                        <field name="model_id" on_change="onchange_model(model_id,state)"/>
+	                        <field name="model_id" />
 	                    	<field name="has_errors" readonly="1"/>
                     	</group>
                     	<group colspan="2">
@@ -69,7 +69,7 @@
 		                         <button name="record_backward" type="object" icon="gtk-go-back" colspan="1"/>
 		                    	 <button name="record_forward" type="object" icon="gtk-go-forward" colspan="1"/>
 		           
-		                    	 <field name="record_num" on_change="onchange_record_num(record_num)"/>
+		                    	 <field name="record_num"/>
 
 		                    	 <field name="tot_record_num" />
 		                    	 
