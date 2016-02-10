@@ -22,6 +22,7 @@
 ##############################################################################
 
 from openerp import models, fields, api, exceptions, _
+from openerp.exceptions import UserError, ValidationError
 import csv
 import os
 import cStringIO
@@ -60,6 +61,8 @@ row_count = 0
 count = 0
 dbf_table = None
 odbc_cursor = None
+start_time = None
+error_log = ""
 
 
 class import_data_file(models.Model): 
@@ -340,7 +343,7 @@ class import_data_file(models.Model):
             else:
                 self.has_errors = True
                 field_val = False
-                error_txt = _('Error: Field %s -- %s is correct Selection Value' % (field.model.model, field.model_field.name, field_val))
+                error_txt = _('Error: Incorrect Selection Field %s - %s  Import Value %s: %s' % (field.model.model, field.model_field.name, field.name,field_val))
                 self.update_log_error(error_txt=error_txt)
         
         elif field.model_field_type in ['char', 'text', 'html'] and  field_val:
@@ -390,7 +393,7 @@ class import_data_file(models.Model):
         #    for sub in field.substitutions:
         #       substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
         
-        for sub in field.substitute_sets.import_m2o_substitutions:
+        for sub in field.substitute_sets.import_substituion_value_ids:
             substitutes.update({str(sub.src_value).strip() : str(sub.odoo_value).strip()})
          
         try:    
@@ -643,8 +646,10 @@ class import_data_file(models.Model):
     @api.multi
     def update_log_error(self, error_txt=''):
         
-        if not self.error_log:
-            self.error_log = ""
+        global error_log
+        
+        if not error_log:
+            error_log = ""
         
         e = traceback.format_exc()
         
@@ -654,13 +659,13 @@ class import_data_file(models.Model):
         _logger.error(logger_msg)
         
         e = sys.exc_info()
-        self.error_log += error_txt + '\n'
+        error_log += error_txt + '\n'
         if e[2]:
             e = traceback.format_exception(e[0], e[1], e[2], 1)
             error_msg = e[2]
-            self.error_log += error_msg + '\n'
+            error_log += error_msg + '\n'
              
-        log_vals = {'error_log': self.error_log,
+        log_vals = {'error_log': error_log,
                 'has_errors':self.has_errors}
         self.write(log_vals)
         self.env.cr.commit()
@@ -677,11 +682,13 @@ class import_data_file(models.Model):
         global count
         global row_count
         
+        
         estimate_time = self.estimate_import_time(processed_rows=row_count, remaining=remaining)    
             
-        stats_vals = {'start_time':self.start_time,
+        stats_vals = {
+                    'start_time':start_time,  
                     'end_time': False,
-                    'error_log': self.error_log,
+                    'error_log': error_log,
                     'time_estimate': estimate_time,
                     'row_count': row_count,
                     'count': count}
@@ -694,6 +701,7 @@ class import_data_file(models.Model):
             row_count = 0
                         
         self.write(stats_vals) 
+        self.env.cr.commit()
         
         return stats_vals
     
@@ -706,7 +714,7 @@ class import_data_file(models.Model):
         remaining: Boolean if Tru return time left in import if false return total Estimated time
         '''
         t2 = datetime.datetime.now()
-        time_delta = (t2 - datetime.datetime.strptime(self.start_time, DEFAULT_SERVER_DATETIME_FORMAT))
+        time_delta = (t2 - datetime.datetime.strptime(start_time, DEFAULT_SERVER_DATETIME_FORMAT))
         if processed_rows > 0:
             time_each = time_delta / processed_rows
             time_each = time_each.total_seconds()
@@ -737,17 +745,17 @@ class import_data_file(models.Model):
     def onchange_record_num(self):
  
         if self.record_num < 1:
-            raise    osv.except_osv('Warning', "The Record Number must be positive value")
+            raise     UserError( "The Record Number must be positive value")
             return {}
        
         header_ids_vals = []
         rec_vals = []
         if self.src_type == 'odbc':
-            raise   osv.except_osv('Warning', "Record set Values  is not available on ODBC")
+            raise    UserError( "Record set Values  is not available on ODBC")
             return {}        
         
         elif self.src_type == 'csv':
-            raise   osv.except_osv('Warning', "Record set Values  is not available on CSV")
+            raise    UserError( "Record set Values  is not available on CSV")
             return {}
         
         elif self.src_type == 'dbf':
@@ -780,7 +788,7 @@ class import_data_file(models.Model):
                 
                 e = 'Error opening DBF Import  %s:' % (self.dbf_path,)
                 _logger.error(_('Error %s' % (e,)))
-                raise osv.except_osv('Warning', e)
+                raise  ValidationError( e)
                 return False
             
             dbf_table.open()
@@ -808,12 +816,12 @@ class import_data_file(models.Model):
     @api.onchange('model_id')
     @api.multi  
     def onchange_model(self):
-        if not ids or not state == 'draft' :
+        if not self.state == 'draft' :
             return {}
         if self.model_id:
             header_id_vals = []
             for rec in self.header_ids:    
-                odoo_field_id = self._match_import_header(cr, uid, model_id, rec.name, rec.field_label)
+                odoo_field_id = self._match_import_header( model_id, rec.name, rec.field_label)
                 vals = { 'model_field':odoo_field_id,
                         'model': model_id,
                         }
@@ -829,20 +837,22 @@ class import_data_file(models.Model):
         
         global row_count
         global count
+        global start_time
         
         row_count = 0
         count = 0
            
         if not self.header_ids:
-            raise osv.except_osv('Warning', 'No Fields import map')
+            raise  UserError( 'No Fields import map')
         
         test_mode = self.env.context.get('test', False)
         
         self.has_errors = False
-        self.error_log = '' 
+        error_log = '' 
         self.row_count = 0
         self.count = 0
-        self.start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        self.start_time = start_time
         
         self.update_statistics(remaining=True)
         
@@ -972,14 +982,14 @@ class import_data_file(models.Model):
             str_data = base64.decodestring(data_file)
             
             if not str_data:
-                raise osv.except_osv('Warning', 'The file contains no data')
+                raise  UserError( 'The file contains no data')
             
             return list(csv.reader(cStringIO.StringIO(str_data)))
             
         except:
             error_txt = "Error: Unable to open CSV Data"
             self.update_log_error(error_txt=error_txt)
-            raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
+            raise  UserError( 'Make sure you saved the file as .csv extension and import!')
             return False
    
     def get_csv_header_dict(self, csv_data):
@@ -996,7 +1006,7 @@ class import_data_file(models.Model):
                 header_map.update({hd.model_field.name : hd.name})
                     
         if not header_map:
-            raise osv.except_osv('Warning', 'No Header mapped with Model Field in Header line!')
+            raise  UserError( 'No Header mapped with Model Field in Header line!')
                     
         headers_dict = {}
         for field, label in header_map.iteritems():  

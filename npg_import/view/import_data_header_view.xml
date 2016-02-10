@@ -129,7 +129,7 @@
               	<form>
 					<group>
 					<field name="name" />
-					<field name="import_m2o_substitutions" />
+					<field name="import_substituion_value_ids" />
 					</group>
             	</form>  
             </field>
@@ -141,7 +141,7 @@
             <field name="arch" type="xml">           	
               	<tree >
 					<field name="name" />
-					<field name="import_m2o_substitutions" />
+					<field name="import_substituion_value_ids" />
             	</tree>  
             </field>
         </record>

@@ -5,7 +5,7 @@
 		<menuitem name="Import" id="menu_import" parent="base.menu_administration" groups="group_npg_import" />
 		
         <record id="action_import_data" model="ir.actions.act_window">
-            <field name="name">Import Sources</field>
+            <field name="name">Data File Sources</field>
             <field name="res_model">import.data.file</field>
             <field name="type">ir.actions.act_window</field>
             <field name="view_type">form</field>
@@ -16,7 +16,7 @@
         <menuitem action="action_import_data" id="menu_import_data" groups="group_npg_import" parent="menu_import" sequence="10"/>
 
  		<record id="action_import_data_header" model="ir.actions.act_window">
-            <field name="name">Import Fields</field>
+            <field name="name">Data Header Column Maps </field>
             <field name="res_model">import.data.header</field>
             <field name="type">ir.actions.act_window</field>
             <field name="view_type">form</field>
@@ -62,9 +62,23 @@
 
         </record> 
             
-        <menuitem action="action_import_substitute_maps" id="menu_import_substitute_maps" groups="group_npg_import" parent="menu_import" sequence="40"/>
-		<menuitem action="action_import_substitute_map_values" id="menu_import_substitute_map_values" groups="group_npg_import" parent="menu_import" sequence="50"/>
+        <menuitem action="action_import_substitute_maps" 
+        		id="menu_import_substitute_maps" 
+        		groups="group_npg_import" 
+        		parent="menu_import" 
+        		sequence="40"/>
+        		
+		<menuitem action="action_import_substitute_map_values" 
+				id="menu_import_substitute_map_values" 
+				groups="group_npg_import" 
+				parent="menu_import" 
+				sequence="50"/>
 		
+		<menuitem name="Database Sources"
+                id="menu_dbsource" 
+                parent="menu_import" 
+                action="base_external_dbsource.action_dbsource"
+                sequence="60"/>
    </data>
  </openerp>       
         

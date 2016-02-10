@@ -84,7 +84,7 @@ class import_substitution_values(osv.osv):
     _columns = {'name': fields.function(_substitute_name_get_fnc, type="char", string='Name'),
                 'src_value':fields.char('Source field value', size=64,required=True),
                 'odoo_value':fields.char('Corresponding odoo value', size=64,required=True),
-                }
+                 }
     
     def _get_import_header_map_id(self,cr,uid,context=None):
         return context.get('default_import_map_id',False)
@@ -98,7 +98,7 @@ class import_substitute_sets(osv.osv):
     _description = "Import Substitution maps"
     
     _columns = { 'name':fields.char('Name', size=64, required=True),
-                  'import_m2o_substitutions':fields.many2many('import.substitution.values', 'import_substitute_sets_rel', 'substitutions_id','substitute_set_id', 'Substitution Set' )
+                  'import_substituion_value_ids':fields.many2many('import.substitution.values', 'import_substitute_values_rel', 'substitutions_id','substitute_set_id', 'Substitution Set' )
                   }
     
 class import_related_header(osv.osv): 
@@ -129,15 +129,6 @@ class import_data_file(osv.osv):
     
     _name = "import.data.file"
     _description = "Holds import Data Source information"
-
-   
-    def _get_external_id_field(self, cr, uid, ids, fields, arg, context=None):
-        
-        header_fld_obj = self.pool.get('import.data.header')
-        search = [('is_unique_external','=',True),('import_data_id','=',ids[0])]
-        extern_fld = header_fld_obj.search(cr,uid, search)[0].name or None
-        return extern_fld
-        
          
     _columns = {
             'name':fields.char('Name',size=32,required = True ), 
@@ -182,7 +173,6 @@ class import_data_file(osv.osv):
     _defaults = {
         'test_sample_size':10,
         'record_num':1,
-        'src_type':'csv',
         'state': 'draft',
         }
 

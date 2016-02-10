@@ -58,7 +58,7 @@
                          	<field name="count" />
                          	<field name="rollback" />
                         	<field name="do_update" />
-                          	<field name="record_external" string="External Id from Row #" on_change="onchange_record_external(record_external)"/>
+                          	<field name="record_external" string="External Id from Row #"/>
                           	
                          </group>
                          <group col = "4">
@@ -83,7 +83,7 @@
                     	<page string="ODBC SQL" name="odbc_sql" attrs="{'invisible':[('src_type', '!=', 'odbc')]}">
                     	 	<field name="sql_source" colspan="4" placeholder="Write a valid SELECT SQL query to fetch data from Source database" />
                     	</page>
-                    	<page string="Field Map" name="field_map" >
+                    	<page string="Header Column Maps" name="field_map" >
                     	
                           <field name="header_ids" context="{'model':model_id,'default_import_data_id':active_id}" nolabel="1"> 
 
