@@ -642,7 +642,9 @@ class import_data_file(models.Model):
    
     @api.multi
     def update_log_error(self, error_txt=''):
-
+        
+        if not self.error_log:
+            self.error_log = ""
         
         e = traceback.format_exc()
         
