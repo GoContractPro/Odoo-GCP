@@ -62,7 +62,7 @@ count = 0
 dbf_table = None
 odbc_cursor = None
 start_time = None
-error_log = ""
+#error_log = ""
 
 
 class import_data_file(models.Model): 
@@ -646,10 +646,10 @@ class import_data_file(models.Model):
     @api.multi
     def update_log_error(self, error_txt=''):
         
-        global error_log
+        #global error_log
         
-        if not error_log:
-            error_log = ""
+        if not self.error_log:
+            self.error_log = ""
         
         e = traceback.format_exc()
         
@@ -659,13 +659,13 @@ class import_data_file(models.Model):
         _logger.error(logger_msg)
         
         e = sys.exc_info()
-        error_log += error_txt + '\n'
+        self.error_log += error_txt + '\n'
         if e[2]:
             e = traceback.format_exception(e[0], e[1], e[2], 1)
             error_msg = e[2]
-            error_log += error_msg + '\n'
+            self.error_log += error_msg + '\n'
              
-        log_vals = {'error_log': error_log,
+        log_vals = {'error_log': self.error_log,
                 'has_errors':self.has_errors}
         self.write(log_vals)
         self.env.cr.commit()
@@ -688,7 +688,7 @@ class import_data_file(models.Model):
         stats_vals = {
                     'start_time':start_time,  
                     'end_time': False,
-                    'error_log': error_log,
+                    'error_log': self.error_log,
                     'time_estimate': estimate_time,
                     'row_count': row_count,
                     'count': count}
@@ -838,8 +838,9 @@ class import_data_file(models.Model):
         global row_count
         global count
         global start_time
-        global error_log
-        
+
+        #global error_log
+
         row_count = 0
         count = 0
            
@@ -849,7 +850,7 @@ class import_data_file(models.Model):
         test_mode = self.env.context.get('test', False)
         
         self.has_errors = False
-        error_log = '' 
+        self.error_log = '' 
         self.row_count = 0
         self.count = 0
         start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
