@@ -838,6 +838,7 @@ class import_data_file(models.Model):
         global row_count
         global count
         global start_time
+        global error_log
         
         row_count = 0
         count = 0
