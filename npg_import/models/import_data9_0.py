@@ -22,7 +22,7 @@
 ##############################################################################
 
 from openerp import models, fields, api, exceptions, _
-from openerp.exceptions import UserError, ValidationError
+
 import csv
 import os
 import cStringIO
@@ -745,17 +745,17 @@ class import_data_file(models.Model):
     def onchange_record_num(self):
  
         if self.record_num < 1:
-            raise     UserError( "The Record Number must be positive value")
+            raise     ValueError( "The Record Number must be positive value")
             return {}
        
         header_ids_vals = []
         rec_vals = []
         if self.src_type == 'odbc':
-            raise    UserError( "Record set Values  is not available on ODBC")
+            raise    ValueError( "Record set Values  is not available on ODBC")
             return {}        
         
         elif self.src_type == 'csv':
-            raise    UserError( "Record set Values  is not available on CSV")
+            raise    ValueError( "Record set Values  is not available on CSV")
             return {}
         
         elif self.src_type == 'dbf':
@@ -788,7 +788,7 @@ class import_data_file(models.Model):
                 
                 e = 'Error opening DBF Import  %s:' % (self.dbf_path,)
                 _logger.error(_('Error %s' % (e,)))
-                raise  ValidationError( e)
+                raise  ValueError( e)
                 return False
             
             dbf_table.open()
@@ -845,7 +845,7 @@ class import_data_file(models.Model):
         count = 0
            
         if not self.header_ids:
-            raise  UserError( 'No Fields import map')
+            raise  ValueError( 'No Fields import map')
         
         test_mode = self.env.context.get('test', False)
         
@@ -984,14 +984,14 @@ class import_data_file(models.Model):
             str_data = base64.decodestring(data_file)
             
             if not str_data:
-                raise  UserError( 'The file contains no data')
+                raise  ValueError( 'The file contains no data')
             
             return list(csv.reader(cStringIO.StringIO(str_data)))
             
         except:
             error_txt = "Error: Unable to open CSV Data"
             self.update_log_error(error_txt=error_txt)
-            raise  UserError( 'Make sure you saved the file as .csv extension and import!')
+            raise  ValueError( 'Make sure you saved the file as .csv extension and import!')
             return False
    
     def get_csv_header_dict(self, csv_data):
@@ -1008,7 +1008,7 @@ class import_data_file(models.Model):
                 header_map.update({hd.model_field.name : hd.name})
                     
         if not header_map:
-            raise  UserError( 'No Header mapped with Model Field in Header line!')
+            raise  ValueError( 'No Header mapped with Model Field in Header line!')
                     
         headers_dict = {}
         for field, label in header_map.iteritems():  
