@@ -1071,7 +1071,7 @@ class import_data_file(models.Model):
         skip_list = []
         search_list = []
         
-        if self.skip_filter:
+        if skip_filter:
             skip_filter = skip_filter.replace('[', '')
             skip_filter = skip_filter.replace(']', '')
             
