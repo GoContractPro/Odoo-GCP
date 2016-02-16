@@ -101,29 +101,6 @@ class import_substitute_sets(osv.osv):
                   'import_substituion_value_ids':fields.many2many('import.substitution.values', 'import_substitute_values_rel', 'substitutions_id','substitute_set_id', 'Substitution Set' )
                   }
     
-class import_related_header(osv.osv): 
-    # The Model Is a map from Odoo Data to CSV Sheet Data
-    _name = "import.related.fields"
-    _description = "Sublevel Related Fields mapping"
-    
-    
-    _columns = { 
-                'name': fields.char('Related Fields Map'),
-                'import_data_headers':fields.many2many('import.data.header', 'import_related_fields_rel', 'import_related_id','import_data_header_id','Import Field', required=False, ondelete='cascade'),
-               
-                }
-    
-
-    def _get_model(self,cr,uid,context=None):
-        return context.get('default_model',False)
-    def _get_import_id(self,cr,uid,context=None):
-        return context.get('default_import_id',False)
-    
-    _defaults = {
-                 'model':_get_model,
-                 'import_data_id':_get_import_id,
-                 }
-
             
 class import_data_file(osv.osv):
     
@@ -163,11 +140,10 @@ class import_data_file(osv.osv):
             'src_table_name' : fields.char('Source Table Name',size=256),
             'src_type' : fields.selection(SOURCE_TYPES, "Data Source Type", required=True),
             'sql_source': fields.text('SQL', help='Write a valid "SELECT" SQL query to fetch data from Source database'),
-            'schedule_import': fields.many2one('ir.cron','Related Source Table'),
+            'schedule_import': fields.integer('Scheduled'),
             
             'state': fields.selection([('draft','Draft'),('map','Mapping Fields'),('ready','Map Confirmed'),('importing','Import Running')], "Status"),
             'sequence': fields.integer("Sequence"),
-            'import_values':fields.text("Import Record Values")
             }
     
     _defaults = {

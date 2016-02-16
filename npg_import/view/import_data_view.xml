@@ -105,6 +105,7 @@
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
                 <tree string="Import Data Files" version="7.0">
+                		<field name="sequence" string="#"/>
                 		<field name="sequence" widget="handle"/>
                     	<field name="name"/>
                         <field name="tot_record_num" />

@@ -43,26 +43,26 @@ class import_data_header(models.Model):
     _name = "import.data.header"
     _description = "Map Odoo Fields to Import Fields"
     
-    name = fields.Char('Import Field Name', size=64)
-    field_label = fields.Char(string='Description', size=64,)
-    field_type = fields.Char(string='Data Type', size=64,)
-    field_val = fields.Char(string='Record Value', size=128)
-    field_selector = fields.Many2one('import.data.header', 'Select Source Field', domain="[('import_data_id','=',import_source_filter)]")
+    name = fields.Char('Source Field Name', size=64)
+    field_label = fields.Char(string='Source Description', size=64,)
+    field_type = fields.Char(string='Source Data Type', size=64,)
+    field_val = fields.Char(string='Source Record Value', size=128)
+    field_selector = fields.Many2one('import.data.header', string='Select Source Field', domain="[('import_data_id','=',import_source_filter)]")
    
-    import_data_id = fields.Many2one(comodel_name='import.data.file', string='Import Source', required=False, ondelete='cascade',)
-    parent_id = fields.Many2one(comodel_name='import.data.header', string='Parent Header Field', required=False, ondelete='cascade')
-    child_ids = fields.One2many('import.data.header', 'parent_id', string="Child Field Map", copy=True,
+    import_data_id = fields.Many2one(comodel_name='import.data.file', string='Data File Source', required=False, ondelete='cascade',)
+    parent_id = fields.Many2one(comodel_name='import.data.header', string='Parent Header Column', required=False, ondelete='cascade')
+    child_ids = fields.One2many('import.data.header', 'parent_id', string="Child Header Column", copy=True,
                                  help="Default Values or source values to map to create related and parent records")
     is_unique = fields.Boolean(string='Use in Unique Search', help='Value for Field  Should be unique name or reference identifier and not Duplicated ')
     model = fields.Many2one(comodel_name='ir.model', string='Model')
     model_field = fields.Many2one(comodel_name='ir.model.fields', string='Odoo Field', domain="[('model_id','=',model)]")
-    model_field_type = fields.Selection(related='model_field.ttype', readonly=True)
-    model_field_name = fields.Char(related='model_field.name', readonly=True)
-    relation = fields.Char(related='model_field.relation', size=128,
+    model_field_type = fields.Selection(related='model_field.ttype', string='Odoo Field Type', readonly=True)
+    model_field_name = fields.Char(related='model_field.name', string='Odoo Field Name', readonly=True)
+    relation = fields.Char(related='model_field.relation', string='Odoo Model Name', size=128,
                     help="The technical name of  Model this field is related to"
                     , readonly=True)
-    relation_id = fields.Many2one(comodel_name='ir.model', compute='_get_relation_id', string='Odoo Related Field', readonly=True)
-    import_child_ids = fields.One2many('import.data.header', 'parent_id', string='Related Field', required=True, ondelete='cascade')
+    relation_id = fields.Many2one(comodel_name='ir.model', string='Odoo Related Field', compute='_get_relation_id', readonly=True)
+#    import_child_ids = fields.One2many('import.data.header', 'parent_id', string='Related Field', required=True, ondelete='cascade')
     relation_field = fields.Char(related='model_field.relation_field', string='Odoo Related Field', size=128,
                     help="For one2many fields, the field on the target model that implement the opposite many2one relationship")
     search_filter = fields.Char('Filter Include', size=256,
@@ -82,7 +82,7 @@ class import_data_header(models.Model):
                                 help='Check if this field is Unique e.g. an Account Number or A vendor Number. Its value will be used in odoo external ID')
 #    m2o_values = fields.One2many('import.m2o.values', 'import_field_id', string="(Deprecated)Related Map", copy=True, 
 #                                 help="Deprecated (Default Values or source values to map to create related and parent records)")
-    m2o_create_external = fields.Boolean('Create External on Related')
+#    m2o_create_external = fields.Boolean('Create External on Related')
     o2m_external_field2 = fields.Many2one(comodel_name='import.data.header', string='[Deprecated]O2M External' , domain="[('import_data_id','=',import_data_id')]",
                                                       help='Deprecated -- use Map Related Fields instead')
     search_related_external = fields.Boolean(string='External ID Search',
@@ -92,8 +92,8 @@ class import_data_header(models.Model):
     search_name = fields.Boolean(string='Name Search')
     search_other_field = fields.Many2one(comodel_name='ir.model.fields', string='Other Search Field', domain="[('model_id','=',relation_id)]",
                                 help='Select field  to match in related record other than Name or External ID')
-    related_import_source = fields.Many2one(comodel_name='import.data.file', string='Related Import Source',
-                                           help='Secondary Table or file Source to provide Values for related Records')
+#    related_import_source = fields.Many2one(comodel_name='import.data.file', string='Related Import Source',
+#                                           help='Secondary Table or file Source to provide Values for related Records')
     sequence = fields.Integer('Sequence')
     sub_string = fields.Char('Substring', size=8)
     import_source_filter = fields.Many2one(comodel_name='import.data.file', string='Import Source ID', compute='_get_import_source', store=False, readonly=False)

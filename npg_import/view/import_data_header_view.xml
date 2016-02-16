@@ -76,7 +76,7 @@
             <field name="model">import.data.header</field>
             <field name="arch" type="xml">           	
               	<tree>
-              		
+              		<field name="sequence" string="#"/>
               		<field name="sequence" widget="handle"/>
               		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
             		<field name="name"/>

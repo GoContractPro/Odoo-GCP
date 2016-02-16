@@ -62,6 +62,7 @@ count = 0
 dbf_table = None
 odbc_cursor = None
 start_time = None
+ProcessStartTime = None
 #error_log = ""
 
 
@@ -171,7 +172,7 @@ class import_data_file(models.Model):
             return search_result 
               
         if search_unique_id and external_id and external_id != search_unique_id:
-            error_txt = _('Warning: External Id and Unique Field not Id not matched  %s <> %s external Id will be used' % (external_id, search_unique_id,))
+            error_txt = _('Warning: Model %s External Id and Unique Field not Id not matched  %s <> %s external Id will be used' % (model.model, external_id, search_unique_id,))
             self.update_log_error(error_txt=error_txt)
             search_result['res_id'] = external_id
             return search_result
@@ -523,13 +524,14 @@ class import_data_file(models.Model):
         
         try:  # Update or Create Records          
             
+            dbWriteStartTime = datetime.datetime.now()
             if res_id == -1:
                 # Errors in UNique Search or Duplicated records found.
-                return False
+                result = False
   
             elif res_id == 0: 
                  res_id = self.create_import_record(vals=vals, external_id_name=external_id_name, model=model)
-                 return res_id
+                 result =  res_id
                 
             elif res_id and self.do_update:
                 record_obj = self.env[model].browse(res_id)
@@ -537,16 +539,19 @@ class import_data_file(models.Model):
                 if record_obj: 
                     res_id = record_obj.id
                     _logger.info(_('Source row %s Updated Odoo Model %s ID: %s %s') % (row_count, model, external_id_name or '', res_id,)) 
-                    return res_id
+                    result =  res_id
                 else:
                     _logger.info(_('Source row %s Update Failed Odoo Model %s ID: %s %s') % (row_count, model, external_id_name or '', res_id,)) 
-                    return False
+                    result =  False
             
             elif res_id and not self.do_update:
                 error_txt = _(('Warning: %s Duplicate found in Odoo Model %s ID: %s %s, record skipped') % (row_count, model, external_id_name or '', res_id,)) 
                 self.update_log_error(error_txt=error_txt)
-                return False   
-       
+                result =  False   
+            time_delta = datetime.datetime.now() - dbWriteStartTime
+            _logger.info(_("Model %s Write Time %s") %(model, time_delta))
+            
+            return result
         except:  # Error Writing or Creating Records
             self.env.cr.rollback()
             self.has_errors = True
@@ -567,7 +572,8 @@ class import_data_file(models.Model):
         external_id_name = ''
         skip_record = False
         row_count += 1
-       
+        
+        self.row_process_time(set_start=True)      
         if row_count % 25 == 0:  # Update Statics every 10 records
             self.update_statistics(remaining=True)
                     
@@ -622,10 +628,16 @@ class import_data_file(models.Model):
             return False
         
         if self.create_or_update_record(res_id, vals, external_id_name, self.model_id.model):
+            self.row_process_time()
             count += 1
             return count
+            
         else:
-            return False
+            self.row_process_time()
+            return  False
+        
+         
+            
   
     @api.multi
     def exit_test_mode(self, test_mode):
@@ -638,7 +650,7 @@ class import_data_file(models.Model):
             # Exit Import Records Loop  
             return True
         elif not test_mode or not self.rollback:
-            self.env.cr.commit()
+#            self.env.cr.commit()
             return False
         return False
 
@@ -668,7 +680,7 @@ class import_data_file(models.Model):
         log_vals = {'error_log': self.error_log,
                 'has_errors':self.has_errors}
         self.write(log_vals)
-        self.env.cr.commit()
+#        self.env.cr.commit()
         return log_vals
     
     @api.multi
@@ -701,7 +713,7 @@ class import_data_file(models.Model):
             row_count = 0
                         
         self.write(stats_vals) 
-        self.env.cr.commit()
+#        self.env.cr.commit()
         
         return stats_vals
     
@@ -775,9 +787,8 @@ class import_data_file(models.Model):
                 
         else:
             return {}    
-        import_values = str(rec_vals)
-        self.import_values = import_values
-        return {"value":{"header_ids":header_ids_vals, "import_values":import_values, "record_num":self.record_num}}
+
+        return {"value":{"header_ids":header_ids_vals, "record_num":self.record_num}}
     
     def get_dbf_table_rec(self, record_num):
         global dbf_table
@@ -819,13 +830,13 @@ class import_data_file(models.Model):
         if not self.state == 'draft' :
             return {}
         if self.model_id:
-            header_id_vals = []
+            header_ids_vals = []
             for rec in self.header_ids:    
-                odoo_field_id = self._match_import_header( model_id, rec.name, rec.field_label)
+                odoo_field_id = self._match_import_header( self.model_id.id, rec.name, rec.field_label)
                 vals = { 'model_field':odoo_field_id,
-                        'model': model_id,
+                        'model': self.model_id.id,
                         }
-                header_ids_vals.append((1, self.id, vals))
+                header_ids_vals.append((1, rec.id, vals))
                 
             return{'value':{"header_ids":header_ids_vals}}
     
@@ -1097,3 +1108,19 @@ class import_data_file(models.Model):
             return False
         else:
             return True
+
+
+    def row_process_time(self, set_start=False):
+    
+        
+        global RowStartTime
+        
+        if set_start:
+            RowStartTime = datetime.datetime.now()
+            return
+        else:
+            time_delta = datetime.datetime.now()- RowStartTime
+            _logger.info(_("Row: %s Process Time: %s seconds" ) %(row_count, time_delta))
+            
+            return                                           
+            
