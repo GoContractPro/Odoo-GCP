@@ -295,7 +295,7 @@ class import_data_file(osv.osv):
 
                     field_label =  self.vision_match_field_label(cr, uid, field[0], index = dbf_label_index)
         
-                    fld_obj = self._match_import_header(cr, uid, rec.model_id.id, field[0], field_label)    
+                    fld_obj = self._match_import_header(cr, uid, ids, rec.model_id.id, field[0], field_label, context)    
                         
                     vals = {'name':field[0], 'import_data_id':rec.id,
                             'model_field':fld_obj and fld_obj.id or False,
@@ -388,7 +388,7 @@ class import_data_file(osv.osv):
             for col in headers_list:
                 
                 header = col[0]
-                fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
+                fld_obj = self._match_import_header(cr, uid, ids, rec.model_id.id, header, header, context)    
 
                 vals = {'name':header, 'import_data_id':rec.id,
                             'model_field':fld_obj and fld_obj.id or False,
