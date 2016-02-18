@@ -113,7 +113,7 @@ class import_data_header(models.Model):
     _order = 'sequence,model_field'
     
     
-    @api.multi
+    
     @api.onchange('field_selector')
     def onchange_field_selector(self):
         if self.field_selector:
@@ -122,7 +122,7 @@ class import_data_header(models.Model):
             self.field_val = self.field_selector.field_val
             self.field_type = self.field_selector.field_type
           
-    @api.multi
+    
     @api.onchange('model_field')
     def onchange_model_field(self, model_field=None):
 

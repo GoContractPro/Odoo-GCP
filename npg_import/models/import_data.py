@@ -248,19 +248,15 @@ class import_data_file(osv.osv):
                 if not dbf_table:
                     
                     e = 'Error opening DBF Import  %s:'  % (rec.dbf_path, )
-                    _logger.error(_('Error %s' % (e,)))
-                    vals = {'error_log': e,
-                            'has_errors':True}
-                    self.write(cr,uid,ids[0],vals) 
+                    return self.update_log_error(self, cr, uid, ids,error_txt=e,has_error = True)
+                    
+                    
                  
                 tot_records = len(dbf_table)    
                 if tot_records == 0:
                     e = 'Table has no data to Import  %s:'  % (rec.dbf_path, )
-                    _logger.error(_('Error %s' % (e,)))
-                    vals = {'error_log': e,
-                            'has_errors':True}
-                    self.write(cr,uid,ids[0],vals)
-                    return
+                    return self.update_log_error(self, cr, uid, ids,error_txt=e,has_error = True)
+                    
                     
                 dbf_label_index = self.get_label_match_index(cr, uid, dbf_table)
                 
@@ -271,7 +267,7 @@ class import_data_file(osv.osv):
 
                     field_label =  self.vision_match_field_label(cr, uid, field[0], index = dbf_label_index)
         
-                    fld_obj = self._match_import_header(cr, uid, rec.model_id.id, field[0], field_label)    
+                    fld_obj = self._match_import_header(cr, uid, ids, rec.model_id.id, field[0], field_label, context)    
                         
                     vals = {'name':field[0], 'import_data_id':rec.id,
                             'model_field':fld_obj and fld_obj.id or False,
@@ -292,13 +288,9 @@ class import_data_file(osv.osv):
                 return {'value': vals}
                 
             except:
-                sys_info = sys.exc_info()[1][1]
-                e = 'Error opening DBF Import  %s: \n%s \n%s' % (rec.dbf_path, sys_info[1],sys_info) 
-                print e
-                _logger.error(_('Error:  %s ' % (e,)))
-                vals = {'error_log': e,
-                        'has_errors':True}
-                self.write(cr,uid,ids[0],vals)  
+                
+                error_txt = _('Error opening DBF Import  %s' % (rec.dbf_path,))
+                return self.update_log_error(self, cr, uid, ids,error_txt=error_txt,has_error = True) 
  
         return {'value': vals}
     
@@ -364,7 +356,7 @@ class import_data_file(osv.osv):
             for col in headers_list:
                 
                 header = col[0]
-                fld_obj = self._match_import_header(cr, uid, rec.model_id.id, header, header)    
+                fld_obj = self._match_import_header(cr, uid,ids, rec.model_id.id, header, header, context)    
 
                 vals = {'name':header, 'import_data_id':rec.id,
                             'model_field':fld_obj and fld_obj.id or False,
@@ -432,8 +424,7 @@ class import_data_file(osv.osv):
                 s = s.encode('unicode-escape')
             return s
         else:
-            return s
-    
+            return s   
           
     def get_row_count_odbc(self,qry,cur):
         
@@ -474,9 +465,6 @@ class import_data_file(osv.osv):
         
             
         raise osv.except_osv('Warning', 'No Data files to Import')
-    
-
-        
 
      
 class ir_model_fields(osv.osv):

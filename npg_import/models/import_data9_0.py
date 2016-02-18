@@ -424,18 +424,19 @@ class import_data_file(models.Model):
         if not field_raw  and field.default_val:
             return field.default_val
         if not field_raw:
-            return False
+            return None
         else: 
             if isinstance(field_raw, str):
                 
                 field_val = field_raw.strip()
-                if field_val == "" and field.default_val:
-                    field_val = field.default_val
+                if field_val == "": 
+                    field_val = field.default_val or ""
+                
     
             elif isinstance(field_raw, unicode):
                 field_val = field_raw.strip()
-                if field_val == "" and field.default_val:
-                    field_val = field.default_val
+                if field_val == "":
+                    field_val = field.default_val or ""
     
             elif isinstance(field_raw, datetime.datetime):
                 field_val = field_raw.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
@@ -586,14 +587,13 @@ class import_data_file(models.Model):
                 
                 # test  Clean and convert Raw incoming Data values to stings to allow comparing to search filters and substitutions         
                 field_val = self.get_field_val_from_record(import_record, field)
-                if not field_val:continue
-                    
                 
                 # IF Field value not found in Filter Search list skip out to next import record row
                 if self.skip_current_row_filter(field_val, field):
                     return False                          
-                
-               
+              
+                if not field_val:continue
+             
                 if not field.model_field: continue  # Skip to next Field if no Odoo field set
                 
                 # Convert to Odoo Data types and add field to Record Vals Dictionary
@@ -611,9 +611,6 @@ class import_data_file(models.Model):
                 self.update_log_error(error_txt=error_txt)
                 skip_record = True
                 return False
-        
-        if skip_record :  # this Record does not match filter skip to next Record in import Source
-            return False
         
         try:  # Finding existing Records  
 
@@ -656,7 +653,7 @@ class import_data_file(models.Model):
 
    
     @api.multi
-    def update_log_error(self, error_txt=''):
+    def update_log_error(self, error_txt='' , has_errors = False):
         
         #global error_log
         
@@ -678,7 +675,7 @@ class import_data_file(models.Model):
             self.error_log += error_msg + '\n'
              
         log_vals = {'error_log': self.error_log,
-                'has_errors':self.has_errors}
+                'has_errors':self.has_errors or has_errors}
         self.write(log_vals)
 #        self.env.cr.commit()
         return log_vals
@@ -753,7 +750,7 @@ class import_data_file(models.Model):
             self.onchange_record_num()
         
     @api.onchange('record_num')
-    @api.multi            
+               
     def onchange_record_num(self):
  
         if self.record_num < 1:
@@ -824,19 +821,31 @@ class import_data_file(models.Model):
         return odbc_cursor    
         
         
-    @api.onchange('model_id')
-    @api.multi  
+    @api.onchange('model_id') 
     def onchange_model(self):
+        
+        header_ids_vals = []
         if not self.state == 'draft' :
+            for rec in self.header_ids:    
+            
+                vals = { 
+                        'model': self.model_id.id,
+                        }
+                header_ids_vals.append((1, rec.id, vals))
+                rec.model = self.model_id.id
+            return{'value':{"header_ids":header_ids_vals}}
+            
+            
             return {}
         if self.model_id:
-            header_ids_vals = []
+           
             for rec in self.header_ids:    
                 odoo_field_id = self._match_import_header( self.model_id.id, rec.name, rec.field_label)
                 vals = { 'model_field':odoo_field_id,
                         'model': self.model_id.id,
                         }
                 header_ids_vals.append((1, rec.id, vals))
+                rec.model = self.model_id.id 
                 
             return{'value':{"header_ids":header_ids_vals}}
     
@@ -1070,7 +1079,10 @@ class import_data_file(models.Model):
      
     def skip_current_row_filter(self, field_val , field):
         
-        if field.skip_if_empty and field_val == '':
+        if field.skip_if_empty and (field_val == '' or not field_val ):
+            error_txt = _('Warning: Source %s : %s for Odoo Field %s  Has no value is Skipped ' % (field.name, field_val,field.model_field.name))
+            self.update_log_error(error_txt=error_txt)
+            
             return True
         
         search_filter = field.search_filter
