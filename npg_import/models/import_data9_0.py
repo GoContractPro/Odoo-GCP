@@ -647,7 +647,7 @@ class import_data_file(models.Model):
             # Exit Import Records Loop  
             return True
         elif not test_mode or not self.rollback:
-#            self.env.cr.commit()
+            self.env.cr.commit()
             return False
         return False
 
