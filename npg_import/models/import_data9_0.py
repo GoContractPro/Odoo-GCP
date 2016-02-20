@@ -1084,49 +1084,51 @@ class import_data_file(models.Model):
 
      
     def skip_current_row_filter(self, field_val , field):
-        
+        '''
+             if record to be skipped return True
+        '''    
+        # Skip if empty Record
         if field.skip_if_empty and (field_val == '' or not field_val ):
             error_txt = _('Warning: Source %s : %s for Odoo Field %s  Has no value is Skipped ' % (field.name, field_val,field.model_field.name))
             self.update_log_error(error_txt=error_txt)
+            to_be_skipped = True
+            return to_be_skipped
+        
+        if field.name == 'kits':
+            pass
+        
+        # Skip if found in list to be Skipped
+        if field.skip_filter and not field.skip_filter == '[]':
+        
+            skip_list = []
+            skip_filter = field.skip_filter.replace('[', '')
+            skip_filter = field.skip_filter.replace(']', '')
             
-            return True
-        
-        search_filter = field.search_filter
-        skip_filter = field.skip_filter
-        
-        if (not  search_filter or search_filter == '[]') and (not  skip_filter or skip_filter == '[]'):
-            return False
-        
-        skip_list = []
-        search_list = []
-        
-        if skip_filter:
-            skip_filter = skip_filter.replace('[', '')
-            skip_filter = skip_filter.replace(']', '')
-            
-            skip_list = tuple(skip_filter.split(','))
+            skip_list = tuple(field.skip_filter.split(','))
             
             if not skip_list:
-                skip_list.append(skip_filter)
+                skip_list.append(field.skip_filter)
+                              
+            if field_val in skip_list:
+                to_be_skipped = True
+                return to_be_skipped
+              
+        if field.search_filter and not field.search_filter == '[]':
         
-        if search_filter:
-        
-            search_filter = search_filter.replace('[', '')
-            search_filter = search_filter.replace(']', '')
+            search_list = []
+            search_filter = field.search_filter.replace('[', '')
+            search_filter = field.search_filter.replace(']', '')
             
-            search_list = tuple(search_filter.split(','))
+            search_list = tuple(field.search_filter.split(','))
             
             if not search_list:
-                search_list.append(search_filter)
+                search_list.append(field.search_filter)
             
-        if field_val in search_list:
-            return False
+            if field_val not in search_list:
+                to_be_skipped = True
+                return to_be_skipped
             
-        elif field_val not in skip_list:
-            return False
-        else:
-            return True
-
+        return False
 
     def row_process_time(self, set_start=False):
     

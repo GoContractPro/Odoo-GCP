@@ -23,7 +23,6 @@
 
 from openerp import models, fields, api, exceptions, _
 
-
 class import_data_header(models.Model): 
 
     @api.one
