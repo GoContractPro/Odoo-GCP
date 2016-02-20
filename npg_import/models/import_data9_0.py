@@ -379,7 +379,7 @@ class import_data_file(models.Model):
                 else:field_val = append_vals
                 
             elif field.model_field_type in ['char', 'text', 'html']:
-                if field_val: field_val = field_val + append_vals
+                if field_val: field_val = append_vals + field_val
             else:
                 if field_val and append_vals:
                     error_txt = _('Warning: Odoo field has been Mapped to multiple source fields, Last value found used for import')
@@ -581,7 +581,9 @@ class import_data_file(models.Model):
         for field in self.header_ids:
 
             try:  # Building Vals DIctionary
-                if not field.model_field: continue                       
+                
+                
+                                      
                 res_id = False
                 field_val = False
                 

@@ -135,7 +135,7 @@ class import_data_file(osv.osv):
             'row_count':fields.integer("Rows Processed"),
             'count':fields.integer("Rows Imported"),
             'time_estimate':fields.float("Time Estimate"),
-            'start_row':fields.integer("Import Start Row"),
+            'start_row':fields.integer("Test Start Row"),
             'base_external_dbsource' : fields.many2one('base.external.dbsource', string="ODBC Connection", help="External Database connection to foreign databases using ODBC, MS-SQL, Postgres, Oracle Client or SQLAlchemy."),
             'src_table_name' : fields.char('Source Table Name',size=256),
             'src_type' : fields.selection(SOURCE_TYPES, "Data Source Type", required=True),

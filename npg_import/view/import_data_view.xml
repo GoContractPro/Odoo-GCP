@@ -108,6 +108,7 @@
                 		<field name="sequence" string="#"/>
                 		<field name="sequence" widget="handle"/>
                     	<field name="name"/>
+                    	<field name="state"/>
                         <field name="tot_record_num" />
                         <field name="row_count" />
                         <field name="count" />
