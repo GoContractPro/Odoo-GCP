@@ -776,12 +776,16 @@ class import_data_file(models.Model):
             rec_vals.append(['Row', self.record_num])
                
             for header_rec in self.header_ids:
-                field_val = dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False
-                rec_vals.append([ str(header_rec.name), str(header_rec.field_label), field_val])
-                vals = {  'field_val': field_val}
-                header_ids_vals.append((1, header_rec.id, vals))
-                header_rec.field_val = field_val
-                
+                try:
+                    field_val = dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False
+                    rec_vals.append([ str(header_rec.name), str(header_rec.field_label), field_val])
+                    vals = {  'field_val': field_val}
+                    header_ids_vals.append((1, header_rec.id, vals))
+                    header_rec.field_val = field_val
+                except:
+                    
+                    error_txt = ( "Error field %s" % (header_rec.name,))
+                    self.update_log_error(error_txt=error_txt)
 #                header_rec.write({"field_val":dbf_table_rec and header_rec and dbf_table_rec[header_rec.name] or False})             
                 
         else:
