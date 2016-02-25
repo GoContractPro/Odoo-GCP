@@ -9,17 +9,13 @@
                 <form string="Import Header" version="7.0">   
 					
 	          	 	<group  cols="4">
-	          	 		<field name="import_data_id" invisible="0" readonly="1"/>
-	          	 		<group String="Search Source Fields" cols="2">
-	          	 		    <field name="import_source_filter"/>
-	          	 			<field name="field_selector"/>	
-	          	 		</group>
-	          	 		<newline/>
+	          	 		<field name="import_data_id" invisible="0" readonly="1"/>	          	 		
 	          	 		<group string=" Source Info " cols="2">
-	                		<field name="name" />                   	
-	                		<field name="field_label"/>
-	                		<field name="field_type"/>
-	                	 	<field name="field_val"/>
+	          	 			<field name="header_list"/>
+	                		<field name="name" readonly="0" />
+							<field name="field_type" readonly="0"/>
+	                	 	<field name="field_val" readonly="0"/>
+	                	 	<field name="field_label" />
 	                	 	<field name="sub_string"/>
 	                	 	<field name="search_filter"/>
 	                	 	<field name="skip_filter" />
@@ -38,23 +34,19 @@
 	                				context = "{'manual':True, 'default_model_id':model}"/>	
 	                		<field name="model_field_name" invisible="0" readonly="1"/>
 	                		<field name="model_field_type" invisible="0" readonly="1"/>
+	                		<field name="is_db_id" attrs="{'invisible':[('model_field_type','!=','integer')]}" />
 	                		<field name="substitute_sets"/>
 	                		
 	                	</group>
 	                	<group string="Related Search Settings" cols="2" 
-								attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many'])]}">
-										                    		
+								attrs="{'invisible':[('model_field_type','not in',['many2one','one2many','many2many']),('is_db_id','=',False)]}">
+								
+							<field name="relation_id"  colspan='2' attrs="{'readonly':[('is_db_id','=',False)]}"/>			                    		
 	                		<field name="relation" readonly="1"/>
-	                		<field name="relation_id" invisible="0" readonly="1" nolabel='1' colspan='2'/>
 	                		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
-
-							
-							<!--<field name="search_name"></field> -->
 							<field name="search_other_field"/>
 							<field name="search_related_external"/>        
-			        				
-							
-							
+						
 						</group>
 					</group>		
                   	<group string="Map Related Fields" cols='8'>
@@ -62,7 +54,7 @@
 	                  			
 	              		  	<field name="child_ids" 
 	              				nolabel="1" colspan="8" context="{'default_model':relation_id, 
-	              				'default_import_id':import_data_id,'model':model}">
+	              				'default_import_data_id':import_data_id,'model':model}">
 	                  		</field>
 	                </group>
 	               
@@ -76,9 +68,10 @@
             <field name="model">import.data.header</field>
             <field name="arch" type="xml">           	
               	<tree>
-              		
+              		<field name="sequence" string="#"/>
               		<field name="sequence" widget="handle"/>
               		<field name="model_field" required="0" domain="[('model_id','=',model)]"/>
+              		<field name="model_field_type"/>
             		<field name="name"/>
             		<field name="field_label"/>
             		<field name="field_type"/>

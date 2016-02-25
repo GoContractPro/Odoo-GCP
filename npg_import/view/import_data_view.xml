@@ -8,16 +8,28 @@
             <field name="arch" type="xml">
                 <form string="Read File" version="7.0">
                 	<header>
-                		<button name='action_get_headers' string="Load Header Fields" 
-                				states="draft"
-                    	 		context="{'model':model_id}" 
-                    	 		type="object" class="oe_highlight"
-                    	 		confirm="???Are you Sure??? This will overwrite any changes made to Field Mappings"/>
-                    		<button name="action_import" string="Run Test" states="map,ready" type="object" class="oe_highlight" context="{'test':True}"/>
-                    		<button name="action_set_confirmed" string="Confirm" states="map" type="object" class="oe_highlight" />
+                		<button name="delete_header_columns" string="Delete Columns" type="object" class="oe_highlight"
+                			
+                			confirm="?Are you Sure?  This will delete existing Data Mapping"/>		
+                   	 	
+                		<button name='create_map_from_source' string="Load Columns From Source Data" 
+               				states="draft"
+                   	 		context="{'model':model_id}" 
+                   	 		type="object" class="oe_highlight"
+                   	 		confirm="?Are you Sure?  This will overwrite existing Data Mapping"/>
+                    	<button name='create_map_from_odoo_model' string="Load Columns From Odoo Model" 
+               				states="draft"
+                   	 		context="{'model':model_id}" 
+                   	 		type="object" class="oe_highlight"
+                   	 		confirm="?Are you Sure?  This will overwrite existing Data Mapping"/>
+                    	<button name="refresh_header_list" string="Refresh Source Columns" 
+                    		context="{'refresh' :True}"
+                    		type="object" class="oe_highlight" 
+                    		states="map,ready"/>
+                   		<button name="action_import" string="Run Test" states="map,ready" type="object" class="oe_highlight" context="{'test':True}"/>
+                   		<button name="action_set_confirmed" string="Confirm" states="map" type="object" class="oe_highlight" />
                     		<button name="action_import_cron" string="Import Data" states="ready" type="object" class="oe_highlight" />
-                    		<button name="import_schedule" states="ready" string="Schedule Import" type="object" icon="gtk-paste"/>
-                    		<field name="state" widget="statusbar" statusbar_visible="draft,map,ready,importing" readonly="0" clickable="True"/>
+                   		<field name="state" widget="statusbar" statusbar_visible="draft,map,ready,importing" readonly="0" clickable="True"/>
 
                 	</header>
                     <group>
@@ -27,6 +39,7 @@
                     	<newline/>
                     	<group colspan="2">
 	                        <field name="model_id" />
+	                        <field name="is_cron_scheduled" />
 	                    	<field name="has_errors" readonly="1"/>
                     	</group>
                     	<group colspan="2">
@@ -41,8 +54,7 @@
 	                        <field name="dbf_path" attrs="{'invisible':[('src_type', '!=', 'dbf')], 'required':[('src_type', '=', 'dbf')]}"/>
 	                        <field name="base_external_dbsource" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
 	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
-	                        <newline/>
-	                        <field name="schedule_import" invisible="1"/>
+	                        
                         </group>
                     	
                     </group>
@@ -85,7 +97,8 @@
                     	</page>
                     	<page string="Header Column Maps" name="field_map" >
                     	
-                          <field name="header_ids" context="{'model':model_id,'default_import_data_id':active_id}" nolabel="1"> 
+                          <field name="header_ids" context="{'model':model_id,'default_import_data_id':active_id}" 
+                          	nolabel="1" options="{'limit': 250}"> 
 
 	                    </field> 
 					
@@ -105,8 +118,10 @@
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
                 <tree string="Import Data Files" version="7.0">
+                		<field name="sequence" string="#"/>
                 		<field name="sequence" widget="handle"/>
                     	<field name="name"/>
+                    	<field name="state"/>
                         <field name="tot_record_num" />
                         <field name="row_count" />
                         <field name="count" />
