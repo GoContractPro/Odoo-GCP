@@ -1145,7 +1145,10 @@ class import_data_file(models.Model):
     def set_header_columns_from_source_vals(self,field, sequence = 0): 
   
             model_field =  self.match_import_header_to_odoo(self.model_id.id, field)
-            model = self.env['ir.model'].search([('model','=',model_field.model)])
+            if model_field:
+                model = self.env['ir.model'].search([('model','=',model_field.model)])
+            else:
+                model = None
             vals = {'header_list':field.id,
                     'name':field.name,
                     'field_label': field.field_label,
