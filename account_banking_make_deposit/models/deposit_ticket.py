@@ -226,7 +226,7 @@ class deposit_ticket(osv.osv):
             'Deposit To Acct',
             required=True,
             states={'done': [('readonly', True)]},
-            domain="[('company_id', '=', company_id), ('type', '!=', 'view')]",
+            domain="[('company_id', '=', company_id)]",
             help="The Bank/Gl Account the Deposit is being made to.",
         ),
         'deposit_from_account_id': fields.many2one(
@@ -234,7 +234,7 @@ class deposit_ticket(osv.osv):
             'Deposit From Acct',
             required=True,
             states={'done': [('readonly', True)]},
-            domain="[('company_id', '=', company_id), ('type', '!=', 'view')]",
+            domain="[('company_id', '=', company_id)]",
             help="The Bank/GL Account the Payments are currently found in.",
         ),
         'date': fields.date(

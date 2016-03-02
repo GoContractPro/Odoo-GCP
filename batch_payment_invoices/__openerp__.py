@@ -40,7 +40,7 @@
      """,
     'author': 'Novapoint Group INC',
     'website': 'www.novapointgroup.com',
-    'depends': ['account_check_printing','account_cancel'],
+    'depends': ['account_check_printing','account_cancel','account_voucher'],
     'data': [
          'security/ir.model.access.csv',
          'security/security.xml',
