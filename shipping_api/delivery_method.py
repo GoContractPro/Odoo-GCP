@@ -24,11 +24,11 @@ from openerp.osv import fields, osv
 from openerp.tools.translate import _
 
 
-class delivery_method(osv.osv):
-    _inherit = "delivery.method"
+class delivery_carrier(osv.osv):
+    _inherit = "delivery.carrier"
     
     
     def _get_company_code(self, cr, user, context=None):
-        res =  super(delivery_method, self)._get_company_code(cr, user, context=context)
+        res =  super(delivery_carrier, self)._get_company_code(cr, user, context=context)
         res.append(('api', 'API'))
         return res

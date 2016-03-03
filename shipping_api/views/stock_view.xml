@@ -35,7 +35,6 @@
 				<xpath expr="//field[@name='partner_id']" position="replace">
 					<field name="partner_id"   context="{'contact_display':'partner'}" colspan="2"/>
 				</xpath>
-				<xpath expr="//field[@name='delivery_method']" position="replace"/>
 				<xpath expr="//field[@name='ship_income_account_id']" position="replace"/>
 				<xpath expr="//field[@name='carrier_id']" position="replace"/>
 				<xpath expr="//field[@name='carrier_contact']" position="replace"/>
@@ -45,9 +44,8 @@
 				<xpath expr="//page[@string='Additional Info']" position="after">
 					<page string="Shipping" attrs="{'invisible': ['|',('state','in',['draft', 'cancel']),('picking_type_code', '=', 'incoming')]}">
 						<group col="4">
-						    <field name="delivery_method" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" on_change="onchange_delivery_method(delivery_method)"/>
-						    <field name="ship_income_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
 		                    <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />
+						    <field name="ship_income_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
 		                    <field name="carrier_contact" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" readonly='0'/>
 		                    <field name="carrier_tracking_ref" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>
 		                    <field name="number_of_packages" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>

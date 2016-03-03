@@ -72,7 +72,6 @@ class stock_picking(osv.osv):
 
     _columns = {
         'carrier_id':fields.many2one("delivery.carrier","Delivery Service"),
-        'delivery_method': fields.many2one("delivery.method","Delivery Type", help=" The Type of Delivery Carrier or Logistics Company"),
         'carrier_contact':fields.many2one("res.partner", "Carrier Contact", help="Contact Info for Carrier  responsible for Shipping"),
         'ship_income_account_id': fields.many2one('account.account', 'Ship Income GL Account',
                                            help='This account represents the g/l account for booking shipping income.'),
@@ -145,20 +144,14 @@ class stock_picking(osv.osv):
             'invoice_line_tax_id': [(6, 0, taxes_ids)],
         }
         
-    def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
-        
-        res = {'value': {'carrier_id':False,
-                         'carrier_contact':False,
-                         'ship_service':False,},
-               }
-        return res
     
     def onchange_carrier_id(self, cr, uid, ids, carrier, context=None):
         res = {}
         if carrier:
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier, context=context)
             res = {'value': {'carrier_contact' : carrier_obj.partner_id.id,
-                            'ship_service' : carrier_obj.name }}
+                            'ship_service' : carrier_obj.name,
+                            'ship_income_account_id':carrier_obj.ship_income_account_id and carrier_obj.ship_income_account_id.id or False}}
         return res
 
     def do_partial(self, cr, uid, ids, partial_datas, context=None):
@@ -195,7 +188,7 @@ class stock_picking(osv.osv):
         picking_obj = self.pool.get('stock.picking').browse(cr,uid,ids[0],context)
         invoice_obj = self.pool.get('account.invoice')
         
-        if picking_obj.delivery_method and picking_obj.delivery_method.invoice_ship_act_cost:
+        if picking_obj.carrier_id and picking_obj.carrier_id.invoice_ship_act_cost:
             shipcharge = picking_obj.shipcost
         else:
             shipcharge = picking_obj.shipcharge
@@ -206,7 +199,6 @@ class stock_picking(osv.osv):
             'carrier_contact': picking_obj.carrier_contact.id,
             'shipcost':picking_obj.shipcost,
             'shipcharge': shipcharge,
-            'delivery_method':picking_obj.delivery_method.id,
             'sale_id':picking_obj.sale_id.id,
             'total_weight_net':picking_obj.weight_net,
             }

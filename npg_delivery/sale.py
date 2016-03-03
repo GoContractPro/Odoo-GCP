@@ -39,7 +39,6 @@ class sale_order(osv.osv):
                 inv_obj.write(cr, uid, inv_id, {
                     'shipcharge': order.shipcharge,
                     'ship_service': order.ship_service,
-                    'delivery_method': order.delivery_method.id,
                     'ship_income_account_id': order.ship_income_account_id.id,
                     'sale_order': order.id ,
                     })
@@ -96,7 +95,6 @@ class sale_order(osv.osv):
     
     _columns = {
         'carrier_id':fields.many2one("delivery.carrier", "Carrier", help="The Delivery service Choices defined for Transport or Logistics Company"),
-        'delivery_method': fields.many2one("delivery.method","Delivery Type", help=" The Type of Delivery Carrier or Logistics Company"),
         'carrier_contact':fields.many2one("res.partner", "Carrier Contact", help="Contact Info for Carrier  responsible for Shipping"),
         'transport_id':fields.many2one("res.partner", "Transport N/A", help="Contact Info for Carrier  responsible for Shipping"),
 
@@ -181,29 +179,16 @@ class sale_order(osv.osv):
         if carrier:
             carrier_obj = self.pool.get('delivery.carrier').browse(cr, uid, carrier, context=context)
             res = {'value': {'carrier_contact' : carrier_obj.partner_id.id,
-                            'ship_service' : carrier_obj.name }}
+                            'ship_service' : carrier_obj.name,
+                            'ship_income_account_id':carrier_obj.ship_income_account_id and carrier_obj.ship_income_account_id.id or False}}
         return res
     
-    def onchange_delivery_method(self, cr, uid, ids, delivery_method, context=None):
-        
-        res = {}
-        
-        delivery_method_obj = self.pool('delivery.method')
-        res = delivery_method_obj.onchange_delivery_method(cr,uid,delivery_method,delivery_method, context = context)
-        
-        return res
-            
-#     def _prepare_order_picking(self, cr, uid, order, context=None):
-#         result = super(sale_order, self)._prepare_order_picking(cr, uid, order, context=context)
-#         result.update(carrier_id=order.carrier_id.id)
-#         return result
     
     def action_ship_create(self, cr, uid, ids, context=None):
         pick_obj = self.pool.get("stock.picking")
         ret = super(sale_order, self).action_ship_create(cr, uid, ids, context=context)
         for sale_obj in self.browse(cr, uid, ids, context=context):
             pick_obj.write(cr, uid, [x.id for x in sale_obj.picking_ids], {'carrier_id': sale_obj.carrier_id and sale_obj.carrier_id.id or False,
-                                                                            'delivery_method': sale_obj.delivery_method and sale_obj.delivery_method.id or False,
                                                                             'ship_income_account_id':sale_obj.ship_income_account_id and sale_obj.ship_income_account_id.id or False,
                                                                             'carrier_contact':sale_obj.carrier_contact and sale_obj.carrier_contact.id or False,
                                                                             'shipcharge':sale_obj.shipcharge or False,
@@ -215,10 +200,8 @@ class sale_order(osv.osv):
     
     def delivery_set(self, cr, uid, ids, context=None):
         order_obj = self.pool.get('sale.order')
-        line_obj = self.pool.get('sale.order.line')
         grid_obj = self.pool.get('delivery.grid')
         carrier_obj = self.pool.get('delivery.carrier')
-        acc_fp_obj = self.pool.get('account.fiscal.position')
         for order in self.browse(cr, uid, ids, context=context):
             grid_id = carrier_obj.grid_get(cr, uid, [order.carrier_id.id], order.partner_shipping_id.id)
             if not grid_id:
@@ -230,21 +213,6 @@ class sale_order(osv.osv):
             grid = grid_obj.browse(cr, uid, grid_id, context=context)
             price_unit= grid_obj.get_price_sale(cr, uid, grid.id, order, time.strftime('%Y-%m-%d'), context)
             order_obj.write(cr,uid,ids,{'ship_service':order.carrier_id.name,'shipcharge':price_unit})
-#            taxes = grid.carrier_id.product_id.taxes_id
-#            fpos = order.fiscal_position or False
-#            taxes_ids = acc_fp_obj.map_tax(cr, uid, fpos, taxes)
-#            #create the sale order line
-#            line_obj.create(cr, uid, {
-#                'order_id': order.id,
-#                'name': grid.carrier_id.name,
-#                'product_uom_qty': 1,
-#                'product_uom': grid.carrier_id.product_id.uom_id.id,
-#                'product_id': grid.carrier_id.product_id.id,
-#                'price_unit': grid_obj.get_price_sale(cr, uid, grid.id, order, time.strftime('%Y-%m-%d'), context),
-#                'tax_id': [(6,0,taxes_ids)],
-#                'type': 'make_to_stock'
-#            })
-             
         return True
     
     def action_invoice_create(self, cr, uid, ids, context=None):
@@ -252,13 +220,11 @@ class sale_order(osv.osv):
         for so in self.browse(cr,uid,ids,context):
             vals = {'carrier_contact':so.carrier_contact.id or False,
                   'carrier_id':so.carrier_id.id or False,
-                  'delivery_method':so.delivery_method.id or False,
                   'ship_service': so.ship_service or False,
                   }
                 
             self.pool.get('account.invoice').write(cr,uid,inv_id,vals)
         return inv_id
-        #return {'type': 'ir.actions.act_window_close'} action reload?
 
 sale_order()
 

@@ -32,8 +32,6 @@
 		<menuitem action="delivery.action_delivery_carrier_form" id="delivery.menu_action_delivery_carrier_form" 
 		        	parent="menu_delivery" sequence="20" name="Carriers"/>
 		        	
-    	<menuitem action="action_delivery_method_form" id="menu_action_delivery_method_form" 
-		        	parent="menu_delivery" sequence="10" name="Delivery Method"/>
     </data>
 </openerp>		        	
         

@@ -51,7 +51,6 @@ class account_invoice(models.Model):
     shipcost =  fields.Float('Shipping Cost', readonly=True)
     total_weight_net = fields.Float('Net Weight', digits=dp.get_precision('Stock Weight'),
         store=True, readonly=True, compute='_total_weight_net')
-    delivery_method = fields.Many2one("delivery.method", "Delivery Type", help="The Type of Delivery Carrier or Logistics Company")
     carrier_id = fields.Many2one("delivery.carrier", "Delivery Carrier", help="The Carrier or Logistics Company")
     sale_id = fields.Many2one('sale.order', 'Sale Order', readonly=True, help="Source sales order.")
     picking_id = fields.Many2one('stock.picking', 'Picking Order', readonly=True, help="Source Delivery Picking Order.")

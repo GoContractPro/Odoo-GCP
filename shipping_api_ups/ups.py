@@ -98,11 +98,11 @@ class ups_account_shipping_service(osv.osv):
     
 ups_account_shipping_service()
 
-class delivery_method(osv.osv):
+class delivery_carrier(osv.osv):
     _inherit = "delivery.method"
     
     def _get_company_code(self, cr, user, context=None):
-        res =  super(delivery_method, self)._get_company_code(cr, user, context=context)
+        res =  super(delivery_carrier, self)._get_company_code(cr, user, context=context)
         res.append(('ups', 'UPS'))
         return res
     
@@ -168,7 +168,7 @@ class delivery_method(osv.osv):
             ret['url'] = url
         return{'value': ret}
         
-delivery_method()
+delivery_carrier()
 
 class ups_account(osv.osv):
     '''

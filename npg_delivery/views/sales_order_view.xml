@@ -30,12 +30,11 @@
 								type="action" icon="gtk-execute" states="draft,manual" />
 					 </group>
 					 <group col="6" colspan="2" name="delivery_method">
-	  			 		 <field name="delivery_method" domain="[('active','=',True)]" on_change="onchange_delivery_method(delivery_method)"/>                      			
-	                     <field name="ship_income_account_id" string="Delivery Income Account" />
 	                     <field name="carrier_id" context="{'sale_order_id':active_id or False ,'delivery_method':delivery_method}"
 	                     		attrs="{'invisible':[('ship_company_code','!=','grid')]}"
 	                     		string='Carrier'
 	                     		class="oe_inline" on_change="onchange_carrier_id(carrier_id)"/>
+	                     <field name="ship_income_account_id" string="Delivery Income Account" />
 	                     <button name="delivery_set" string="Add to Quote" type="object" 
 		                         class="oe_edit_only" 
 		                         attrs="{'invisible':['|','|',('carrier_id','=',False),('ship_company_code','!=','grid'),('state','not in',('draft','sent','progress'))]}"/>

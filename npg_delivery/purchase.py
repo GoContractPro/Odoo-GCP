@@ -18,12 +18,9 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-
 import time
 from openerp.osv import fields,osv
 from openerp.tools.translate import _
-
-
 
 # Overloaded sale_order to manage carriers :
 class purchase_order(osv.osv):
@@ -31,18 +28,13 @@ class purchase_order(osv.osv):
     _columns = {
         'carrier_id':fields.many2one("delivery.carrier", "Delivery Service", help="The Delivery service Choices defined for Transport or Logistics Company"),
         'warehouse_id': fields.many2one('stock.warehouse', 'Destination Warehouse'), 
-        'delivery_method': fields.many2one("delivery.method","Delivery Type", help=" The Type of Delivery Carrier or Logistics Company"),
     }
-
     
     def delivery_set(self, cr, uid, ids, context=None):
-        order_obj = self.pool.get('purchase.order')
         line_obj = self.pool.get('purchase.order.line')
         grid_obj = self.pool.get('delivery.grid')
         carrier_obj = self.pool.get('delivery.carrier')
-        acc_fp_obj = self.pool.get('account.fiscal.position')
         for order in self.browse(cr, uid, ids, context=context):
-            
             destination=order.dest_address_id.id or False
             if not destination:
                 destination = order.warehouse_id.partner_id.id or False
@@ -55,20 +47,11 @@ class purchase_order(osv.osv):
                 raise osv.except_osv(_('Order not in Draft State!'), _('The order state have to be draft to add delivery lines.'))
 
             grid = grid_obj.browse(cr, uid, grid_id, context=context)
-
-            #taxes = grid.carrier_id.product_id.taxes_id
-            #fpos = order.fiscal_position or False
-            #taxes_ids = acc_fp_obj.map_tax(cr, uid, fpos, taxes)
-            #create the purchase order line
-              
             vals = {
                 'order_id': order.id,
                 'name': grid.carrier_id.name,
                 'product_qty': 1,
-#                 'product_uom': grid.carrier_id.product_id.uom_id.id,
-#                 'product_id': grid.carrier_id.product_id.id,
                 'price_unit': grid_obj.get_price_purchase(cr, uid, grid.id, order, time.strftime('%Y-%m-%d'), context),
-#                 'tax_id': [(6,0,taxes_ids)],
                 'date_planned':order.date_order,
                 }
             
@@ -80,7 +63,6 @@ class purchase_order(osv.osv):
         for po in self.browse(cr,uid,ids,context):
             vars = {
                   'carrier_id':po.carrier_id and po.carrier_id.id or False,
-                  'delivery_method':po.delivery_method and po.delivery_method.id or False,
                   }
                 
             self.pool.get('account.invoice').write(cr,uid,inv_id,vars)

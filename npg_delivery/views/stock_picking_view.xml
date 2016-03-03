@@ -7,9 +7,8 @@
             <field name="inherit_id" ref="stock.view_picking_form"/>
             <field name="arch" type="xml">
                 <field name="min_date" position="after">
-                    <field name="delivery_method" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}" on_change="onchange_delivery_method(delivery_method)"/>
-                    <field name="ship_income_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                     <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />
+                    <field name="ship_income_account_id" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                     <field name="carrier_contact" invisible='1' readonly='0'/>
                     <field name="ship_company_code" invisible="1"/>
                     <field name="carrier_tracking_ref" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"/>

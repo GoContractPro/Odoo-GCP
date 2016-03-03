@@ -39,7 +39,6 @@ invoices from picking, OpenERP is able to add and compute the shipping line.
         'wizard/response_data_view.xml',
         'wizard/address_validate_view.xml',
         'wizard/saleorder_validation_view.xml',
-        'views/delivery_view.xml',
         'views/res_company_view.xml',
         'views/partner_view.xml',
         'views/stock_picking_view.xml',

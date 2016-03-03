@@ -28,7 +28,7 @@
     """,
     'author': 'NovaPoint Group LLC',
     'website': ' http://www.novapointgroup.com',
-    'depends': ['email_template','npg_delivery','account_analytic_default', 'purchase'],
+    'depends': ['npg_delivery','account_analytic_default', 'purchase'],
     'data': [
         'stock_package_data.xml',
         'security/ir.model.access.csv',
