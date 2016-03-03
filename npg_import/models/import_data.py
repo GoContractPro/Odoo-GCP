@@ -103,7 +103,8 @@ class import_substitute_sets(osv.osv):
     
             
 class import_data_file(osv.osv):
-    
+
+
     _name = "import.data.file"
     _description = "Holds import Data Source information"
          
@@ -121,8 +122,8 @@ class import_data_file(osv.osv):
             'test_sample_size': fields.integer('Test Sample Size'),
             'do_update': fields.boolean('Allow Update', 
                     help='If Set when  matching unique fields on records will update values for record, Otherwise will just log duplicate and skip this record '),
-            'header_ids': fields.one2many('import.data.header','import_data_id','Import Fields ',limit=300, copy=True),
-#            'index':fields.integer("Index"),
+            'header_ids': fields.one2many('import.data.header','import_data_id','Map Fields ', copy=True),
+            'header_list_ids': fields.one2many('import.data.header.list','import_data_id','Source Fields ', copy=True),
             'dbf_path':fields.char('DBF Path',size=256),
             'record_num':fields.integer('Current Record'),
             'tot_record_num':fields.integer("Total Records"),
@@ -140,10 +141,10 @@ class import_data_file(osv.osv):
             'src_table_name' : fields.char('Source Table Name',size=256),
             'src_type' : fields.selection(SOURCE_TYPES, "Data Source Type", required=True),
             'sql_source': fields.text('SQL', help='Write a valid "SELECT" SQL query to fetch data from Source database'),
-            'schedule_import': fields.integer('Scheduled'),
-            
             'state': fields.selection([('draft','Draft'),('map','Mapping Fields'),('ready','Map Confirmed'),('importing','Import Running')], "Status"),
             'sequence': fields.integer("Sequence"),
+            'is_cron_scheduled': fields.boolean('Run as Scheduled Import'),
+            
             }
     
     _defaults = {
@@ -153,290 +154,6 @@ class import_data_file(osv.osv):
         }
 
     _order = 'sequence'
-    
-    def import_schedule(self, cr, uid, ids, context=None):
-        cron_obj = self.pool.get('ir.cron')
-        for imp in self.browse(cr, uid, ids, context):
-            cron_id = False
-            if not imp.schedule_import:
-                new_create_id = cron_obj.create(cr, uid, {
-                    'name': 'Import ODBC tables',
-                    'interval_type': 'hours',
-                    'interval_number': 1,
-                    'numbercall': -1,
-                    'model': 'import.data.file',
-                    'function': 'action_import',
-                    'doall': False,
-                    'active': True
-                })
-                imp.write({'schedule_import':new_create_id})
-                cron_id = new_create_id
-            else:
-                cron_id = imp.schedule_import.id
-        return {
-            'name': 'Import ODBC tables',
-            'view_type': 'form',
-            'view_mode': 'form,tree',
-            'res_model': 'ir.cron',
-            'res_id': cron_id,
-            'type': 'ir.actions.act_window',
-        }
-
-    def action_set_confirmed(self,cr, uid,ids,context=None):
-        vals = {'state':'ready'}
-        self.write(cr,uid,ids[0],vals)
-        return{'value':vals}
-        
-    def action_get_headers(self, cr, uid, ids, context=None):
-        
-        for rec in self.browse(cr, uid, ids, context=context):
-            if rec.src_type == 'dbf':
-                self.action_get_headers_dbf(cr, uid, ids, context)
-                
-            elif rec.src_type == 'csv':
-                self.action_get_headers_csv(cr, uid, ids, context)
-                
-            elif rec.src_type == 'odbc':
-                self.action_get_headers_odbc(cr, uid, ids, context)
-            
-            vals = {'state':'map'}
-            self.write(cr,uid,ids[0],vals)
-            return{'value':vals}
-            
-        raise osv.except_osv('Warning', 'No Data files to Import')
-    
-    def get_label_match_index(self, cr, uid, dbf_table ):
-        
-        
-        dbf_path = dbf_table.filename
-        dbf_directory = os.path.dirname(dbf_path)
-        table_name = os.path.basename(dbf_path).split('.')[0]
-
-        fldlabel_path = dbf_directory + '/FLDLABEL.DBF'
-        fldlabel_dbf_table = dbf.Table(fldlabel_path)
-        fldlabel_dbf_table.open()
-        
-        if not fldlabel_dbf_table:
-            
-            e = 'No Labels Table found at DBF Path %s:'  % (fldlabel_path, )
-            _logger.error(_('Error %s' % (e,)))
-              
-        index = fldlabel_dbf_table.create_index(lambda rec: rec.table)
-        
-        return index.search(match=table_name.ljust(10))
-                
-    def action_get_headers_dbf(self, cr, uid, ids, context=None):
-        if context is None:
-            context = {}
-        tot_records = 0
-        for rec in self.browse(cr, uid, ids, context=context):
-            rec.record_num = 1
-            try:
-         
-                header_obj = self.pool.get('import.data.header')
-                header_ids=header_obj.search(cr, uid,[('import_data_id','=',ids[0])])
-                    
-                if header_ids:
-                    header_obj.unlink(cr,uid,header_ids,context=None)
-               
-                dbf_table = dbf.Table(rec.dbf_path)
-                dbf_table.open()
-                info = dbf.info(rec.dbf_path)
-                
-                structure = dbf.structure(rec.dbf_path)
-
-                if not dbf_table:
-                    
-                    e = 'Error opening DBF Import  %s:'  % (rec.dbf_path, )
-                    return self.update_log_error(self, cr, uid, ids,error_txt=e,has_error = True)
-                    
-                    
-                 
-                tot_records = len(dbf_table)    
-                if tot_records == 0:
-                    e = 'Table has no data to Import  %s:'  % (rec.dbf_path, )
-                    return self.update_log_error(self, cr, uid, ids,error_txt=e,has_error = True)
-                    
-                    
-                dbf_label_index = self.get_label_match_index(cr, uid, dbf_table)
-                
-
-                for field in structure:
-           
-                    field = field.split()
-
-                    field_label =  self.vision_match_field_label(cr, uid, field[0], index = dbf_label_index)
-        
-                    fld_obj = self._match_import_header(cr, uid, ids, rec.model_id.id, field[0], field_label, context)    
-                        
-                    vals = {'name':field[0], 'import_data_id':rec.id,
-                            'model_field':fld_obj and fld_obj.id or False,
-                            'model':rec.model_id and rec.model_id.id,
-                            'field_label': field_label or False,
-                            'field_val':dbf_table[0][field[0]],
-                            'field_type':field[1]
-                            }
-                    header_id = self.pool.get('import.data.header').create(cr,uid,vals,context=context)
-                    
-                vals = {'error_log':'Successful Header Import',
-                    'has_errors':False,
-                    'tot_record_num':tot_records, 
-                    'description':info
-                    }
-                self.write(cr,uid,ids[0],vals)    
-                
-                return {'value': vals}
-                
-            except:
-                
-                error_txt = _('Error opening DBF Import  %s' % (rec.dbf_path,))
-                return self.update_log_error(self, cr, uid, ids,error_txt=error_txt,has_error = True) 
- 
-        return {'value': vals}
-    
-    def action_get_headers_csv(self, cr, uid, ids, context=None):
-        if context is None:
-            context = {}
-        for rec in self.browse(cr, uid, ids, context=context):
-
-            for attach in rec.attachment:
-                data_file = attach.datas
-                continue
-            str_data = base64.decodestring(data_file)
-            
-            if not str_data:
-                raise osv.except_osv('Warning', 'The file contains no data')
-            try:
-                partner_data = list(csv.reader(cStringIO.StringIO(str_data)))
-            except:
-                raise osv.except_osv('Warning', 'Make sure you saved the file as .csv extension and import!')
-            
-            header_csv_obj = self.pool.get('import.data.header')
-            header_csv_ids=header_csv_obj.search(cr, uid,[('import_data_id','=',ids[0])])
-            
-            if header_csv_ids:
-                header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
-            
-            headers_list = []
-            for header in partner_data[0]:
-                headers_list.append(header.strip())
-            n=0
-            row = 0
-            for header in headers_list:
-                row+= 1
-                fids = self.pool.get('ir.model.fields').search(cr,uid,['|',('field_description','ilike',header),('name','ilike',header), ('model_id', '=', rec.model_id.id)])
-                rid = self.pool.get('import.data.header').create(cr,uid,{'name':header, 'csv_id':rec.id, 'model_field':fids and fids[0] or False, 'model':rec.model_id.id},context=context)
-                
-        return True
-    
-    def action_get_headers_odbc(self, cr, uid, ids, context=None):
-        if context is None:
-            context = {}
-        for rec in self.browse(cr, uid, ids, context=context):
-            
-            src_table = str(rec.src_table_name).strip()
-            if rec.sql_source:
-                qry = str(rec.sql_source)
-            else:
-                qry = "select TOP 1 * from %s" % src_table
-                
-            result = rec.base_external_dbsource.execute(sqlquery=qry,metadata=True)
-            if not result.has_key('cols'):
-                continue
-            has_row = result.has_key('rows')
-            header_csv_obj = self.pool.get('import.data.header')
-            header_csv_ids=header_csv_obj.search(cr, uid,[('import_data_id','=',ids[0])])
-            
-            if header_csv_ids:
-                header_csv_obj.unlink(cr,uid,header_csv_ids,context=None)
-            
-            headers_list = result['cols']
-            row_data = result['rows']
-            n=0
-            for col in headers_list:
-                
-                header = col[0]
-                fld_obj = self._match_import_header(cr, uid,ids, rec.model_id.id, header, header, context)    
-
-                vals = {'name':header, 'import_data_id':rec.id,
-                            'model_field':fld_obj and fld_obj.id or False,
-                            'model':rec.model_id and rec.model_id.id,
-                            'field_label': header or False,
-                            'field_type':col[1],
-                            'field_val' : False,
-                            }
-                if has_row:
-                        if not  isinstance(row_data[n], bytearray):
-                            vals.update({'field_val' : row_data[n],})
-                        
-                        else:
-                            vals.update({'field_val' : "Binary"})
-                        n += 1
-                self.pool.get('import.data.header').create(cr,uid,vals,context=context)
-                
-            conn = self.pool.get('base.external.dbsource').conn_open(cr, uid, rec.base_external_dbsource.id)
-            cur = conn.cursor()
-            tot_records = self.get_row_count_odbc(qry, cur)
-               
-            vals = {'error_log':'Successful Header Import',
-                    'has_errors':False,
-                    'tot_record_num':tot_records, 
-                    }
-            self.write(cr,uid,ids[0],vals)    
-                
-        return True
- 
-    def vision_match_field_label(self, cr ,uid,field_name, index ):         
-        
-        for fld_label in index:
-            
-            label_fld_name = fld_label.fldname.lower().strip()
-                        
-            if  label_fld_name == field_name:
-                return fld_label.fldlabel.lower().strip()
-        return None                                  
-        
-
-    def search_record_exists(self, cr, uid, rec, data,header_dict, unique_fields=[]):
-        if not unique_fields: return False
-        
-        dom = []
-        for col in unique_fields:
-            dom.append((col, '=', data[header_dict[col]]))
-            
-        obj = self.pool[rec.model_id.model]
-        return obj.search(cr,uid,dom)
-        
-        #Todo Add Code here to  search on fields in header_dict which are flaged as Unique Record
-        # for example a Name or Ref Field
-        # if Found Return record ID (most also Consider is possible could be multiple records if search field not Truely unique Will update all these)
-        # if not Found Return false
-        
-        return False  
-
-             
-    def convert_backslash_string(self,s):
-        
-        if '//' in s:
-            if isinstance(s, str):
-                s = s.encode('string-escape')
-            elif isinstance(s, unicode):
-                s = s.encode('unicode-escape')
-            return s
-        else:
-            return s   
-          
-    def get_row_count_odbc(self,qry,cur):
-        
-        pos = qry.lower().find('from')
-        count_qry = qry[pos-1:]
-        count_qry = 'select count(*) as rows ' + count_qry
-        cur.execute(count_qry)
-        count_result = cur.fetchone()
-        for tot_count in count_result:
-            return tot_count
-            
-        return False
 
     def action_import_cron(self, cr, uid, ids, context=None):
         
