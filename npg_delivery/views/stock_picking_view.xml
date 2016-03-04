@@ -18,7 +18,7 @@
                 <field name="company_id" position="before">
                     <field name="ship_service" attrs="{'invisible': [('picking_type_code', '=', 'incoming')]}"/>
                </field>
-               <xpath expr="/form/header//button[@name='do_enter_transfer_details']" position="after">
+               <xpath expr="/form/header//button[@name='do_prepare_partial']" position="after">
                     <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'incoming'), ('state', 'not in', ('assigned','confirmed'),)]}" string="Print Delivery Order" type="action"/>
                     <button name="%(npg_report_shipping)d" attrs="{'invisible': ['|', ('picking_type_code', '=', 'incoming'), ('state', '!=', 'done')]}" string="Print Delivery Order"  type="action" class="oe_highlight"/>
                 </xpath>
@@ -48,7 +48,6 @@
                         <field name="weight" class="oe_inline"/>
                         <field name="weight_uom_id" nolabel="1" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" class="oe_inline"/>
                     </div>
-                     <field name="weight_net" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}"  groups="base.group_no_one" class="oe_inline"/>
                 </field>
             </field>
         </record>
@@ -72,7 +71,6 @@
             <field name="arch" type="xml">
                 <xpath expr="//field[@name='date_expected']" position="after">
                     <field name="weight"/>
-                    <field name="weight_net" groups="base.group_no_one"/>
                 </xpath>
             </field>
         </record>
@@ -88,7 +86,6 @@
                         <field name="weight" class="oe_inline"/>
                         <field name="weight_uom_id" nolabel="1" class="oe_inline"/>
                     </div>
-                    <field name="weight_net" groups="base.group_no_one" class="oe_inline"/>
                 </xpath>
                 <xpath expr="//field[@name='picking_id']" position="after">
 					<group colspan="2" col="2" >
@@ -104,7 +101,7 @@
 			<field name="model">stock.picking</field>
 			<field name="inherit_id" ref="stock.view_picking_internal_search"/>
 			<field name="arch" type="xml">
-				<xpath expr="//filter[@string='Picking Type']" position="after">
+				<xpath expr="//filter[@name='done']" position="after">
 					<separator orientation="vertical" />
 					<filter string="Shipping Service" icon="terp-product" domain="[]" context="{'group_by':'ship_service'}"  
 							groups="base.group_extended"/>
@@ -132,7 +129,7 @@
 			<field name="inherit_id" ref="stock.view_move_search"/>
 			<field eval="8" name="priority"/>
 			<field name="arch" type="xml">
-				<xpath expr="//filter[@string='Scheduled']" position="after">
+				<xpath expr="//filter[@name='done']" position="after">
 					<separator orientation="vertical" />
 					<filter string="Shipping Service" icon="terp-product" domain="[]" context="{'group_by':'ship_service'}"  
 							groups="base.group_extended"/>

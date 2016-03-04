@@ -23,14 +23,6 @@
             </field>
         </record>
  
-		<menuitem id="menu_delivery" name="Delivery" 
-		        parent="stock.menu_stock_configuration" groups="base.group_no_one" sequence="50"/>
-		        
-		<menuitem action="delivery.action_delivery_grid_form" id="delivery.menu_action_delivery_grid_form" 
-		 			parent="menu_delivery" sequence="30" name="Carriers Pricelist"/>
-		 
-		<menuitem action="delivery.action_delivery_carrier_form" id="delivery.menu_action_delivery_carrier_form" 
-		        	parent="menu_delivery" sequence="20" name="Carriers"/>
 		        	
     </data>
 </openerp>		        	

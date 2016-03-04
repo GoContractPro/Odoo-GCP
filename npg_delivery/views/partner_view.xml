@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="stock.view_partner_stock_form" />
             <field name="arch" type="xml">
                 <field name="property_stock_supplier" position="after">
-                    <field name="property_delivery_carrier"/>
+                    <field name="property_delivery_carrier_id"/>
                 </field>
                 <!-- From Partner Address Validation -->
                 <xpath expr="//field[@name='website']" position="after">

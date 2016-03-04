@@ -4,7 +4,7 @@
             <field name="model">account.invoice</field>
             <field name="inherit_id" ref="account.invoice_form"/>
             <field name="arch" type="xml">
-	            <field name="fiscal_position" position="after">
+	            <field name="fiscal_position_id" position="after">
 	            	<field name= "origin" groups="base.group_user"/>
 <!--	           	 	<field name="carrier_id"/-->
 	           </field>
@@ -13,10 +13,6 @@
 					<field name="shipcharge"/>
 					<field name="ship_service"/>
 				</xpath>     
-				<xpath expr="//button[@name='button_reset_taxes']" position="replace">
-					<button colspan="1" name="button_reset_taxes" states="draft" string="Compute Taxes" type="object" 
-                    		groups="base.group_user" icon="terp-stock_format-scientific"/>
-				</xpath>
 				<xpath expr="//field[@name='amount_untaxed']" position="replace">
 					<field name="amount_untaxed" string="Net Total"/>
 				</xpath>
@@ -40,10 +36,6 @@
 					<field name="shipcharge"/>
 					<field name="shipcharge" />
 					<field name="ship_service"/>
-				</xpath>
-				<xpath expr="//button[@name='button_reset_taxes']" position="replace">
-					<button colspan="1" name="button_reset_taxes" states="draft" string="Compute Taxes" type="object" 
-							groups="base.group_user" icon="terp-stock_format-scientific"/>
 				</xpath>
 				<xpath expr="//field[@name='amount_untaxed']" position="replace">
 					<field name="amount_untaxed" string="Net Total"/>

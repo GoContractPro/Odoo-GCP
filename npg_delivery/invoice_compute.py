@@ -28,18 +28,18 @@ class account_invoice(models.Model):
     _inherit = "account.invoice"
     
     @api.one
-    @api.depends('invoice_line','invoice_line.weight_net')
+    @api.depends('invoice_line_ids','invoice_line_ids.weight_net')
     
     def _total_weight_net(self):
         """Compute the total net weight of the given Invoice."""
 
         self.total_weight_net = 0.0
-        for line in self.invoice_line:
+        for line in self.invoice_line_ids:
             if line.product_id:
                 self.total_weight_net += line.weight_net or 0.0  
     
     @api.one
-    @api.depends('invoice_line.price_subtotal', 'tax_line.amount','shipcharge')
+    @api.depends('invoice_line_ids.price_subtotal', 'tax_line_ids.amount','shipcharge')
     def _compute_amount(self):
 
         
@@ -209,7 +209,3 @@ class account_invoice_tax_inherit(models.Model):
                 t['tax_amount'] = currency.round(t['tax_amount'])
                 
         return tax_grouped
-    
- 
-
-    

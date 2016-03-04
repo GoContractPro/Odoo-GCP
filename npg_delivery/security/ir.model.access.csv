@@ -1,2 +1,1 @@
 "id","name","model_id:id","group_id:id","perm_read","perm_write","perm_create","perm_unlink"
-"access_delivery_method","access_delivery_method","model_delivery_method","base.group_sale_manager",1,1,1,1
