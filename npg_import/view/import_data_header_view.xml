@@ -49,7 +49,7 @@
 						
 						</group>
 					</group>
-					<button name="delete_header_columns" string="Delete Columns" type="object" class="oe_highlight"
+					<!--  <button name="delete_header_columns" string="Delete Columns" type="object" class="oe_highlight"
                 			
                 			confirm="?Are you Sure?  This will delete existing Data Mapping"/>		
                    	 	
@@ -66,7 +66,9 @@
                     	<button name="refresh_header_list" string="Refresh Source Columns" 
                     		context="{'refresh' :True}"
                     		type="object" class="oe_highlight" 
-                    		states="map,ready"/>		
+                    		states="map,ready"/>               		
+                    -->	
+                    	
                   	<group string="Map Related Fields" cols='8'>
                   			<field name="create_related"/>
                   			<field name="update_related"/>
