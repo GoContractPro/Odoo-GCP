@@ -2,7 +2,7 @@
 <openerp>
 	<data>
 
-		<menuitem id="shipping_menu" parent="npg_delivery.menu_delivery" sequence="55" name="UPS"/>
+		<menuitem id="shipping_menu" parent="delivery.menu_delivery" sequence="55" name="UPS"/>
 
 		<!-- Shipping log -->
 		<record id="shipping_move_filter" model="ir.ui.view">

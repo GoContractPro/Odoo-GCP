@@ -24,7 +24,7 @@ from openerp.osv import fields, osv
 
 class email_template(osv.osv):
     
-    _inherit = "email.template"
+    _inherit = "mail.template"
     
     _columns = {
         'ship_mail': fields.boolean('Ship Confirm Mail', help='Check this field to send mail when shipping is done.'),

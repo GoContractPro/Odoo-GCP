@@ -242,7 +242,7 @@ class stock_picking(osv.osv):
         for id in ids:
             obj = self.browse(cr, uid, id)
             if obj and obj.address_id and obj.address_id.email:
-                email_temp_obj = self.pool.get('email.template')
+                email_temp_obj = self.pool.get('mail.template')
                 template_id = email_temp_obj.search(cr, uid, [('object_name.model', '=', 'stock.picking'), ('ship_mail', '=', True)], context=context)
                 if template_id:
                     template_obj_list = email_temp_obj.browse(cr, uid, template_id)

@@ -25,8 +25,6 @@ from openerp.osv import fields, osv
 class sale_order(osv.osv):
     _inherit = 'sale.order'
     
-
-
     _columns= {
         
         'partner_order_id': fields.many2one('res.partner', 'Ordering Contact', readonly=True, states={'draft': [('readonly', False)], 'sent': [('readonly', False)]}, help="The name and address of the contact who requested the order or quotation."),

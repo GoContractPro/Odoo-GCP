@@ -6,7 +6,7 @@
 	 	<record id="view_picking_shipping_inherit" model="ir.ui.view">
 			<field name="name">stock.picking.shipping.inherit.out</field>
 			<field name="model">stock.picking</field>
-			<field name="inherit_id" ref="stock.view_picking_form" />
+			<field name="inherit_id" ref="stock.view_picking_form"/>
 			<field name="arch" type="xml">
 				<field name="move_lines" position="replace">
 					<field name="move_lines" context="{'address_out_id': partner_id, 'picking_type_code': 'outgoing', 'form_view_ref':'view_stock_move_shipping_inherit', 'tree_view_ref':'stock_move_tree_inherit_stock_move'}" options='{"reload_on_button": true}'>
@@ -41,7 +41,7 @@
 				<xpath expr="//field[@name='carrier_tracking_ref']" position="replace"/>
 				<xpath expr="//field[@name='number_of_packages']" position="replace"/>
 				
-				<xpath expr="//page[@string='Additional Info']" position="after">
+				<xpath expr="//page[@name='extra']" position="after">
 					<page string="Shipping" attrs="{'invisible': ['|',('state','in',['draft', 'cancel']),('picking_type_code', '=', 'incoming')]}">
 						<group col="4">
 		                    <field name="carrier_id" attrs="{'invisible': ['|',('picking_type_code', '=', 'incoming'),('ship_company_code','!=','grid')]}" on_change="onchange_carrier_id(carrier_id)" />

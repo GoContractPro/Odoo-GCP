@@ -70,9 +70,8 @@ class sale_order(models.Model):
     
 
     
-    def _get_address_validation_method(self, cr, uid, context=None):
-        if context is None: context = {}
-        user = self.pool.get('res.users').browse(cr, uid, uid, context=context)
+    def _get_address_validation_method(self):
+        user = self.env.user
         return user and user.company_id and user.company_id.address_validation_method
     
     @api.multi
@@ -150,7 +149,6 @@ class sale_order(models.Model):
 # #             vals['carrier_contact']=ups_shipper_id_obj.partner_id.id
 #         return super(sale_order, self).write(cr, uid,ids, vals, context=context)
 
-    @api.multi
     @api.onchange('carrier_id')
     def onchange_carrier_id(self):
         if not self.carrier_id:
@@ -209,4 +207,3 @@ class sale_order(models.Model):
 sale_order()
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
-

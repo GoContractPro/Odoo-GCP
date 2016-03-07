@@ -29,20 +29,20 @@
 							<button name="%(sale.action_view_sale_advance_payment_inv)d" string="Advance Invoice"
 								type="action" icon="gtk-execute" states="draft,manual" />
 					 </group>
-					 <group col="6" colspan="2" name="delivery_method">
-	                     <field name="carrier_id" context="{'sale_order_id':active_id or False ,'delivery_method':delivery_method}"
-	                     		attrs="{'invisible':[('ship_company_code','!=','grid')]}"
-	                     		string='Carrier'
-	                     		class="oe_inline" on_change="onchange_carrier_id(carrier_id)"/>
 	                     <field name="ship_income_account_id" string="Delivery Income Account" />
-	                     <button name="delivery_set" string="Add to Quote" type="object" 
-		                         class="oe_edit_only" 
-		                         attrs="{'invisible':['|','|',('carrier_id','=',False),('ship_company_code','!=','grid'),('state','not in',('draft','sent','progress'))]}"/>
-		                     
-	                     <label colspan="4" string="Click 'Add to Quote' to add Sales line for estimated delivery price, If Estimated not added here amount will be computed when invoicing based on delivery order(s)."
-	                         class="oe_edit_only"
-	                         attrs="{'invisible':['|','|',('carrier_id','=',False),('state','not in',('draft','sent')),('ship_company_code','!=','grid')]}"/>
-                      </group>
+<!--					 <group col="6" colspan="2" name="delivery_method">-->
+<!--	                     <field name="carrier_id" context="{'sale_order_id':active_id or False }"-->
+<!--	                     		attrs="{'invisible':[('ship_company_code','!=','grid')]}"-->
+<!--	                     		string='Carrier'-->
+<!--	                     		class="oe_inline" on_change="onchange_carrier_id(carrier_id)"/>-->
+<!--	                     <button name="delivery_set" string="Add to Quote" type="object" -->
+<!--		                         class="oe_edit_only" -->
+<!--		                         attrs="{'invisible':['|','|',('carrier_id','=',False),('ship_company_code','!=','grid'),('state','not in',('draft','sent','progress'))]}"/>-->
+<!--		                     -->
+<!--	                     <label colspan="4" string="Click 'Add to Quote' to add Sales line for estimated delivery price, If Estimated not added here amount will be computed when invoicing based on delivery order(s)."-->
+<!--	                         class="oe_edit_only"-->
+<!--	                         attrs="{'invisible':['|','|',('carrier_id','=',False),('state','not in',('draft','sent')),('ship_company_code','!=','grid')]}"/>-->
+<!--                      </group>-->
 				</xpath>
 				
 				<!--   From partner address validation  -->
@@ -62,5 +62,19 @@
 		       
             </field>
          </record>
+         
+         
+        <record model="ir.ui.view" id="view_delivery_carrier_form_npg_inherit">
+		    <field name="name">delivery.carrier.npg.form</field>
+		    <field name="model">delivery.carrier</field>
+		    <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+	        <field name="arch" type="xml">
+	        	 <xpath expr="//field[@name='partner_id']" position="after">
+	        	 	<field name="ship_company_code"/>
+	        	 	<field name="ship_income_account_id"/>
+	        	 	<field name="invoice_ship_act_cost"/>
+	        	 </xpath>
+        	</field>
+         </record> 
      </data>
  </openerp>

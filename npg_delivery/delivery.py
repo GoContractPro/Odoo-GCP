@@ -33,7 +33,7 @@ class delivery_carrier(osv.osv):
         return [('grid', 'Price Grid')]
     
     _columns = {
-        'name': fields.char('Delivery Type', size=24, required=True),
+#         'name': fields.char('Delivery Type', size=24, required=True),
         'ship_company_code': fields.selection(_get_company_code, 'Method Type', method=True,size=64),
         'ship_income_account_id': fields.property(type='many2one',relation='account.account', string="Shipping Income GL Account",view_load=True,
                                 required=True, help='This account represents the g/l account for booking shipping income.'),
