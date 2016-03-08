@@ -8,7 +8,7 @@
 			<field name="inherit_id" ref="sale.view_order_form"/>
 			<field name="priority" eval="30" />
 			<field name="arch" type="xml">
-				<xpath expr="//form/sheet/notebook/page/group[@name='carrier_id']" position="after">
+				<xpath expr="//field[@name='note']" position="before">
 					<newline/>
 					<group colspan="4" col="6" attrs="{'invisible':['|',('ship_company_code','!=','ups')]}">
 						<separator colspan="2" string="UPS" />

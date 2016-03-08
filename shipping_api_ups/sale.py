@@ -76,7 +76,7 @@ class sale_order(osv.osv):
         return result
 
     def _get_company_code(self, cr, user, context=None):
-        res = super(sale_order, self)._get_company_code(cr, user, context=context)
+        res = super(sale_order, self)._get_company_code()
         res.append(('ups', 'UPS'))
         return res
     
@@ -100,7 +100,7 @@ class sale_order(osv.osv):
         ups_shipper_ids = []
         ups_shipper_id=False
         if delivery_method:
-            deliver_method_obj = self.pool.get('delivery.method').browse(cr, uid, delivery_method, context=context)
+            deliver_method_obj = self.pool.get('delivery.carrier').browse(cr, uid, delivery_method, context=context)
             if deliver_method_obj.ship_company_code == 'ups':
                 for shipper in deliver_method_obj.ups_shipping_account_ids:
                     ups_shipper_ids.append(shipper.id) 
@@ -114,7 +114,7 @@ class sale_order(osv.osv):
         return res
      
     def _method_get(self, cr, uid, context=None):
-        res = super(sale_order, self)._method_get(cr, uid, context=context)
+        res = super(sale_order, self)._method_get()
         res.append(('ups.account', 'UPS'))
         return res
     

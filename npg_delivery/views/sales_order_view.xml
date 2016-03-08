@@ -10,7 +10,7 @@
             <field name="arch" type="xml">
                 <xpath expr="//group[@name='technical']" position="after" >
 					<group colspan="4" col="4">
-						<field name="ship_company_code" invisible="1"/>
+						<field name="ship_company_code" invisible="0"/>
 					</group>
 				</xpath>
             

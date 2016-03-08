@@ -173,7 +173,7 @@ class stock_picking(osv.osv):
         ups_shipper_ids = []
         ups_shipper_id=False
         if delivery_method:
-            deliver_method_obj = self.pool.get('delivery.method').browse(cr, uid, delivery_method, context=context)
+            deliver_method_obj = self.pool.get('delivery.carrier').browse(cr, uid, delivery_method, context=context)
             if deliver_method_obj.ship_company_code == 'ups':
                 for shipper in deliver_method_obj.ups_shipping_account_ids:
                     ups_shipper_ids.append(shipper.id) 
@@ -1438,50 +1438,50 @@ class stock_picking(osv.osv):
 
 stock_picking()
 
-class stock(osv.osv_memory):
-    
-    _inherit = "stock.invoice.onshipping"
-    
-    def create_invoice(self, cr, uid, ids, context=None):
-        if context is None:
-            context = {}
-        invoice_ids = []
-        res = super(stock, self).create_invoice(cr, uid, ids, context=context)
-        invoice_ids = res
-        picking_pool = self.pool.get('stock.picking')
-        invoice_pool = self.pool.get('account.invoice')
-        active_picking = picking_pool.browse(cr, uid, context.get('active_id', False), context=context)
-        if active_picking:
-            package_note = ''
-            package_note = self.get_invoice_shipping_note(cr,uid,active_picking, context)
-            
-            vals = {'shipcharge':active_picking.shipcharge or 0.0,
-                    'shipcost':active_picking.shipcost or 0.0,
-                    'delivery_method':active_picking.delivery_method.id or False,               
-                    'ship_income_account_id': active_picking.ship_income_account_id.id or False,
-                    'comment':package_note,
-                    }
-            invoice_pool.write(cr, uid, invoice_ids, vals, context=context)
-        return res
-    
-    def get_invoice_shipping_note(self,cr, uid, active_picking = None, context=None):
-        
-        packages = self.pool('stock.packages').browse(cr,uid, active_picking.packages_ids.ids, context=context)
-#         pack_note = 'There are %s packages being Shipped for this order with the following tracking nos-' % (len(packages.ids),)
-        pack_note = 'Package(s) shipped for this order - '
-        for package in packages:
-            
-#             pack_note += 'Package %s of Weight %s  --Tracking No %s'%(package.packge_no,package.weight, package.tracking_no) 
-            pack_note += '\nPackage %s Weight %s (lbs) - Tracking No %s'%(package.packge_no,package.weight, package.tracking_no)
-       
-        return pack_note 
-stock()
+# class stock(osv.osv_memory):
+#     
+#     _inherit = "stock.invoice.onshipping"
+#     
+#     def create_invoice(self, cr, uid, ids, context=None):
+#         if context is None:
+#             context = {}
+#         invoice_ids = []
+#         res = super(stock, self).create_invoice(cr, uid, ids, context=context)
+#         invoice_ids = res
+#         picking_pool = self.pool.get('stock.picking')
+#         invoice_pool = self.pool.get('account.invoice')
+#         active_picking = picking_pool.browse(cr, uid, context.get('active_id', False), context=context)
+#         if active_picking:
+#             package_note = ''
+#             package_note = self.get_invoice_shipping_note(cr,uid,active_picking, context)
+#             
+#             vals = {'shipcharge':active_picking.shipcharge or 0.0,
+#                     'shipcost':active_picking.shipcost or 0.0,
+#                     'delivery_method':active_picking.delivery_method.id or False,               
+#                     'ship_income_account_id': active_picking.ship_income_account_id.id or False,
+#                     'comment':package_note,
+#                     }
+#             invoice_pool.write(cr, uid, invoice_ids, vals, context=context)
+#         return res
+#     
+#     def get_invoice_shipping_note(self,cr, uid, active_picking = None, context=None):
+#         
+#         packages = self.pool('stock.packages').browse(cr,uid, active_picking.packages_ids.ids, context=context)
+# #         pack_note = 'There are %s packages being Shipped for this order with the following tracking nos-' % (len(packages.ids),)
+#         pack_note = 'Package(s) shipped for this order - '
+#         for package in packages:
+#             
+# #             pack_note += 'Package %s of Weight %s  --Tracking No %s'%(package.packge_no,package.weight, package.tracking_no) 
+#             pack_note += '\nPackage %s Weight %s (lbs) - Tracking No %s'%(package.packge_no,package.weight, package.tracking_no)
+#        
+#         return pack_note 
+# stock()
 
 class stock_move(osv.osv):
     
     _inherit = "stock.move"
     
-    def created(self, cr, uid, vals, context=None):
+    def create(self, cr, uid, vals, context=None):
         if not context: context = {}
         package_obj = self.pool.get('stock.packages')
         pack_id = None

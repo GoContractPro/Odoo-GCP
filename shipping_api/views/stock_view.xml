@@ -13,8 +13,7 @@
 						<tree colors="grey:state == 'cancel'" string="Moves" editable="bottom" >
 		                    <field name="product_id" />
 		                    <field name="product_qty"  />
-		                    <field name="product_uos" invisible="1" />
-		                    <field name="package_id"  on_change="onchange_quantity(product_id, product_qty, product_uom, product_uos, location_id, False)" />
+		                    <field name="package_id"  on_change="onchange_quantity(product_id, product_qty, product_uom, location_id, False)" />
 		                    <field name="cost" invisible="1" />
 		                    <field name="product_uom"  string="Unit of Measure" groups="product.group_uom"/>
 		                   <field name="restrict_lot_id"   groups="stock.group_production_lot"/> 
@@ -113,7 +112,7 @@
 							<field name='exp_carrier' attrs="{'required':['|', ('comm_inv','=',True),('nafta_cer_orig','=',True)]}" />
 						</group>
 						</page>
-						<page string="BlanketPeriod" attrs="{'invisible':[('nafta_cer_orig','=',False)]}" >
+						<page string="BlanketPeriod" name='blanket' attrs="{'invisible':[('nafta_cer_orig','=',False)]}" >
 						<group colspan="1" col="8" attrs="{'invisible':[('nafta_cer_orig','=',False)]}">
 							<field name='blanket_begin_date' attrs="{'required':[('nafta_cer_orig','=',True)]}"/>
 							<field name='blanket_end_date'  attrs="{'required':[('nafta_cer_orig','=',True)]}"/>

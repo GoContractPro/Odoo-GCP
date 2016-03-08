@@ -24,7 +24,7 @@
 					</group>
 				</xpath>
 
-				<xpath expr="//page[@string='BlanketPeriod']" position="after">
+				<xpath expr="//page[@name='blanket']" position="after">
 					<page string="UPS Rates" attrs="{'invisible':['|',('bill_shipping','!=', 'shipper'),('ups_use_cc','!=',True)]}" >
 					<button name="get_rate" string="Get Rate" type="object" icon="gtk-execute"  />
 					<field name='shipping_rates' widget="one2many_list" nolabel='1'>

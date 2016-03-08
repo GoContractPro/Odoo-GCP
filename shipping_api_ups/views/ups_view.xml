@@ -5,9 +5,9 @@
 	    <!--  UPS DELIVERY Method -->
 	    
 	    <record id="delivery_method_form_inherit_02" model="ir.ui.view">
-			<field name="name">delivery.method.inherit</field>
-			<field name="model">delivery.method</field>
-			<field name="inherit_id" ref="npg_delivery.view_delivery_method_form"/>
+			<field name="name">delivery.carrier.inherit</field>
+			<field name="model">delivery.carrier</field>
+			<field name="inherit_id" ref="npg_delivery.view_delivery_carrier_form_npg_inherit"/>
 			<field name="arch" type="xml">
 			    <xpath expr="//group" position="after">
 				      <group col="4" attrs="{'invisible':[('ship_company_code','!=','ups')]}">
@@ -17,7 +17,8 @@
 						<field name="test_mode" colspan='2'/>
 <!--	                    <field name="ship_income_account_id"/>-->
 					  </group>
-					 <notebook>
+					 </xpath>
+					  <xpath expr="//notebook" position="inside">
   						<page string="UPS Account"  attrs="{'invisible':[('ship_company_code','!=','ups')]}">
 						    <group>
 							<field name="ups_shipping_account_ids" nolabel='1' colspan="4"/>
@@ -44,7 +45,6 @@
 							<field name='ship_tracking_url'/>
 							</group>
 						</page>
-					</notebook>
 				 </xpath>
 			</field>
 		</record>
@@ -91,7 +91,7 @@
 			<field name="view_mode">tree,form</field>
 		</record>
 
-		<menuitem id="ups_shipping_service_type_in_config" name="Shipping" parent="stock.menu_stock_configuration" />
+		<menuitem id="ups_shipping_service_type_in_config" name="Shipping" parent="stock.menu_stock_config_settings" />
 		<menuitem id="ups_shipping_service_type" name="Shipping Service"
 			parent="shipping_api.shipping_menu" action="action_for_ups_account_shipping_service" />
 

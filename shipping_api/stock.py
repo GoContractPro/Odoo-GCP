@@ -68,7 +68,7 @@ class stock_picking(osv.osv):
             result[pick.id] = 0.0
             for line in pick.move_lines:
                 if line.product_id:
-                    result[pick.id] += line.product_qty * line.product_id.weight_net
+                    result[pick.id] += line.product_qty * line.product_id.weight
         return result
 
     def _get_move_order(self, cr, uid, ids, context=None):
@@ -287,8 +287,8 @@ class stock_move(osv.osv):
         'cost': fields.float('Value', digits_compute=dp.get_precision('Account'))
     }
     
-    def onchange_quantity(self, cr, uid, ids, product_id, product_qty, product_uom, product_uos, location_id=False, sale_line_id=False):
-        result = super(stock_move, self).onchange_quantity(cr, uid, ids, product_id, product_qty, product_uom, product_uos)
+    def onchange_quantity(self, cr, uid, ids, product_id, product_qty, product_uom, location_id=False, sale_line_id=False):
+        result = super(stock_move, self).onchange_quantity(cr, uid, ids, product_id, product_qty, product_uom)
         if product_id:
             product = self.pool.get('product.product').browse(cr, uid, product_id)
             if sale_line_id:

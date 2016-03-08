@@ -41,7 +41,7 @@ class ups_account_shipping(osv.osv):
         'atten_name': fields.char('AttentionName', size=64, required=True, select=1),
         'tax_id_no': fields.char('Tax Identification Number', size=64 , select=1, help="Shipper's Tax Identification Number."),
 
-        'delivery_mthd_id': fields.many2one('delivery.method', 'Parent Delivery Method'),
+        'delivery_mthd_id': fields.many2one('delivery.carrier', 'Parent Delivery Method'),
 #         'ups_shipping_service_ids': fields.one2many('ups.shipping.service.type', 'ups_account_id', 'Shipping Service'),
 #        'ups_shipping_service_ids':fields.many2many('ups.shipping.service.type', 'shipping_service_rel', 'ups_account_id', 'service_id', 'Shipping Service'),
         'address': fields.property(
@@ -99,7 +99,7 @@ class ups_account_shipping_service(osv.osv):
 ups_account_shipping_service()
 
 class delivery_carrier(osv.osv):
-    _inherit = "delivery.method"
+    _inherit = "delivery.carrier"
     
     def _get_company_code(self, cr, user, context=None):
         res =  super(delivery_carrier, self)._get_company_code(cr, user, context=context)

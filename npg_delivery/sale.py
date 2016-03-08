@@ -156,9 +156,11 @@ class sale_order(models.Model):
                 'carrier_contact': False,
                 'ship_service': False,
                 'ship_income_account_id': False,
+                'ship_company_code':False
             })
             return
         self.update({'carrier_contact' : self.carrier_id.partner_id.id,
+                     'ship_company_code':self.carrier_id.ship_company_code,
                         'ship_service' : self.carrier_id.name,
                         'ship_income_account_id':self.carrier_id.ship_income_account_id and self.carrier_id.ship_income_account_id.id or False})
     
