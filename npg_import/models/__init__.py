@@ -22,5 +22,6 @@
 import import_data_header
 import import_data
 import import_data9_0
+import ir_cron
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

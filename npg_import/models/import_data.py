@@ -111,7 +111,7 @@ class import_data_file(osv.osv):
     _columns = {
             'name':fields.char('Name',size=32,required = True ), 
             'description':fields.text('Description',), 
-            'model_id': fields.many2one('ir.model', 'Model', ondelete='cascade', required= False,
+            'model_id': fields.many2one('ir.model', 'Model',  required= False,
                 help="The model to import"),
             'start_time': fields.datetime('Start Time',  readonly=True),
             'end_time': fields.datetime('End Time',  readonly=True),
@@ -143,7 +143,7 @@ class import_data_file(osv.osv):
             'sql_source': fields.text('SQL', help='Write a valid "SELECT" SQL query to fetch data from Source database'),
             'state': fields.selection([('draft','Draft'),('map','Mapping Fields'),('ready','Map Confirmed'),('importing','Import Running')], "Status"),
             'sequence': fields.integer("Sequence"),
-            'is_cron_scheduled': fields.boolean('Run as Scheduled Import'),
+            'ir_cron_id': fields.many2one('ir.cron', 'Scheduled Job',domain="[('is_import_data_job','=',True)]"),
             
             }
     

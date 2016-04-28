@@ -71,26 +71,29 @@ test_mode = False
 class import_data_file(models.Model): 
             
     _inherit = "import.data.file"  
-       
-    def import_schedule(self, cr, uid, ids, context=None):
-        cron_obj = self.pool.get('ir.cron')
-        for imp in self.browse(cr, uid, ids, context):
+    
+    @api.multi 
+    def import_schedule(self):
+        cron_obj = self.env['ir.cron']
+        for imp in self:
             cron_id = False
-            if not imp.schedule_import:
-                new_create_id = cron_obj.create(cr, uid, {
+            if not imp.ir_cron_id:
+                new_create_id = cron_obj.create( {
                     'name': 'Import ODBC tables',
-                    'interval_type': 'hours',
+                    'interval_type': 'days',
                     'interval_number': 1,
                     'numbercall': -1,
-                    'model': 'import.data.file',
-                    'function': 'action_import',
+                    'model': 'ir.cron',
+                    'function': 'action_import_scheduled',
                     'doall': False,
-                    'active': True
+                    'active': True,
+                    'is_import_data_job':True,
                 })
-                imp.write({'schedule_import':new_create_id})
-                cron_id = new_create_id
+                new_create_id.write({'args':repr([new_create_id.id])})
+                imp.write({'ir_cron_id':new_create_id.id})
+                cron_id = new_create_id.id
             else:
-                cron_id = imp.schedule_import.id
+                cron_id = imp.ir_cron_id.id
         return {
             'name': 'Import ODBC tables',
             'view_type': 'form',
@@ -511,7 +514,7 @@ class import_data_file(models.Model):
                 res_id = False
             else:
                 vals = odoo_vals['field_val']
-                res_id = self.create_or_update_record(0, vals, external_id_name, field.relation)
+                res_id = self.create_or_update_record(0, vals, external_id_name, field.relation, update = field.update_related)
 
             if not res_id:
                 error_txt = _('Warning: Relation: %s record Not Created for Value: %s' % (field.relation, field_val)) 
@@ -560,7 +563,7 @@ class import_data_file(models.Model):
             
             return False
         
-    def create_or_update_record(self, res_id, vals, external_id_name, model):        
+    def create_or_update_record(self, res_id, vals, external_id_name, model, update):        
         
         try:  # Update or Create Records          
             
@@ -573,7 +576,7 @@ class import_data_file(models.Model):
                  res_id = self.create_import_record(vals=vals, external_id_name=external_id_name, model=model)
                  result =  res_id
                 
-            elif res_id and self.do_update:
+            elif res_id and update:
                 record_obj = self.env[model].browse(res_id)
                 record_obj.write(vals)
                 if record_obj: 
@@ -666,7 +669,7 @@ class import_data_file(models.Model):
             self.update_log_error(error_txt=error_txt)                    
             return False
         
-        if self.create_or_update_record(res_id, vals, external_id_name, self.model_id.model):
+        if self.create_or_update_record(res_id, vals, external_id_name, self.model_id.model, update = self.do_update):
             self.row_process_time()
             count += 1
             return count
@@ -811,6 +814,8 @@ class import_data_file(models.Model):
         else:
             return {}
 
+
+            
     @api.multi
     def action_import(self):
         

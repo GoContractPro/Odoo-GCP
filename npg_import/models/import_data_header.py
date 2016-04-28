@@ -80,7 +80,8 @@ class import_data_header(models.Model):
                       help='''Use to create Filter on incoming records Field value in source must match values in list or row is skipped on import,
                            Can use multiple values for filter,  format as python type list for values example "value1","value2","value3". ''')           
     skip_if_empty = fields.Boolean('Skip if Empty')
-    create_related = fields.Boolean('Create Related', help="Will create the related records using system default values if missing")
+    create_related = fields.Boolean('Create Related', help="Will create the related records  if missing")
+    update_related = fields.Boolean('Update Related', help="Will update the related records with source values if found")
 
     default_val = fields.Char(string='Default Import Val', size=256, help='The Default if no values for field in imported Source')
     substitute_sets = fields.Many2one(comodel_name='import.substitute.sets', string='Substitution Sets',

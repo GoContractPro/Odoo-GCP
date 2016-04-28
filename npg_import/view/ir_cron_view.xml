@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<openerp>
+	<data>
+	     <record id="ir_cron_view_data_import" model="ir.ui.view">
+	     	<field name="name">ir.cron.view.data.import.inherited</field>
+            <field name="model">ir.cron</field>
+            <field name="inherit_id" ref="base.ir_cron_view"/>
+            <field name="arch" type="xml">
+            	<field name="priority" position="after">
+            		<field name="is_import_data_job" readonly="1"/>
+            	</field>
+            	<xpath expr="//notebook[last()]" position="inside">
+            		<page string="Data Import" attrs="{'invisible':[('is_import_data_job','!=',True)]}">
+            			<field name="import_data_ids"/>
+            		</page>
+            	</xpath>
+            </field>
+         </record>
+     </data>
+</openerp>
+       
