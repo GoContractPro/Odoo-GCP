@@ -79,14 +79,14 @@ class import_data_file(models.Model):
             cron_id = False
             if not imp.ir_cron_id:
                 new_create_id = cron_obj.create( {
-                    'name': 'Import ODBC tables',
+                    'name': ('Import %s'% imp.name) , 
                     'interval_type': 'days',
                     'interval_number': 1,
                     'numbercall': -1,
                     'model': 'ir.cron',
                     'function': 'action_import_scheduled',
                     'doall': False,
-                    'active': True,
+                    'active': False,
                     'is_import_data_job':True,
                 })
                 new_create_id.write({'args':repr([new_create_id.id])})
