@@ -49,24 +49,7 @@
 						
 						</group>
 					</group>
-					<button name="delete_header_columns" string="Delete Columns" type="object" class="oe_highlight"
-                			
-                			confirm="?Are you Sure?  This will delete existing Data Mapping"/>		
-                   	 	
-                		<button name='create_map_from_source' string="Load Columns From Source Data" 
-               				states="draft"
-                   	 		context="{'model':model_id}" 
-                   	 		type="object" class="oe_highlight"
-                   	 		confirm="?Are you Sure?  This will overwrite existing Data Mapping"/>
-                    	<button name='create_map_from_odoo_model' string="Load Columns From Odoo Model" 
-               				states="draft"
-                   	 		context="{'model':model_id}" 
-                   	 		type="object" class="oe_highlight"
-                   	 		confirm="?Are you Sure?  This will overwrite existing Data Mapping"/>
-                    	<button name="refresh_header_list" string="Refresh Source Columns" 
-                    		context="{'refresh' :True}"
-                    		type="object" class="oe_highlight" 
-                    		states="map,ready"/>		
+		
                   	<group string="Map Related Fields" cols='8'>
                   			<field name="create_related"/>
                   			<field name="update_related"/>
