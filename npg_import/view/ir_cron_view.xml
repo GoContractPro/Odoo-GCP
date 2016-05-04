@@ -12,7 +12,25 @@
             	</field>
             	<xpath expr="//notebook[last()]" position="inside">
             		<page string="Data Import" attrs="{'invisible':[('is_import_data_job','!=',True)]}">
-            			<field name="import_data_ids"/>
+            		    <button name="action_select_data_imports" 
+            		    	string="Select Source Data Maps"
+            		    	type="object" class="oe_highlight"
+            		    />
+            			<field name="import_data_ids" widget="one2many_list" mode="tree" nolabel="1">
+            				<tree>
+            					<field name="sequence" string="#"/>
+		                		<field name="sequence" widget="handle"/>
+		                    	<field name="name"/>
+		                    	<field name="state"/>
+		                        <field name="tot_record_num" />
+		                        <field name="row_count" />
+		                        <field name="count" />
+		                        <field name="start_time" />
+		                        <field name="end_time" />
+            				
+            				</tree>
+            			
+            			</field>
             		</page>
             	</xpath>
             </field>

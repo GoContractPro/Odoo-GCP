@@ -28,9 +28,8 @@
                     		states="map,ready"/>
                    		<button name="action_import" string="Run Test" states="map,ready" type="object" class="oe_highlight" context="{'test':True}"/>
                    		<button name="action_set_confirmed" string="Confirm" states="map" type="object" class="oe_highlight" />
-                    	<button name="action_import_cron" string="Import Data" states="ready" type="object" class="oe_highlight" />
-                    	<button name="import_schedule" string="Schedule Import" states="ready" type="object" clase="oe_highlight" />
-                   		<field name="state" widget="statusbar" statusbar_visible="draft,map,ready,importing" readonly="0" clickable="True"/>
+                    	<button name="action_import_cron" string="Run Import" states="ready" type="object" class="oe_highlight" />
+                    	<field name="state" widget="statusbar" statusbar_visible="draft,map,ready,importing" readonly="0" clickable="True"/>
 
                 	</header>
                     <group>
@@ -40,13 +39,15 @@
                     	<newline/>
                     	<group colspan="2">
 	                        <field name="model_id" />
-	                        <field name="ir_cron_id" />
+	                        
 	                    	<field name="has_errors" readonly="1"/>
                     	</group>
                     	<group colspan="2">
                     		<field name="start_time" string="Started"/>
                     		<field name="end_time"/>
                     		<field name="time_estimate" widget="float_time" />
+                    		<button name="import_schedule" string="Cron Schedule" states="ready" type="object" clase="oe_highlight" />
+                   			<field name="ir_cron_id" nolabel="1"  />
                     	</group>
                     	 <newline/>
                     	<group colspan="4" col="4">

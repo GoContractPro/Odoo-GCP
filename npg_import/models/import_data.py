@@ -91,7 +91,7 @@ class import_substitution_values(osv.osv):
     _defaults = {
                  'header_map':_get_import_header_map_id
                  }
-       
+
 class import_substitute_sets(osv.osv):
     
     _name = "import.substitute.sets"
