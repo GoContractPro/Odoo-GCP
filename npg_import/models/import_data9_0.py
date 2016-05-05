@@ -26,7 +26,7 @@ from openerp import models, fields, api, exceptions, _
 import csv
 import os
 import cStringIO
-import datetime 
+import datetime, pytz 
 import logging 
 import sys, traceback
 import contextlib
@@ -75,6 +75,12 @@ class import_data_file(models.Model):
     @api.multi 
     def import_schedule(self):
         cron_obj = self.env['ir.cron']
+        tz = self.env.context['tz']
+        tz = pytz.timezone(tz)
+        today = datetime.datetime.now(tz).date() + datetime.timedelta(days=1)
+        midnight = tz.localize(datetime.datetime.combine(today,datetime.time(0,0)))
+        next_start = midnight.astimezone(pytz.utc).strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+              
         for imp in self:
             cron_id = False
             if not imp.ir_cron_id:
@@ -83,15 +89,17 @@ class import_data_file(models.Model):
                     'interval_type': 'days',
                     'interval_number': 1,
                     'numbercall': -1,
-                    'model': 'ir.cron',
+                    'nextcall': next_start,
+                    'model': 'import.data.file',
                     'function': 'action_import_scheduled',
                     'doall': False,
                     'active': False,
                     'is_import_data_job':True,
                 })
-                new_create_id.write({'args':repr([new_create_id.id])})
-                imp.write({'ir_cron_id':new_create_id.id})
                 cron_id = new_create_id.id
+                new_create_id.write({'args':'(%s,)'% cron_id})
+                imp.write({'ir_cron_id':cron_id})
+                
             else:
                 cron_id = imp.ir_cron_id.id
         return {
@@ -726,7 +734,7 @@ class import_data_file(models.Model):
         return log_vals
     
     @api.multi
-    def update_statistics(self, remaining=True):   
+    def update_statistics(self, remaining=True, stats_vals=False):   
         '''params:
         rec: The main record set for import File
         processed_rows: Current number of Rows processed from Data Source
@@ -738,8 +746,11 @@ class import_data_file(models.Model):
         
         
         estimate_time = self.estimate_import_time(processed_rows=row_count, remaining=remaining)    
-            
-        stats_vals = {
+        
+        if stats_vals:
+            stats_vals['time_estimate'] = estimate_time  
+        else: 
+            stats_vals = {
                     'start_time':start_time,  
                     'end_time': False,
                     'error_log': self.error_log,
@@ -814,7 +825,16 @@ class import_data_file(models.Model):
         else:
             return {}
 
-
+    
+    def action_import_scheduled(self,cr,uid,cron_id=False):
+        if cron_id:
+            domain = [('state','=','ready'),('ir_cron_id','=',cron_id)]
+            obj = self.pool('import.data.file')
+            ids = obj.search(cr,uid,domain,order='sequence')
+            recs = obj.browse(cr,uid,ids)
+            for rec in recs:
+                rec.action_import()
+            return True
             
     @api.multi
     def action_import(self):
@@ -830,19 +850,27 @@ class import_data_file(models.Model):
         count = 0
            
         if not self.header_ids:
-            error = 'No Fields import map'
+            error = 'No  import map fields'
             return  
         
         test_mode = self.env.context.get('test', False)
-        
+        '''
         self.has_errors = False
         self.error_log = '' 
         self.row_count = 0
         self.count = 0
         self.tot_record_num = 0
-        start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        
         self.start_time = start_time
-   
+        '''
+        start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        stats = {'has_errors':False,
+                'error_log':'',
+                'row_count':0,
+                'count':0,
+                'tot_record_num':0,
+                'start_time':datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT),
+                }
         if self.src_type == 'dbf':
             return self.action_import_dbf()
             
@@ -850,7 +878,7 @@ class import_data_file(models.Model):
             return self.action_import_csv()
             
         elif self.src_type == 'odbc':
-            return self.action_import_odbc()
+            return self.action_import_odbc(stats_vals=stats)
                 
     @api.multi
     def action_import_dbf(self, ):
@@ -881,7 +909,7 @@ class import_data_file(models.Model):
         return {'value':self.update_statistics(remaining=False)}
     
     @api.multi
-    def action_import_odbc(self):
+    def action_import_odbc(self,stats_vals=None):
         
         conn = False 
         
@@ -890,8 +918,9 @@ class import_data_file(models.Model):
             conn = self.env['base.external.dbsource'].conn_open(self.base_external_dbsource.id)
             cur = conn.cursor()
             
-            self.tot_record_num = self.get_row_count_odbc(self.odbc_import_query(),cur)
-            self.update_statistics(remaining=True)
+#            self.tot_record_num = self.get_row_count_odbc(self.odbc_import_query(),cur)
+            stats_vals['tot_record_num'] = self.get_row_count_odbc(self.odbc_import_query(),cur)
+            self.update_statistics(remaining=True, stats_vals=stats_vals)
             self.env.cr.commit()
             qry = self.odbc_import_query()
             cur.execute(qry)

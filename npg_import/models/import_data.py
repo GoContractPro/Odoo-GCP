@@ -143,7 +143,7 @@ class import_data_file(osv.osv):
             'sql_source': fields.text('SQL', help='Write a valid "SELECT" SQL query to fetch data from Source database'),
             'state': fields.selection([('draft','Draft'),('map','Mapping Fields'),('ready','Map Confirmed'),('importing','Import Running')], "Status"),
             'sequence': fields.integer("Sequence"),
-            'ir_cron_id': fields.many2one('ir.cron', 'Scheduled Job',domain="[('is_import_data_job','=',True)]"),
+            'ir_cron_id': fields.many2one('ir.cron', 'Scheduled Job',domain="[('is_import_data_job','=',True)]",),
             
             }
     
