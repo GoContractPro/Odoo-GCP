@@ -399,7 +399,10 @@ class import_data_file(models.Model):
                 self.update_log_error(error_txt=error_txt)
         
         elif field.model_field_type in ['char', 'text', 'html'] and  field_val:
-            pass
+            if not field_val:
+                field_val = ''
+            else:
+                pass
         elif field.model_field_type == 'binary' and  field_val:
             
             pass
@@ -644,7 +647,7 @@ class import_data_file(models.Model):
                 if self.skip_current_row_filter(field_val, field):
                     return False                          
               
-                if not field_val:continue
+                #if not field_val:continue
              
                 if not field.model_field: continue  # Skip to next Field if no Odoo field set
                 
