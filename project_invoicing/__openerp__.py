@@ -20,8 +20,7 @@
     'demo': [],
     'installable': True,
     'auto_install': False,
-    'qweb' : [],
-    'price' : 100.00,
-    'application': True,
-}
-    
+    'qweb': [],
+    'price': 100.00,
+    'application':True,
+}   

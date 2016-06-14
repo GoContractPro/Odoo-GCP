@@ -121,7 +121,7 @@ class SaleOrderLine(models.Model):
         for line in self:
             if line.product_id.track_service == 'timesheet':
                 
-                tasks = self.env['projec.task'].search([('sale_line_id2','=',False),('sale_line_id','=',False),
+                tasks = self.env['project.task'].search([('sale_line_id2','=',False),('sale_line_id','=',False),
                                                         ('analytic_account_id','=',line.order_id.project_id.id)])
                 tasks.write({'sale_line_id2':line.id}) 
                 break
@@ -135,7 +135,7 @@ class SaleOrderLine(models.Model):
 
                 
                 domain = [('invoice_line','=',False),('product_id','=', False),
-                          ('so_line','=',False),('account_id','=',line.order.project_id.id),
+                          ('so_line','=',False),('account_id','=',line.order_id.project_id.id),
                           ('task_id','in',tasks.ids)]
                 if line.order_id.start_date: domain.append(('date','>=',line.order_id.start_date))
                 if line.order_id.end_date: domain.append(('date','<=',line.order_id.end_date))
@@ -176,7 +176,7 @@ class SaleOrder(models.Model):
     def action_cancel(self):
         
         self.order_line.reset_analytic_so_line()
-        super(SaleOrder.self).action_cancel()
+        super(SaleOrder, self).action_cancel()
         
     
     def get_analytic_so_lines_for_project(self, task ):
