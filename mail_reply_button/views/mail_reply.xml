@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <template id="mail_reply" name="mail reply" inherit_id="web.assets_backend">
+            <xpath expr="." position="inside">
+            	<link rel="stylesheet" href="/npg_mail_reply_button/static/src/css/mail_reply.css"/>
+                <script type="text/javascript" src="/npg_mail_reply_button/static/src/js/thread.js"></script>
+            </xpath>
+            <xpath expr="script[@src='/mail/static/src/js/chat_manager.js']" position="replace">
+                <script type="text/javascript" src="/npg_mail_reply_button/static/src/js/chat_manager_new.js"></script>
+            </xpath>
+        </template>
+    </data>
+</openerp>
