@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+	<t t-extend="mail.ChatThread.Message">
+    	<t t-jquery="div.o_thread_message" t-operation="after">
+    	    <t t-foreach="message.child_ids" t-as="child">
+                <div class="o_thread_child">
+                    <t t-call="mail.ChatThread.child"/>
+                </div>
+            </t>
+        </t>
+    	<t t-jquery="span:eq(1)" t-operation="after">
+			<span>
+      			<i t-if="message.message_type != 'notification' &amp;&amp; !message.is_needaction &amp;&amp; !options.display_needactions" t-att-class="'fa fa-lg o_thread_message_reply fa-mail-reply'" t-att-data-message-id="message.id" t-att-title="_t('Reply')"/>
+			</span>
+    	</t>
+	</t>
+    <t t-name="mail.ChatThread.child">
+        <div class="o_thread_message">
+            <div t-if="options.display_avatar" class="o_thread_message_sidebar">
+                <t t-if="!child.mailto &amp;&amp; child.author_id[0]">
+                    <img t-if="child.avatar_src &amp;&amp; child.display_author"
+                        t-att-src="child.avatar_src"
+                        data-oe-model="res.partner"
+                        t-att-data-oe-id="child.author_redirect ? child.author_id[0] : ''"
+                        t-attf-class="o_thread_message_avatar #{child.author_redirect ? 'o_mail_redirect' : ''}"/>
+                </t>
+                <t t-if="child.mailto || !child.author_id[0]">
+                    <img t-if="child.avatar_src &amp;&amp; child.display_author"
+                        t-att-src="child.avatar_src"
+                        class="o_thread_message_avatar"/>
+                </t>
+                <span t-if="!child.display_author" t-att-title="child.date" class="o_thread_message_side_date">
+                    <t t-esc="child.date.format('hh:mm')"/>
+                </span>
+                <i t-if="!child.display_author &amp;&amp; options.display_stars &amp;&amp; child.message_type != 'notification'"
+                    t-att-class="'fa o_thread_message_star ' + (child.is_starred ? 'fa-star' : 'fa-star-o')"
+                    t-att-data-message-id="child.id" t-att-title="_t('Mark as Todo')"/>
+            </div>
+            <div t-att-class="'o_thread_message_core' + (child.is_note ? ' o_mail_note' : '')">
+                <p t-if="child.display_author" class="o_mail_info">
+                    <t t-if="child.is_note">
+                        Note by
+                    </t>
+
+                    <strong t-if="child.mailto">
+                        <a class="o_mail_mailto" t-attf-href="mailto:#{child.mailto}?subject=Re: #{child.subject}">
+                            <t t-esc="child.mailto"/>
+                        </a>
+                    </strong>
+                    <strong t-if="!child.mailto &amp;&amp; child.author_id[0]"
+                            data-oe-model="res.partner" t-att-data-oe-id="child.author_redirect ? child.author_id[0] : ''"
+                            t-attf-class="#{child.author_redirect ? 'o_mail_redirect' : ''}">
+                        <t t-esc="child.displayed_author"/>
+                    </strong>
+                    <strong t-if="!child.mailto &amp;&amp; !child.author_id[0]">
+                        <t t-esc="child.displayed_author"/>
+                    </strong>
+
+                    <small t-att-title="child.date">
+                        - <t t-esc="child.hour"/>
+                    </small>
+                    <t t-if="child.model &amp;&amp; (child.model != 'mail.channel') &amp;&amp; options.display_document_link">
+                        on <a t-att-href="child.url" t-att-data-oe-model="child.model" t-att-data-oe-id="child.res_id"><t t-esc="child.record_name"/></a>
+                    </t>
+                    <t t-if="child.origin_id &amp;&amp; (child.origin_id !== options.channel_id)">
+                        (from <a t-att-data-oe-id="child.origin_id" href="#">#<t t-esc="child.origin_name"/></a>)
+                    </t>
+                    <span>
+                        <i t-if="options.display_stars &amp;&amp; child.message_type != 'notification'"
+                            t-att-class="'fa fa-lg o_thread_message_star ' + (child.is_starred ? 'fa-star' : 'fa-star-o')"
+                            t-att-data-message-id="child.id" t-att-title="_t('Mark as Todo')"/>
+                        <i t-if="child.is_needaction &amp;&amp; options.display_needactions"
+                           class="fa fa-check o_thread_message_needaction"
+                           t-att-data-message-id="child.id" t-att-title="_t('Mark as Read')"/>
+                    </span>
+                </p>
+                <t t-if="child.tracking_value_ids &amp;&amp; child.tracking_value_ids.length &gt; 0">
+                    <t t-if="child.subtype_description">
+                        <p t-esc="child.subtype_description"/>
+                    </t>
+                    <t t-call="mail.ChatThread.ChildTracking"/>
+                </t>
+                <p t-if="options.display_subject &amp;&amp; child.display_subject" class="o_mail_subject">Subject: <t t-esc="child.subject"/></p>
+                <t t-if="!(child.tracking_value_ids &amp;&amp; child.tracking_value_ids.length &gt; 0)">
+                    <t t-if="options.shorten_messages &amp;&amp; child.body_short">
+                        <div class="o_mail_body_short">
+                            <t t-raw="child.body_short"/>
+                        </div>
+                        <div class="o_mail_body_long">
+                            <t t-raw="child.body"/>
+                        </div>
+                    </t>
+                    <t t-if="!options.shorten_messages || !child.body_short">
+                        <t t-raw="child.body"/>
+                    </t>
+                </t>
+                <t t-foreach="child.attachment_ids" t-as="attachment">
+                    <t t-call="mail.Attachment"/>
+                </t>
+            </div>
+        </div>
+    </t>
+        <t t-name="mail.ChatThread.ChildTracking">
+        <ul class="o_mail_thread_message_tracking">
+            <t t-foreach='child.tracking_value_ids' t-as='value'>
+                <li>
+                    <t t-esc="value.changed_field"/>:
+                    <t t-if="value.old_value">
+                        <span> <t t-esc="value.old_value"/> </span>
+                        <span class="fa fa-long-arrow-right"/>
+                    </t>
+                    <span> <t t-esc="value.new_value"/> </span>
+                </li>
+            </t>
+        </ul>
+    </t>
+</templates>

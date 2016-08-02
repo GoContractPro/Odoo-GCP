@@ -1,0 +1,11 @@
+.o_mail_thread .o_thread_child{
+	margin-left: 35px;
+}
+.o_thread_message{
+	background: whitesmoke;
+    padding-left: 5px !important;
+    padding-bottom: 3px !important;
+}
+.o_thread_child .o_thread_message{
+	background: white !important;
+}
