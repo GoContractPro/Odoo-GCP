@@ -1,4 +1,4 @@
-odoo.define('npg_mail_reply_button.ChatThread', function(require) {
+odoo.define('mail_reply_button.ChatThread', function(require) {
     "use strict";
 
     var ChatThread = require('mail.ChatThread');

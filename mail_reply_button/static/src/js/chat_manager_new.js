@@ -11,6 +11,7 @@ var time = require('web.time');
 var web_client = require('web.web_client');
 
 var _t = core._t;
+var _lt = core._lt;
 var LIMIT = 100;
 var preview_msg_max_size = 350;  // optimal for native english speakers
 
@@ -83,7 +84,7 @@ function notify_incoming_message (msg, options) {
         web_client.set_title_part("_chat", tab_title);
     }
 
-    if (Notification && Notification.permission === "granted") {
+    if (window.Notification && Notification.permission === "granted") {
         if (bus.is_master) {
             send_native_notification(title, content);
         }
@@ -134,7 +135,7 @@ function strip_html (node, transform_children) {
 function inline (node, transform_children) {
     if (node.nodeType === 3) return node.data;
     if (node.tagName === "BR") return " ";
-    if (node.tagName.match(/^(A|P|DIV|PRE)$/)) return transform_children();
+    if (node.tagName.match(/^(A|P|DIV|PRE|BLOCKQUOTE)$/)) return transform_children();
     node.innerHTML = transform_children();
     return node.outerHTML;
 }
@@ -148,7 +149,7 @@ function add_message (data, options) {
     var msg = _.findWhere(messages, { id: data.id });
 
     if (!msg) {
-        msg = make_message(data);
+        msg = chat_manager.make_message(data);
         // Keep the array ordered by id when inserting the new message
         messages.splice(_.sortedIndex(messages, msg, 'id'), 0, msg);
         _.each(msg.channel_ids, function (channel_id) {
@@ -299,9 +300,11 @@ function add_channel (data, options) {
             chat_manager.bus.trigger("channel_toggle_fold", channel);
         }
     } else {
-        channel = make_channel(data, options);
+        channel = chat_manager.make_channel(data, options);
         channels.push(channel);
-        channels = _.sortBy(channels, function (channel) { return channel.name.toLowerCase(); });
+        // In case of a static channel (Inbox, Starred), the name is translated thanks to _lt
+        // (lazy translate). In this case, channel.name is an object, not a string.
+        channels = _.sortBy(channels, function (channel) { return _.isString(channel.name) ? channel.name.toLowerCase() : '' });
         if (!options.silent) {
             chat_manager.bus.trigger("new_channel", channel);
         }
@@ -334,12 +337,10 @@ function make_channel (data, options) {
             messages: [],
         }},
     };
-    if (channel.type === "channel" && data.public !== "private") {
-        channel.type = "public";
-    } else if (data.public === "private") {
-        channel.type = "private";
+    if (channel.type === "channel") {
+        channel.type = data.public !== "private" ? "public" : "private";
     }
-    if ('direct_partner' in data) {
+    if (_.size(data.direct_partner) > 0) {
         channel.type = "dm";
         channel.name = data.direct_partner[0].name;
         channel.direct_partner_id = data.direct_partner[0].id;
@@ -678,6 +679,10 @@ function on_presence_notification (data) {
 // Public interface
 //----------------------------------------------------------------------------------
 var chat_manager = {
+    // these two functions are exposed for extensibility purposes and shouldn't be called by other modules
+    make_message: make_message,
+    make_channel: make_channel,
+
     post_message: function (data, options) {
         options = options || {};
         var replypid = 0
@@ -780,9 +785,9 @@ var chat_manager = {
             return $.when();
         }
     },
-    mark_all_as_read: function (channel) {
-        if ((!channel && needaction_counter) || (channel && channel.needaction_counter)) {
-            return MessageModel.call('mark_all_as_read', channel ? [[channel.id]] : []);
+    mark_all_as_read: function (channel, domain) {
+        if ((channel.id === "channel_inbox" && needaction_counter) || (channel && channel.needaction_counter)) {
+            return MessageModel.call('mark_all_as_read', [], {channel_ids: channel.id !== "channel_inbox" ? [channel.id] : [], domain: domain});
         }
         return $.when();
     },
@@ -1032,13 +1037,13 @@ chat_manager.bus.on('client_action_open', null, function (open) {
 function init () {
     add_channel({
         id: "channel_inbox",
-        name: _t("Inbox"),
+        name: _lt("Inbox"),
         type: "static",
     }, { display_needactions: true });
 
     add_channel({
         id: "channel_starred",
-        name: _t("Starred"),
+        name: _lt("Starred"),
         type: "static"
     });
 
