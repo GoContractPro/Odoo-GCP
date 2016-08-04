@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+    
+        <!-- Task -->
+        <record id="view_task_form_project_invoicing" model="ir.ui.view">
+            <field name="name">project.task.invoicing.form</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="sale_service.view_sale_service_inherit_form2"/>
+            <field name="arch" type="xml">
+            	<xpath expr="//notebook[last()]" position="inside">
+	            	<page name="invoice_parent" string="Related Tasks">
+	            		
+	            			<group>
+	            			
+	            			<field name="procurement_id"  />
+		            		<field name="invoice_parent_id" />
+		            		</group>
+		            		<group>
+		            		<label for="invoice_child_id"/>
+		            		<newline/>
+		            		<field name="invoice_child_id" nolabel="1" colspan="2"
+		            			context="{'default_project_id':project_id,
+		            					'default_procurement_id':procurement_id}" />
+		            		</group>
+	            			            	
+	            	</page>	
+	            
+            	</xpath> 
+				
+				<field name='sale_line_id' position ='replace' />
+				
+				<field name="tag_ids" position="after">
+					<field name='analytic_account'/>
+					<field name='procurement_id' invisible='1'/>
+					<field name='sale_line_id'
+            		
+            			domain="[('order_id.project_id','=',analytic_account),('product_id.track_service','in',('task'))]"
+            			attrs="{'invisible':[('sale_line_id','!=',False)]}"
+            		/>
+	            	<field name='sale_line_id2'
+            		
+            			domain="[('order_id.project_id','=',analytic_account),('product_id.track_service','in',('timesheet','task'))]"
+            			attrs="{'invisible':[('sale_line_id','=',False)]}"
+            		 />
+
+            	</field>
+            </field>
+        </record>
+    
+    </data>
+</openerp>

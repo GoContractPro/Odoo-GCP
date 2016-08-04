@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>        
+        
+        <record id="view_account_analytic_line_search_invoice_line_inherit" model="ir.ui.view">
+            <field name="name">account.analytic.line.search.invoice_line</field>
+            <field name="model">account.analytic.line</field>
+            <field name="inherit_id" ref="analytic.view_account_analytic_line_filter"/>
+            <field name="arch" type="xml">
+
+                 <field name="task_id" position="after">
+                    <field name="invoice_line"/>
+                 </field>
+            </field>
+         </record>
+        <record id="view_account_analytic_line_form_inherit_invoice_line" model="ir.ui.view">
+            <field name="name">account.analytic.line.form.invoice.line</field>
+            <field name="model">account.analytic.line</field>
+            <field name="inherit_id" ref="analytic.view_account_analytic_line_form"/>
+            <field name="arch" type="xml">
+                <field name="name"  position="before">
+                   <field name="locked" />
+                </field>
+            </field>
+        </record>
+       <record id="view_account_analytic_line_tree_inherit_account_id" model="ir.ui.view">
+            <field name="name">account.analytic.line.tree.account_id</field>
+            <field name="model">account.analytic.line</field>
+            <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+            <field name="arch" type="xml">
+                <field name="date" position="before">
+                    <field name="locked"/>
+                </field>
+               
+            </field>
+        </record>
+        
+        <record model="ir.ui.view" id="hr_timesheet_sheet_form_show_locked">
+            <field name="name">hr.timesheet.sheet.form</field>
+            <field name="model">hr_timesheet_sheet.sheet</field>
+            <field name="inherit_id" ref="hr_timesheet_sheet.hr_timesheet_sheet_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='timesheet_ids']/tree/field[@name='date']" position="before">
+                	<field name='locked'/>
+                </xpath>
+        		<xpath expr="//field[@name='timesheet_ids']/form/field[@name='date']" position="before">
+        			<field name='locked'/>
+        		</xpath>
+        	</field>
+        </record>
+</data>
+</openerp>

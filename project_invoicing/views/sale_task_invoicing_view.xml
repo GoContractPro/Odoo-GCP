@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+ 
+        
+        <!-- Invoice form -->
+       
+        <record model="ir.ui.view" id="view_invoice_form_analytic_lines">
+             <field name="name">account.invoice.form.analytic.lines</field>
+             <field name="model">account.invoice</field>
+             <field name="inherit_id" ref="account.invoice_form"/>
+             <field name="arch" type="xml">
+                 <data>
+                    <xpath expr="//page/field[@name='invoice_line_ids']/tree/field[@name='name']" position="after">
+                        <field name="analytic_lines"/>
+                    </xpath>
+
+                 </data>
+             </field>
+         </record>
+
+        <record model="ir.ui.view" id="view_invoice_line_form_inherit_2">
+            <field name="name">account.invoice.line.form.inherit_2</field>
+            <field name="model">account.invoice.line</field>
+            <field name="inherit_id" ref="account.view_invoice_line_form"/>
+            <field name="arch" type="xml">
+                <data>
+                    <xpath expr="//form/field[@name='name']" position="after">
+                    	<label for="analytic_lines"/>
+                        <field name="analytic_lines">
+                        <tree string="Timesheet Activities" >
+                            <field name="date"/>
+                            <field name="user_id" />
+                            <field name="task_id"/>
+                            <field name="name"/>
+                            
+                            <field name="unit_amount" string="Duration" sum="Total time" widget="float_time"/>
+                            
+                        </tree>
+                        </field>
+                    </xpath>
+                </data>
+            </field>
+        </record>
+        
+        <record id="view_order_form_inherit_sale_analytic_line_date_range" model="ir.ui.view">
+            <field name="name">sale.order.form.sale.analytic.line.date.range</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+               	<field name='project_id' position='after'>
+               		<group string="Invoice Activities Dates" attrs="{'invisible':[('project_id','=',False)]}" colspan="2" col="4">
+               		<div class="o_row" >
+						<label string="From: " for="start_date"/>
+	            		<field name="start_date" nolabel= "1" />
+	            		<label string=" To: "  for="end_date"/>
+	            		<field name="end_date" nolabel= "1" />  
+	            	</div>   	
+	            	</group>
+	            </field>
+	      </field>
+	      </record>
+	        
+	    <record id="view_order_line_form_inherit_project_invoicing" model="ir.ui.view">
+            <field name="name">sale.order.form.sale.project_invoicing</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <data>
+                   <xpath expr="//field[@name='order_line']/form/group" position="inside">
+                       <field name="tasks_ids" invisible="1"/>
+                       <button type="object"
+                           name="action_view_task"
+                           class="oe_stat_button"
+                           icon="fa-tasks"
+                           attrs="{'invisible': [('tasks_count', '=', 0)]}" groups="base.group_user">
+                           <field name="tasks_count" widget="statinfo" string="Tasks"/>
+                       </button>
+                    </xpath>
+                </data>
+           </field>
+        </record>    
+        
+    </data>
+</openerp>        
