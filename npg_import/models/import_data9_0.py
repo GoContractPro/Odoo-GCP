@@ -358,10 +358,10 @@ class import_data_file(models.Model):
                 error_txt = ('Error: Converting Field %s -- %s to Boolean value set False' % (field.model_field.name, field_val,))
                 self.update_log_error(error_txt=error_txt)
             
-        elif field.model_field_type == 'float' and  field_val:
+        elif field.model_field_type == 'float':
+       
+            if field_val == False or field_val is None: field_val = '0'
                 
-            if field_val.lower() == 'false': field_val = '0.0'
-            
             try:
                 field_val = float(field_val)
             except:
