@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+		<!-- Journal -->
+		<record id="account_journal_changes_for_credit_card_01" model="ir.ui.view">
+			<field name="name">account_journal_changes_for_credit_card_01</field>
+			<field name="model">account.journal</field>
+			<field name="inherit_id" ref="account.view_account_journal_form" />
+			<field name="arch" type="xml">
+				<xpath expr="//page" position="inside">
+					<group colspan="2" col="2">
+						<separator string="Credit Card Processing" colspan="4" />
+						<field name="cc_allow_processing" />
+						<field name="cc_allow_refunds" />
+					</group>
+				</xpath>
+			</field>
+		</record>
+
+
+	</data>
+</openerp>

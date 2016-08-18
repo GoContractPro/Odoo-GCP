@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+		<!-- Company Form -->
+        <record id="cc_company" model="ir.ui.view">
+            <field name="name">res.company.cc.config</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+            <xpath expr="//page" position="after">	
+                <page name="Configuration" position="inside">
+                	<newline/>
+                	<separator string="Credit Card Details" colspan="4"/>
+                	<newline/>
+                	<group colspan="4" col="6">
+	                   	<field name="cc_transaction_key" password="1"/>
+	                   	<field name="cc_login"/>
+	                   	<field name="cc_testmode"/>
+	                   	<field name="cc_journal_id"  domain="[('type','in',('bank','cash'))]" />
+					</group>
+                	<newline/>
+                </page>
+               </xpath> 
+            </field>
+        </record>
+
+		<!--  Bank-->
+        <record id="view_partner_bank_form_inherit" model="ir.ui.view">
+            <field name="name">res.partner.bank.form.inherit</field>
+            <field name="model">res.partner.bank</field>
+            <field name="inherit_id" ref="base.view_partner_bank_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//group" position="after">
+					<group string="Credit Card Information">
+						<div>
+							 <group>
+								 <field name="cc_number"/>
+			                     <!--field name="cc_type"/-->
+			                     <field name="cc_e_d_month"/>
+			                     <field name="cc_e_d_year"/>
+		                     	 <field name="cc_v" password="True"/>
+							 </group>
+						</div>
+					</group>
+				</xpath>
+            </field>
+        </record>
+        <record id="view_partner_bank_tree_inherit" model="ir.ui.view">
+            <field name="name">res.partner.bank.tree.inherit</field>
+            <field name="model">res.partner.bank</field>
+            <field name="inherit_id" ref="base.view_partner_bank_tree"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+					 <field name="cc_number"/>
+                     <!--field name="cc_type"/-->
+                     <field name="cc_e_d_month"/>
+                     <field name="cc_e_d_year"/>
+				</xpath>
+            </field>
+        </record>
+
+		<!--  CreditCard Type -->
+        <menuitem id="menu_cc" action="" name="Credit Card" parent="account.menu_finance_configuration"/>
+
+      </data>
+</openerp>

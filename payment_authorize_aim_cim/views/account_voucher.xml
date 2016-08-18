@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record id="view_sale_receipt_form_inherit_id" model="ir.ui.view">
+            <field name="name">account.voucher.sale.form.inherit</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_sale_receipt_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/sheet/group/group/field[@name='partner_id']" position="after">
+                	<field name="origin"/>
+				</xpath>
+			<xpath expr="//form/sheet/group/group/field[@name='partner_id']" position='attributes'>
+                	<attribute name='on_change'>1</attribute>
+				</xpath>
+			 <xpath expr="//notebook" position="inside">
+                     <page string="Credit Card Details" attrs="{'invisible': [('cc_info_hide','=',True)]}">
+						<group string="Cardholder details" >
+						    <field name="cc_info_hide" invisible="1"/>
+						    <field name="cc_reseller" invisible="1"/>
+						    <field name="cc_transaction" invisible="1"/>
+						    <group colspan="4" col="6" name='ccinfo'>
+		                    	<field name="cc_name" attrs="{'readonly': [('state','!=','draft')]}"/>
+								<field name="cc_b_addr_1" attrs="{'readonly': [('state','!=','draft')]}"/>
+								<field name="cc_b_addr_2" attrs="{'readonly': [('state','!=','draft')]}"/>
+								<field name="cc_city" attrs="{'readonly': [('state','!=','draft')]}"/>
+								<field name="cc_state" attrs="{'readonly': [('state','!=','draft')]}"/>
+								<field name="cc_zip" attrs="{'readonly': [('state','!=','draft')]}"/>
+								<field name="cc_country" attrs="{'readonly': [('state','!=','draft')]}"/>
+							</group>
+						</group>
+						<group colspan="4" col="6" name="saleinfo">
+							<field name="rel_sale_order_id" readonly="1"/>
+							<field name="cc_order_amt" attrs="{'readonly': [('state','!=','draft')]}" />
+							<field name="cc_refund_amt" attrs="{'readonly': [('state','!=','draft')], 'invisible' : [('is_charged','=',False)]}" />
+							<field name="is_charged" invisible='1' />
+							<field name="cc_ecommerce_sale" attrs="{'readonly': [('state','!=','draft')]}" />
+						</group>
+						<newline/>
+						<group colspan="4" col="6" name='autofill'>
+							<field name="cc_details"  attrs="{'readonly': [('state','!=','draft')]}" string="CreditCard Auto Fill" domain="[('cc_number','!=',False),('partner_id','=',partner_id)]" on_change="onchange_cc_details(cc_details)"/>
+						</group>
+						<newline/>
+						<group colspan="4" col="6" name='ccdata'>
+							<field name="cc_number" attrs="{'required':[('cc_info_hide','!=',True)],'readonly': [('state','!=','draft')]}" colspan="1" col="2"/>
+							<field name="cc_e_d_month" attrs="{'required':[('cc_info_hide','!=',True)],'readonly': [('state','!=','draft')]}"/>
+							<field name="cc_e_d_year" attrs="{'required':[('cc_info_hide','!=',True)],'readonly': [('state','!=','draft')]}"/>
+							<field name="cc_v" attrs="{'required':[('cc_info_hide','!=',True)],'readonly': [('state','!=','draft')]}"/>
+						</group>
+						<group colspan="4" col="6" name='ccbank'>
+							<field name="cc_save_card_details" attrs="{'readonly': [('state','!=','draft')]}" />
+							<field name="cc_bank" attrs="{'invisible': [('cc_save_card_details','=',False)]}"/>
+						</group>
+						<group colspan="4" col="6" name='cccomment'>
+							<field name="cc_comment"/>
+						</group>
+						<newline/>
+						<group colspan="4" col="6" name='cccode'>
+							<field name="cc_auth_code" readonly="1"/>
+						</group>
+						<group colspan="4" col="6" name='ccchecks' string="Type of Transaction">
+							<field name="cc_p_authorize"/>
+							<field name="cc_charge"/>
+						</group>
+						<newline/>
+						<group>
+						 	<field name="cc_status" colsapn="4" invisible="1"/>
+						</group>
+						<newline/>
+						<group string='Transaction History'>
+						<field name='trans_history_ids' widget='one2many_list' readonly='1' nolabel='1'>
+					    	<tree string="Transaction History">
+					    	    <field name="transaction_date"/>
+								<field name="trans_type"/>
+								<field name="amount"/>
+								<field name="trans_id"/>
+								<field name="status"/>
+							</tree>
+						</field>
+						</group>
+						<newline/>
+						<button name="cancel_cc" icon="gtk-cancel" string="Cancel" type="object" states="draft"/>
+						<button name="cc_refund" icon="gtk-execute" string="Refund" type="object" attrs="{'readonly': [('state','=','draft')], 'invisible' : [('is_charged','=',False)]}" groups="payment_authorize_aim_cim.group_cc_mgr"/>
+						<button icon="terp-camera_test" name="authorize" string="Authorize" type="object" colspan="2" attrs="{'readonly': [('cc_transaction','!=',False)] , 'invisible' : [('cc_info_hide','!=',True),('state','!=','draft')]}" />
+					  </page>
+				</xpath>		
+            </field>
+        </record>
+        
+        <record id="view_voucher_filter_sale_inherit" model="ir.ui.view">
+            <field name="name">account.voucher.sale.select.inherit</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_voucher_filter_sale"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='partner_id']" position="after">
+                	<field name="origin"/>
+				</xpath>
+            </field>
+        </record>
+        
+		<record model="ir.ui.view" id="view_vendor_receipt_form_5">
+            <field name="name">account.voucher.receipt.form.5</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="account_voucher.view_sale_receipt_form"/>
+            <field name="arch" type="xml">
+				<xpath expr="//form/header/button[@name='proforma_voucher']" position="replace">
+                    <button name="%(action_proforma_voucher)d" string="Post" states="draft" type="action" 
+                            attrs="{'invisible': ['|',('cc_info_hide','=',False),('state','&lt;&gt;','draft')]}" icon="terp-camera_test"/>
+				</xpath>
+            </field>
+        </record>
+       <record id="account_voucher_changes_for_credit_card_02" model="ir.ui.view">
+            <field name="name">account_voucher_changes_for_credit_card_02</field>
+            <field name="model">account.voucher</field>
+            <field name="inherit_id" ref="view_sale_receipt_form_inherit_id"/>
+            <field name="arch" type="xml">
+				<xpath expr="//field[@name='partner_id']" position='attributes'>
+                	<attribute name='on_change'>1</attribute>
+				</xpath>
+				<xpath expr="//group" position="after">
+						<group col='6' colspan='4' name='cccim'>
+							<field name="payment_profile_id" domain="[('partner_id','=',partner_id)]" attrs="{'readonly':[('state','!=','draft')]}"/>
+							<button name="%(action_create_payment_profile)d" type='action' string='Create Payment Profile'/>
+						</group>
+					</xpath>
+					<xpath expr="//group[@name='autofill']" position="replace"/>
+					<xpath expr="//group[@name='ccdata']" position="replace"/>
+					<xpath expr="//group[@name='ccbank']" position="replace"/>
+					<xpath expr="//group[@name='ccchecks']" position="replace"/>
+					<xpath expr="//field[@name='cc_comment']" position="after">
+					    <newline/>
+						<separator colspan="4" string="Type of Transaction"/>
+						<newline/>
+						<field name="trans_type" /><!--Added-->
+					</xpath>
+					<xpath expr="//field[@name='cc_ecommerce_sale']" position="replace"/>
+	            </field>
+	        </record>  
+    </data>
+</openerp>
+        
+        
