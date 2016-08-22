@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+        <record id="acquirer_form_authorize_extended" model="ir.ui.view">
+            <field name="name">acquirer.form.authorize.extended</field>
+            <field name="model">payment.acquirer</field>
+            <field name="inherit_id" ref="payment.acquirer_form"/>
+            <field name="arch" type="xml">
+                <xpath expr='//field[@name="authorize_transaction_key"]' position='after'>
+                    <group attrs="{'invisible': [('provider', '!=', 'authorize')]}">
+                        <field name="currency_id"/>
+                        
+                     </group>
+                </xpath>
+            </field>
+        </record>
+
+</odoo>
