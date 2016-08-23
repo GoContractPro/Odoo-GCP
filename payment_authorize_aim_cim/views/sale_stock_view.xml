@@ -8,7 +8,7 @@
 			<field name="inherit_id" ref="sale_stock.view_order_form_inherit_sale_stock" />
 			<field name="arch" type="xml">
 				<xpath expr="//button[@name='action_view_delivery']" position="attributes">
-					<attribute name="attrs">{'invisible': ['|','|','|',('picking_ids','=',False),('picking_ids','=',[]),('state', 'not in', ('cc_auth','progress','manual')),('shipped','=',True)]}</attribute>
+					<attribute name="attrs">{'invisible': ['|','|',('picking_ids','=',False),('picking_ids','=',[]),('state', 'not in', ('cc_auth','progress','manual'))]}</attribute>
 				</xpath>
 				<xpath expr="//form/header/field[@name='state']" position="attributes">
 				    <attribute name="statusbar_visible">draft,sent,progress,cc_auth,invoiced,done</attribute>
@@ -35,7 +35,7 @@
 					</group>
 				</xpath>
 				<xpath expr="//button[@name='print_quotation']" position="before">
-					<button icon="gtk-apply" string="Pay" type="object" name="pay" attrs="{'invisible': ['|','|',('state','!=','progress'),('invoiced', '!=', False),('order_policy','!=','credit_card')]}" />
+					<button icon="gtk-apply" string="Pay" type="object" name="pay" attrs="{'invisible': ['|',('state','!=','progress')]}" />
 				</xpath>
 			</field>
 		</record>
