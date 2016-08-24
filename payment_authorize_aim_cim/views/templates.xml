@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    
+
+    <template id="payment_profiles_aim_cim" name="Account" inherit_id="website_portal.account">
+        <xpath expr="//div[contains(@class,'o_my_documents')]" position="inside">
+            <t t-call="payment_authorize_aim_cim.payment_profiles" />
+        </xpath>
+    </template>
+
+    <template id="payment_profiles" name="Payment Profiles">
+        <h3 class="page-header">Payment Profiles</h3>
+        <t t-if="not payment_profiles">
+            <p>There are currently no payment profiles added.</p>
+        </t>
+        <t t-if="payment_profiles">
+            <table class="table table-hover o_my_status_table">
+                <thead>
+                  <tr class="active">
+                      <th>Name</th>
+                      <th></th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                    </tr>
+                </thead>
+                <t t-foreach="payment_profiles" t-as="profile">
+                    <tr>
+                        <td>
+                            <a t-att-href="'/my/profile/'+str(profile.id)"><t t-esc="profile.name"/></a>
+                        </td>
+                        <td></td>
+                        <td>
+                         	<a t-attf-href="/my/profile/cim_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                </t>
+                <tr t-att-class="'hidden' if len(quotations) &lt; 5 else ''">
+                  <td colspan="5"><a href="" class="o_my_show_more btn btn-xs btn-default"><span>Show more</span><span class="hidden">Show less</span></a></td>
+                </tr>
+            </table>
+        </t>
+    </template>
+
+    
+<template id="cim_profile">
+  <t t-call="website.layout">
+    <t t-set="additional_title">Manage Profile</t>
+    <div id="wrap">
+      <div class="container oe_website_sale">
+          <h1>Your Profile Information</h1>
+          <form action="/profile/confirm_profile" method="post">
+          <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+          <div class="row">
+          <div class="col-md-8 oe_cart">
+              <h3 class="page-header mt16">Payment Profile
+                  <small groups="base.group_public"> or
+                      <a class='btn btn-primary' t-if="not partner" t-attf-href="/web?redirect=#{ request.httprequest.url }">Sign in</a>
+                  </small>
+              </h3>
+              <div class="row">
+                  <div class="col-md-12">
+                      <div t-if="error_message" class="alert alert-danger">
+                          <t t-foreach="error_message" t-as="err"><t t-esc="err"/><br /></t>
+                      </div>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('cc_number') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="contact_name">Credit Card Number</label>
+                      <input type="text" name="cc_number" class="form-control" t-att-value="profile.get('cc_number')"/>
+                  </div>
+                  <div class="clearfix"/>
+                  <div t-attf-class="form-group #{error.get('exp_mm') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="street">Expiration Date MM</label>
+                      <input type="text" name="exp_mm" class="form-control" t-att-value="profile.get('exp_mm')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('exp_yyyy') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="vat">Expiration Date YYYY</label>
+                      <input type="text" name="exp_yyyy" class="form-control" t-att-value="profile.get('exp_yyyy')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('email') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="contact_name">Card Code </label>
+                      <input type="text" name="card_code" class="form-control" t-att-value="profile.get('card_code')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('phone') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="phone">Description</label>
+                      <input type="tel" name="desc" class="form-control" t-att-value="profile.get('desc')"/>
+                  </div>
+
+                  
+                  
+              </div>
+              
+              <div class="clearfix">
+                <a href="/my/home" class="btn btn-default mb32"><span class="fa fa-long-arrow-left"/> Return to Cart</a>
+                <a class="btn btn-default btn-primary pull-right mb32 a-submit">Confirm <span class="fa fa-long-arrow-right"/></a>
+              </div>
+          </div>
+          
+      </div>
+      </form>
+    </div>
+    </div>
+  </t>
+</template>
+ 
+</odoo>

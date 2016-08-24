@@ -30,7 +30,9 @@
     """,
     'author': 'Verts Service Pvt Ltd.',
     'website': ' http://www.verts.co.in',
-    'depends': ['sale_stock','sale', 'account_voucher', 'stock'],
+    'depends': ['sale_stock','sale', 'account_voucher', 'stock',
+        'website_portal','website_portal_sale',
+        'website_payment',],
     'data': [
         'wizard/account_post_voucher.xml',
         'wizard/create_payment_profile_view.xml',
@@ -46,6 +48,7 @@
         'views/sale_stock_view.xml',
         'views/stock_picking_view.xml',
         'views/stock_view.xml',
+        'views/templates.xml',
         'views/account_voucher.xml',
         'security/account_security.xml',
         'security/ir.model.access.csv',
