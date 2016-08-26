@@ -7,7 +7,7 @@
 			<field name="inherit_id" ref="base.view_partner_form"/>
 			<field name="arch" type="xml">
 				<xpath expr="//group[@name='accounting_entries']" position="after">
-					<separator string="Credit Card"/>
+					<separator string="Saved Payment Accounts"/>
 					<newline/>
 					<!--field name="payment_profile_id" nolabel='1' colsapn='4' cols='8'/-->
 					<group colsapn='2'>

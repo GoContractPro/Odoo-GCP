@@ -7,15 +7,34 @@
              <field name="model">create.payment.profile</field>
              <field name="arch" type="xml">
 				<form string="Payment Profile" version='7.0'>
-					<group colspan="2" col="4">
-					    <field name='cc_card_type' required='1' />
-						<field name="cc_number" />
-						<field name="cc_ed_month" />
-						<field name="cc_ed_year" />
-						<field name="cc_verify_code" />
-						<field name="description" />
+					
+					<group colspan="4" col="2">
+						<field name="account_type" widget="radio"  nolabel="1"/>
+					    <group  colspan="3" col="2" string="Credit Card" attrs="{'invisible':[('account_type','=','bank')]}">
+						    <field name='cc_card_type' required='0' invisible="1" />
+							<field name="cc_number"  />
+							<group colspan="2" col="6">
+								<field name="cc_ed_month" string="Expire Month" placeholder="MM" required='1'/>
+								<field name="cc_ed_year" string="Expire Year" placeholder="YYYY" required='1'/>
+								<field name="cc_verify_code" placeholder="XXX" />
+							</group>
+						</group>						
+						
+						<group colspan="3" cols="2"  attrs="{'invisible':[('account_type','=','cc')]}">
+							<field name="bank_name"/>
+							<field name="bank_account"/>
+							<field name="bank_routing"/>
+							<field name="bank_account_type" widget="radio" />
+						
+						</group>
+						<group colspan="3" cols="2" >
+							<field name="description" />
+						</group>
 						<field name="address_id" invisible="1" domain="[('parent_id','=',partner_id)]"/>
 						<field name="partner_id" invisible="1"/>
+						
+						
+						
 						<!--button name="button_install" states="uninstalled" string="Schedule for Installation" icon="terp-gtk-jump-to-ltr" type="object"/-->
 						</group>
 					<newline/>

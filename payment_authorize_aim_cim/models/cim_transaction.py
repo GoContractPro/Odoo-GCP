@@ -1,24 +1,5 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011 NovaPoint Group LLC (<http://www.verts.co.in>)
-#    Copyright (C) 2004-2010 OpenERP SA (<http://www.openerp.com>)
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>
-#
-##############################################################################
+
 from openerp.osv import osv, fields
 
 class cust_profile(osv.Model):
@@ -27,7 +8,11 @@ class cust_profile(osv.Model):
     _columns = {
         'name':  fields.char('Name', size=128, required=True, help='Store payment profile id', readonly=True),
         'payment_profile_ids':fields.one2many('cust.payment.profile', 'cust_profile_id', 'Payment Profiles' , help='Store customers payment profile id', readonly=True),
-        'shipping_address_id' : fields.char('Shipping Address Request ID')
+#        'shipping_address_id' : fields.char('Shipping Address Request ID'),
+        'acquirer_id' : fields.many2one('payment.acquirer',"Authorize Gateway Account" , required=True, readonly=True,
+                                        domain=[('providers','=','authorize')]),
+        'partner_id':fields.many2one('res.partner', 'Partner', readonly=True, required=True),
+       
     }
 
 class cust_payment_profile(osv.Model):
@@ -44,14 +29,16 @@ class cust_payment_profile(osv.Model):
         'cust_profile_id':fields.many2one('cust.profile', 'Customer Profiles', help='Store customers payment profile id', readonly=True),
         'address_id':fields.many2one('res.partner', 'Address', readonly=True),
         'transaction_history_ids':fields.one2many('transaction.history', 'payment_profile_id', 'Transaction History' , help='Store History of Transactions', readonly=True),
-        'description':fields.char('Description', size=128, readonly=True),
+        'description':fields.char('Optional Name', size=128, readonly=True),
         'partner_id':fields.many2one('res.partner', 'Partner', readonly=True, required=True),
         'use_default':fields.boolean('Use Default'),
-        'cc_number':fields.char('Credit Card Number', size=4, required=True),
-        'cc_card_type' :fields.selection([('Discovery','Discovery'),
+        'last4number':fields.char('Last Numbers', size=4, required=True),
+        'cc_type' :fields.selection([('Discovery','Discovery'),
                                           ('AMEX','AMEX'),
                                           ('MasterCard','MasterCard'),
-                                          ('Visa','Visa')],'Credit Card Type')
+                                          ('Visa','Visa'),]
+                                          ,'Credit Card Type'),
+        'account_type' : fields.selection([('bank','Banking'),('cc','Credit Card')],'Account Type')
     }
 
     _defaults = {
@@ -89,10 +76,10 @@ class cust_payment_profile(osv.Model):
         result = []
         for rec in self.browse(cr, uid, ids, context=context):
             Name = rec.name
-            if rec.cc_card_type:
-                Name += ' - ' + rec.cc_card_type
-            if rec.cc_number:
-                Name += ' - ' + rec.cc_number
+            if rec.account_type:
+                Name += ' - ' + rec.type
+            if rec.last4number:
+                Name += ' - ' + rec.last4number
             result.append((rec.id, Name))
         return result
 

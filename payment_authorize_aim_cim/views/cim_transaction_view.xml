@@ -9,7 +9,7 @@
 				<form string="Profile">
 					<field name="name"/>
 					<field name="payment_profile_ids"/>
-					<field name="shipping_address_id"/>
+					
 				</form>
 			</field>
 		</record>
@@ -21,7 +21,7 @@
 				<tree string="Profile">
 					<field name="name"/>
 					<field name="payment_profile_ids"/>
-					<field name="shipping_address_id"/>
+					
 				</tree>
 			</field>
 		</record>
