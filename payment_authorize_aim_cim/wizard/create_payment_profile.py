@@ -61,7 +61,7 @@ class create_payment_profile(models.TransientModel):
         if self.account_type == 'cc': 
             creditCard = apicontractsv1.creditCardType()
             creditCard.cardNumber = self.cc_number
-            creditCard.expirationDate = "%s-%s" % self.cc_ed_month,self.cc_ed_year
+            creditCard.expirationDate = ("%s-%s") % (self.cc_ed_month, self.cc_ed_year)
 
         if self.account_type == 'bank':
             bankAccount = apicontractsv1.bankAccountType()
@@ -69,12 +69,8 @@ class create_payment_profile(models.TransientModel):
             bankAccount.accountNumber = self.bank_account
             bankAccount.routingNumber = self.bank_routing
             bankAccount.bankName = self.bank_name
-
-
                 
-    
-                
-        self.partner_id.create_customer_payment_profile(creditCard=creditCard,bankAccount=bankAccount)
+        self.partner_id.create_customer_payment_profile(creditCard=creditCard,bankAccount=bankAccount,description=self.description)
     
     
     

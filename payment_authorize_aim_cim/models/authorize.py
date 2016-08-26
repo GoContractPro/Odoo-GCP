@@ -3,10 +3,19 @@
 
 
 from openerp import api, fields, models, _
+from openerp.exceptions import UserError, RedirectWarning, ValidationError
 
-from authorizenet import constants
-from authorizenet import apicontractsv1
-from authorizenet.apicontrollers import *
+import logging 
+
+_logger = logging.getLogger(__name__)
+try:
+
+    from authorizenet import constants
+    from authorizenet import apicontractsv1
+    from authorizenet.apicontrollers import *
+except:    
+    _logger.info('Authorize.net Python Library not available. ' \
+    '\nPlease confirm latest pip  version and  install Authorize SDK using "pip install authorizenet"'  )
 
 
 _logger = logging.getLogger(__name__)
@@ -62,19 +71,21 @@ class PaymentAcquirerAuthorize(models.Model):
         controller = createCustomerPaymentProfileController(createCustomerPaymentProfile)
         self.set_environment(controller)    
         controller.execute()
-            
-        return controller.getresponse()
+        response = controller.getresponse()
+        if (response.messages.resultCode=="Ok"):
+            return response
+        else:
+            raise ValidationError(_("Failed to create customer payment profile %s" % response.messages.message[0]['text'].text))
+        
+        return 
     
     @api.multi
     def getCreateCustomerProfile(self, partner):
         
         createCustomerProfile = apicontractsv1.createCustomerProfileRequest()
         createCustomerProfile.merchantAuthentication = self.set_merchantAuth()
-        profile = apicontractsv1.customerProfileType
-        profile.email = partner.email
-        profile.description = partner.name
-        profile.merchantCustomerId = str(partner.id).zfill(10)
-        
+        profile = apicontractsv1.customerProfileType(str(partner.id).zfill(10),partner.name,partner.email)
+      
         createCustomerProfile.profile = profile
         return createCustomerProfile
     
@@ -85,8 +96,14 @@ class PaymentAcquirerAuthorize(models.Model):
         controller = createCustomerProfileController(createCustomerProfile)
         self.set_environment(controller)
         controller.execute()
+        response = controller.getresponse()
+        if (response.messages.resultCode=="Ok"):
+            return response
+        else:
+            raise ValidationError(_("Failed to create customer payment profile %s" % response.messages.message[0]['text'].text))
         
-        return controller.getresponse()
+        return response
+        
     
     @api.multi
     def getShippingAddressRequest(self,address,profile_id):

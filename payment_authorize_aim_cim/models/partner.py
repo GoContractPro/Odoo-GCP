@@ -3,19 +3,8 @@
 #See LICENSE file for full copyright and licensing details.
 
 from openerp import models, fields, api, exceptions, _
-
 from openerp.exceptions import UserError, RedirectWarning, ValidationError
 
-import imp
-import logging 
-
-#_logger = logging.getLogger(__name__)
-
-from authorizenet import apicontractsv1
-from authorizenet.apicontrollers import *
-    
-#_logger.info("Authorize.net Python Library  not available. Please install using 'pip install authorizenet'"  )
-    
 
 class res_partner(models.Model):
     _inherit = 'res.partner'
@@ -32,7 +21,7 @@ class res_partner(models.Model):
     
     def get_partner_pricelist_currency(self):
         
-        currency_id = self.price_list and self.price_list.currency_id.id or None  
+        currency_id = self.property_product_pricelist and self.property_product_pricelist.currency_id.id or None  
         if not currency_id:
 
             raise ValidationError(_('Please select a set price list for this Partner.'))
@@ -42,7 +31,7 @@ class res_partner(models.Model):
     
     def get_authorize_aquirer(self, currency_id):
         
-        res = self.env['payment.acquirer'].search([('provider','=','authorize'),('currency','=',currency_id)])
+        res = self.env['payment.acquirer'].search([('provider','=','authorize'),('currency_id','=',currency_id)])
         for aquirer in res:
             return aquirer
         
@@ -62,20 +51,17 @@ class res_partner(models.Model):
     
         for partner in self:
             
-            createCustomerProfile = authorize_aquirer.getcreateCustomerProfile(partner)
+            createCustomerProfile = authorize_aquirer.getCreateCustomerProfile(partner)
           
             response = authorize_aquirer.getCreateCustomerProfileResponse(createCustomerProfile)
-        
-            if (response.messages.resultCode=="Ok"):
-                vals = {"partner_id":partner.id,
-                        "name":response.cust_profile_id,  
-                        }
+                    
+            vals = {"partner_id":partner.id,
+                    "name":response.customerProfileId,
+                    "acquirer_id":authorize_aquirer.id  
+                    }
  
-                return self.env['cust.profile'].create(vals)
-                
-            else:
-                raise ValidationError(_("Failed to create customer payment profile %s" % response.messages.message[0]['text'].text))
-    
+            return self.env['cust.profile'].create(vals)
+                    
     @api.multi
     def read_customer_profile(self):
         #TODO add create supporting code in authorize.py
@@ -97,7 +83,7 @@ class res_partner(models.Model):
     @api.multi
     def get_customer_profile_id(self,authorize_aquirer):
     # find exisiting profile Id saved in Odoo for partner or create new
-        customer_profile = self.payment_cust_profile_ids.filtered(lambda r: r.aquirer_id == authorize_aquirer.id)
+        customer_profile = self.payment_cust_profile_ids.filtered(lambda r: r.acquirer_id == authorize_aquirer)
         if customer_profile:
             return customer_profile
         else:
@@ -114,24 +100,25 @@ class res_partner(models.Model):
                 currency_id = partner.get_partner_pricelist_currency()
               
             authorize_aquirer = partner.get_authorize_aquirer(currency_id)
-            customer_profile_id = partner.get_customer_profile_id(authorize_aquirer)
+            customer_profile = partner.get_customer_profile_id(authorize_aquirer)
    
-            createCustomerPaymentProfile = authorize_aquirer.getCreateCustomerPaymentProfile( creditCard, bankAccount, customer_profile_id)    
+            createCustomerPaymentProfile = authorize_aquirer.getCreateCustomerPaymentProfile( creditCard, bankAccount, customer_profile.name)    
 
-            response = authorize_aquirer.getCreateCustomerPaymentProfileControllerResponse(createCustomerPaymentProfile)
+            response = authorize_aquirer.getCreateCustomerPaymentProfileResponse(createCustomerPaymentProfile)
             if creditCard:
                 account_type = "cc"
-                last4number = creditCard.cardNumber[-4:]
+                last4number = 'XXXX' + creditCard.cardNumber[-4:]
             if bankAccount:
                 account_type = "bank"
-                last4number = bankAccount.accountNumber[-4:]
+                last4number = 'XXXX' + bankAccount.accountNumber[-4:]
                     
             if  (response.messages.resultCode=="Ok"):
                 vals = {'partner_id':partner.id,
-                        'name':response.payment_id,
+                        'name':response.customerPaymentProfileId,
                         'description':description,
                         'last4number':last4number,
-                        'account_type':account_type
+                        'account_type':account_type,
+                        'cust_profile_id':customer_profile.id
                         }
                 self.env['cust.payment.profile'].create(vals)
                 print "Successfully created a customer payment profile with id: %s" % response.customerPaymentProfileId

@@ -148,7 +148,8 @@ class delete_payment_profile(osv.TransientModel):
         Login_id = partner.company_id.auth_config_id.login_id
         url_extension = partner.company_id.auth_config_id.url_extension
         xsd = partner.company_id.auth_config_id.xsd_link
-        prof_id = partner.payment_profile_id.name
+        #prof_id = partner.payment_profile_id.name
+        prof_id = data.payment_profile_id
         customerPaymentProfileId = data.payment_profile_id.name
         if partner.company_id.auth_config_id.test_mode:
             url = partner.company_id.auth_config_id.url_test

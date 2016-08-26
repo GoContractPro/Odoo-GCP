@@ -6,7 +6,7 @@ class cust_profile(osv.Model):
     _name = "cust.profile"
     _description = 'Customer Profile'
     _columns = {
-        'name':  fields.char('Name', size=128, required=True, help='Store payment profile id', readonly=True),
+        'name':  fields.char('Customer Profile ID', size=128, required=True, help='The customer profile id as saved on Authorize.net', readonly=True),
         'payment_profile_ids':fields.one2many('cust.payment.profile', 'cust_profile_id', 'Payment Profiles' , help='Store customers payment profile id', readonly=True),
 #        'shipping_address_id' : fields.char('Shipping Address Request ID'),
         'acquirer_id' : fields.many2one('payment.acquirer',"Authorize Gateway Account" , required=True, readonly=True,
@@ -25,14 +25,15 @@ class cust_payment_profile(osv.Model):
         return context.get('active_id', False)
 
     _columns = {
-        'name':  fields.char('Name', size=128, required=True, help='Store payment profile id returned from authorize', readonly=True),
-        'cust_profile_id':fields.many2one('cust.profile', 'Customer Profiles', help='Store customers payment profile id', readonly=True),
+        'name':  fields.char('Payment Profile ID', size=16, required=True, help='The payment profile id as saved on Authorize.net', readonly=True),
+        'cust_profile_id':fields.many2one('cust.profile', 'Customer Profile ID', help='Related field to customer profile', readonly=True),
         'address_id':fields.many2one('res.partner', 'Address', readonly=True),
         'transaction_history_ids':fields.one2many('transaction.history', 'payment_profile_id', 'Transaction History' , help='Store History of Transactions', readonly=True),
         'description':fields.char('Optional Name', size=128, readonly=True),
         'partner_id':fields.many2one('res.partner', 'Partner', readonly=True, required=True),
         'use_default':fields.boolean('Use Default'),
-        'last4number':fields.char('Last Numbers', size=4, required=True),
+        'last4number':fields.char('Account Number', size=8, required=True),
+        
         'cc_type' :fields.selection([('Discovery','Discovery'),
                                           ('AMEX','AMEX'),
                                           ('MasterCard','MasterCard'),
@@ -70,6 +71,7 @@ class cust_payment_profile(osv.Model):
 
         return super(cust_payment_profile, self).search(cr, uid, args, offset, limit, order, context, count)
 
+    '''
     def name_get(self, cr, uid, ids, context=None):
         if not ids:
             return []
@@ -77,11 +79,12 @@ class cust_payment_profile(osv.Model):
         for rec in self.browse(cr, uid, ids, context=context):
             Name = rec.name
             if rec.account_type:
-                Name += ' - ' + rec.type
+                Name += ' - ' + rec.account_type
             if rec.last4number:
                 Name += ' - ' + rec.last4number
             result.append((rec.id, Name))
         return result
+    '''
 
 class auth_config(osv.Model):
     _name = "auth.config"

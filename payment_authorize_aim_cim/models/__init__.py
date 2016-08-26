@@ -32,3 +32,4 @@ import res_company
 import sale
 import stock_picking
 import stock_return_picking
+import authorize
