@@ -94,9 +94,11 @@ class PaymentAcquirerAuthorize(models.Model):
         
         # Give address details
         officeAddress = apicontractsv1.customerAddressType();
-        if address.iscompany
-        officeAddress.firstName =  address.name.split(" ",1)[0]
-        officeAddress.lastName = address.name.split(" ",1)[1]
+        if address.is_company:
+            officeAddress.company = address.name
+        else:
+            officeAddress.firstName =  address.name.split(" ",1)[0]
+            officeAddress.lastName = address.name.split(" ",1)[1]
         officeAddress.address = address.street
         officeAddress.city = address.city
         officeAddress.state = address.state_id.code
