@@ -140,5 +140,24 @@ class PaymentAcquirerAuthorize(models.Model):
         controller.execute()
         
         return createCustomerShippingAddressController.getresponse();
+    
+    def delete_customer_payment_profile(self, customerProfileId, customerPaymentProfileId):
+        deleteCustomerPaymentProfile = apicontractsv1.deleteCustomerPaymentProfileRequest()
+        deleteCustomerPaymentProfile.merchantAuthentication = self.set_merchantAuth()
+        deleteCustomerPaymentProfile.customerProfileId = customerProfileId
+        deleteCustomerPaymentProfile.customerPaymentProfileId = customerPaymentProfileId
+    
+        controller = deleteCustomerPaymentProfileController(deleteCustomerPaymentProfile)
+        controller.execute()
+    
+        response = controller.getresponse()
+    
+        if (response.messages.resultCode=="Ok"):
+            print("Successfully deleted customer payment profile with customer profile id %s" % deleteCustomerPaymentProfile.customerProfileId)
+        else:
+            print(response.messages.message[0]['text'].text)
+            print("Failed to delete customer paymnet profile with customer profile id %s" % deleteCustomerPaymentProfile.customerProfileId)
+    
+        return response
 
         

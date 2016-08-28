@@ -1,0 +1,49 @@
+# -*- coding: utf-8 -*-
+
+#See LICENSE file for full copyright and licensing details.
+
+from openerp import models, fields, api, exceptions, _
+import logging 
+from bsddb.dbutils import _deadlock_MaxSleepTime
+from django.utils.translation.trans_real import _default
+
+_logger = logging.getLogger(__name__)
+#try
+from authorizenet import apicontractsv1
+from authorizenet.apicontrollers import *
+'''except:
+    
+    _logger.info("Authorize.net Python Library  not available. Please install using 'pip install authorizenet'"  )
+''' 
+
+
+class delete_payment_profile(models.TransientModel):
+    _name = 'delete.payment.profile'
+    _description = 'Delete Payment Profile'
+    
+    @api.model
+    def del_pay_profile(self):
+        context = self.env.context
+        parent_model = context.get('active_model')
+        parent_id = context.get('active_id')
+        if parent_model == 'res.partner':
+            partner = self.env[parent_model].browse(parent_id)
+        else:
+            parent_model_obj = self.env[parent_model].browse(parent_id)
+            partner = parent_model_obj.partner_id
+
+#         data = self.pool.get('delete.payment.profile').browse(cr, uid, ids[0])
+        partner.delete_customer_payment_profile(self.payment_profile_id)
+
+    @api.model
+    def _get_profile_id(self):
+        context = self.env.context
+        if context is None:
+            context = {}
+        if context.get('active_model') == 'cust.payment.profile':
+            return context.get('active_id')
+        return None
+
+    
+    payment_profile_id = fields.Many2one('cust.payment.profile', 'Payment Profile', _default=_get_profile_id)
+      

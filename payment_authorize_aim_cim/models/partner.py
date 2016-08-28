@@ -136,9 +136,15 @@ class res_partner(models.Model):
         #TODO add create supporting code in authorize.py
         pass
 
-    def delete_customer_payment_profile(self):
-        #TODO add create supporting code in authorize.py
-        pass
+    def delete_customer_payment_profile(self, payment_profile_id,currency_id=None):
+        for partner in self:
+            if not currency_id:
+                currency_id = partner.get_partner_pricelist_currency()
+            authorize_aquirer = partner.get_authorize_aquirer(currency_id)
+            customer_profile = partner.get_customer_profile_id(authorize_aquirer)
+   
+            response = authorize_aquirer.delete_customer_payment_profile(customer_profile.name, payment_profile_id.name)    
+
  
 ##########################################################################################    
 # CRUD section for Customer Payments Profiles  Billing address on AutHorize.net data store    
