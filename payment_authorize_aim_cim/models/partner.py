@@ -114,9 +114,9 @@ class res_partner(models.Model):
                     
             if  (response.messages.resultCode=="Ok"):
                 vals = {'partner_id':partner.id,
-                        'name':response.customerPaymentProfileId,
-                        'description':description,
-                        'last4number':last4number,
+                        'name':str(response.customerPaymentProfileId),
+                        'description':str(description),
+                        'last4number':str(last4number),
                         'account_type':account_type,
                         'cust_profile_id':customer_profile.id
                         }
@@ -144,8 +144,10 @@ class res_partner(models.Model):
             customer_profile = partner.get_customer_profile_id(authorize_aquirer)
    
             response = authorize_aquirer.delete_customer_payment_profile(customer_profile.name, payment_profile_id.name)    
-
- 
+            
+            if (response.messages.resultCode=="Ok"):
+                payment_profile_id.unlink()
+        return
 ##########################################################################################    
 # CRUD section for Customer Payments Profiles  Billing address on AutHorize.net data store    
 # Each above payment profile should have a coresponding billing address matching payees Account address
