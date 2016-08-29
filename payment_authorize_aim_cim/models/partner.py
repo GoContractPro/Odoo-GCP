@@ -92,8 +92,6 @@ class res_partner(models.Model):
         
     @api.multi
     def create_customer_payment_profile(self, creditCard, bankAccount, description, currency_id=None):
-        
-        
         for partner in self:
             
             if not currency_id:
@@ -112,7 +110,7 @@ class res_partner(models.Model):
                 account_type = "bank"
                 last4number = 'XXXX' + bankAccount.accountNumber[-4:]
                     
-            if  (response.messages.resultCode=="Ok"):
+            if response and (response.messages.resultCode=="Ok"):
                 vals = {'partner_id':partner.id,
                         'name':str(response.customerPaymentProfileId),
                         'description':str(description),
@@ -128,9 +126,30 @@ class res_partner(models.Model):
  
  
         
-    def read_customer_payment_profile(self):
-        #TODO add create supporting code in authorize.py
-        pass
+    def read_customer_payment_profile(self, payment_profile_id,currency_id=None):
+        res = {}
+        for partner in self:
+            if not currency_id:
+                currency_id = partner.get_partner_pricelist_currency()
+              
+            authorize_aquirer = partner.get_authorize_aquirer(currency_id)
+            customer_profile = partner.get_customer_profile_id(authorize_aquirer)
+   
+            getCustomerPaymentProfile = authorize_aquirer.getCustomerPaymentProfileInfo(customer_profile.name, payment_profile_id.name)
+
+            response = authorize_aquirer.getCustomerPaymentProfileInfoResponse(getCustomerPaymentProfile)
+            
+            if response and (response.messages.resultCode=="Ok"):
+                print("Successfully retrieved a payment profile with profile id %s and customer id %s" % (getCustomerPaymentProfile.customerProfileId, getCustomerPaymentProfile.customerProfileId))
+                if hasattr(response, 'paymentProfile') == True:
+                    if hasattr(response.paymentProfile, 'payment') == True:
+                        if hasattr(response.paymentProfile.payment, 'creditCard') == True:
+                            res['cardNumber'] = response.paymentProfile.payment.creditCard.cardNumber
+                            res['expirationDate'] = response.paymentProfile.payment.creditCard.expirationDate
+            else:
+                print("response code: %s" % response.messages.resultCode)
+                print("Failed to get payment profile information with id %s" % getCustomerPaymentProfile.customerPaymentProfileId)
+        return res
 
     def update_customer_payment_profile(self):
         #TODO add create supporting code in authorize.py
@@ -145,7 +164,7 @@ class res_partner(models.Model):
    
             response = authorize_aquirer.delete_customer_payment_profile(customer_profile.name, payment_profile_id.name)    
             
-            if (response.messages.resultCode=="Ok"):
+            if response and (response.messages.resultCode=="Ok"):
                 payment_profile_id.unlink()
         return
 ##########################################################################################    

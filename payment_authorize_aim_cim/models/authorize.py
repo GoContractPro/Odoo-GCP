@@ -77,8 +77,35 @@ class PaymentAcquirerAuthorize(models.Model):
         else:
             raise ValidationError(_("Failed to create customer payment profile %s" % response.messages.message[0]['text'].text))
         
-        return 
+        return
     
+    @api.multi
+    def getCustomerPaymentProfileInfo(self, customerProfileId, customerPaymentProfileId):
+
+        getCustomerPaymentProfile = apicontractsv1.getCustomerPaymentProfileRequest()
+        getCustomerPaymentProfile.merchantAuthentication = self.set_merchantAuth()
+        getCustomerPaymentProfile.customerProfileId = customerProfileId
+        getCustomerPaymentProfile.customerPaymentProfileId = customerPaymentProfileId
+    
+        return getCustomerPaymentProfile
+    
+        
+    
+    @api.multi
+    def getCustomerPaymentProfileInfoResponse(self,getCustomerPaymentProfileInfo):
+        controller = getCustomerPaymentProfileController(getCustomerPaymentProfileInfo)
+        self.set_environment(controller)
+        controller.execute()
+        response = controller.getresponse()
+        
+        if (response.messages.resultCode=="Ok"):
+            return response
+        else:
+            print(response.messages.message[0]['text'].text)
+            raise ValidationError(_("Failed to get payment profile information : %s" % response.messages.message[0]['text'].text))
+        
+        return
+        
     @api.multi
     def getCreateCustomerProfile(self, partner):
         
@@ -141,6 +168,7 @@ class PaymentAcquirerAuthorize(models.Model):
         
         return createCustomerShippingAddressController.getresponse();
     
+    @api.multi
     def delete_customer_payment_profile(self, customerProfileId, customerPaymentProfileId):
         deleteCustomerPaymentProfile = apicontractsv1.deleteCustomerPaymentProfileRequest()
         deleteCustomerPaymentProfile.merchantAuthentication = self.set_merchantAuth()
@@ -159,5 +187,53 @@ class PaymentAcquirerAuthorize(models.Model):
             print("Failed to delete customer paymnet profile with customer profile id %s" % deleteCustomerPaymentProfile.customerProfileId)
     
         return response
+    
+    @api.multi
+    def updateCustomerPaymentProfile(self, customerProfileId, customerPaymentProfileId, vals={}):
+        creditCard = apicontractsv1.creditCardType()
+        creditCard.cardNumber = vals.get("cardNumber")
+        creditCard.expirationDate = "%s-%s" % (vals.get("month"),vals.get("year"))
+    
+        payment = apicontractsv1.paymentType()
+        payment.creditCard = creditCard
+    
+        paymentProfile = apicontractsv1.customerPaymentProfileExType()
+        paymentProfile.billTo = apicontractsv1.customerAddressType()
+        paymentProfile.billTo.firstName = vals.get("firstName",'')
+        paymentProfile.billTo.lastName = vals.get("lastName",'')
+        paymentProfile.billTo.address = vals.get("address",'')
+        paymentProfile.billTo.city = vals.get("city",'')
+        paymentProfile.billTo.state = vals.get("state",'')
+        paymentProfile.billTo.zip = vals.get("zip",'')
+        paymentProfile.billTo.country = vals.get("country",'')
+        paymentProfile.billTo.phoneNumber = vals.get("phoneNumber",'')
+        paymentProfile.payment = payment
+        paymentProfile.customerPaymentProfileId = customerPaymentProfileId
+    
+        updateCustomerPaymentProfile = apicontractsv1.updateCustomerPaymentProfileRequest()
+        updateCustomerPaymentProfile.merchantAuthentication = self.set_merchantAuth()
+        updateCustomerPaymentProfile.paymentProfile = paymentProfile
+        updateCustomerPaymentProfile.customerProfileId = customerProfileId
+        updateCustomerPaymentProfile.validationMode = apicontractsv1.validationModeEnum.liveMode
+    
+    
+        return updateCustomerPaymentProfile
+    
+    @api.multi
+    def updateCustomerPaymentProfileResponse(self,updateCustomerPaymentProfile ):
+    
+        controller= updateCustomerPaymentProfileController(updateCustomerPaymentProfile)
+        self.set_environment(controller)
+        controller.execute()
+        
+        response = controller.getresponse()
+    
+        if (response.messages.resultCode=="Ok"):
+            print ("Successfully updated customer payment profile with id %s" % updateCustomerPaymentProfile.paymentProfile.customerPaymentProfileId)
+        else:
+            print (response.messages.message[0]['text'].text)
+            print ("Failed to update customer with customer payment profile id %s" % updateCustomerPaymentProfile.paymentProfile.customerPaymentProfileId)
+        return response
+    
 
         
