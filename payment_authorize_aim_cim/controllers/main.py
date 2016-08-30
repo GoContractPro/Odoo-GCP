@@ -31,6 +31,23 @@ class website_account(website_account):
                   }
         return request.website.render("payment_authorize_aim_cim.cim_profile", values)
     
+    @http.route(['/my/profile/delete_profile/'], type='http', auth="user", website=True)
+    def delete_profile(self, profile='', **kw):
+#         acquirers = list(request.env['payment.acquirer'].search([('website_published', '=', True), ('registration_view_template_id', '!=', False)]))
+        partner = request.env.user.partner_id
+        profile = request.env['cust.payment.profile'].search([('name', '=', profile)])
+        ret = False
+        if profile: 
+            partner.delete_customer_payment_profile(profile)
+            ret = request.website.render("payment_authorize_aim_cim.delete_profile")
+        else:
+            ret = request.website.render("payment_authorize_aim_cim.not_delete_profile")
+        values = {
+                  'error': {},
+                  'profile':profile
+                  }
+        return ret
+    
     
     
     

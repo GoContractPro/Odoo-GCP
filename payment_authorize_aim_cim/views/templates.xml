@@ -34,6 +34,7 @@
                          	<a t-attf-href="/my/profile/cim_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
                         </td>
                         <td>
+                        	<a t-attf-href="/my/profile/delete_profile?profile=#{profile.name}" alt="Delete Profile" class="btn btn-xs btn-primary"><i class="fa fa-delete"/> Delete Profile</a>
                         </td>
                     </tr>
                 </t>
@@ -44,7 +45,26 @@
         </t>
     </template>
 
-    
+   <template id="delete_profile">
+	  <t t-call="website.layout">
+	    <t t-set="additional_title">Delete Profile</t>
+	    <div id="wrap">
+	      <div class="container oe_website_sale">
+	          <h1>Your Profile is Deleted</h1> 
+	         </div>
+    </div>
+  </t>
+</template>
+ <template id="not_delete_profile">
+	  <t t-call="website.layout">
+	    <t t-set="additional_title">Delete Profile</t>
+	    <div id="wrap">
+	      <div class="container oe_website_sale">
+	          <h1>There is some technical issue in deleting your payment profile.</h1> 
+	         </div>
+    </div>
+  </t>
+</template>
 <template id="cim_profile">
   <t t-call="website.layout">
     <t t-set="additional_title">Manage Profile</t>
