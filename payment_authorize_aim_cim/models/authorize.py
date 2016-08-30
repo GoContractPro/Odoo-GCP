@@ -192,8 +192,8 @@ class PaymentAcquirerAuthorize(models.Model):
     def updateCustomerPaymentProfile(self, customerProfileId, customerPaymentProfileId, vals={}):
         creditCard = apicontractsv1.creditCardType()
         creditCard.cardNumber = vals.get("cardNumber")
-        creditCard.expirationDate = "%s-%s" % (vals.get("month"),vals.get("year"))
-    
+        creditCard.expirationDate = vals.get("expirationDate")
+        creditCard.cardCode = vals.get("cardCode")
         payment = apicontractsv1.paymentType()
         payment.creditCard = creditCard
     
@@ -214,7 +214,11 @@ class PaymentAcquirerAuthorize(models.Model):
         updateCustomerPaymentProfile.merchantAuthentication = self.set_merchantAuth()
         updateCustomerPaymentProfile.paymentProfile = paymentProfile
         updateCustomerPaymentProfile.customerProfileId = customerProfileId
-        updateCustomerPaymentProfile.validationMode = apicontractsv1.validationModeEnum.liveMode
+        if self.environment == 'prod':
+            mode = apicontractsv1.validationModeEnum.liveMode
+        else:
+            mode = apicontractsv1.validationModeEnum.testMode
+        updateCustomerPaymentProfile.validationMode = mode
     
     
         return updateCustomerPaymentProfile

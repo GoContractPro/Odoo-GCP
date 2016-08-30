@@ -146,14 +146,31 @@ class res_partner(models.Model):
                         if hasattr(response.paymentProfile.payment, 'creditCard') == True:
                             res['cardNumber'] = response.paymentProfile.payment.creditCard.cardNumber
                             res['expirationDate'] = response.paymentProfile.payment.creditCard.expirationDate
+                            if hasattr(response.paymentProfile.payment.creditCard, 'cardCode'):
+                                res['cardCode'] = response.paymentProfile.payment.creditCard.cardCode
             else:
                 print("response code: %s" % response.messages.resultCode)
                 print("Failed to get payment profile information with id %s" % getCustomerPaymentProfile.customerPaymentProfileId)
         return res
 
-    def update_customer_payment_profile(self):
-        #TODO add create supporting code in authorize.py
-        pass
+    def update_customer_payment_profile(self, payment_profile_id, values={},currency_id=None):
+        for partner in self:
+            if not currency_id:
+                currency_id = partner.get_partner_pricelist_currency()
+              
+            authorize_aquirer = partner.get_authorize_aquirer(currency_id)
+            customer_profile = partner.get_customer_profile_id(authorize_aquirer)
+   
+            getCustomerPaymentProfile = authorize_aquirer.updateCustomerPaymentProfile(customer_profile.name, payment_profile_id.name,values)
+
+            response = authorize_aquirer.updateCustomerPaymentProfileResponse(getCustomerPaymentProfile)
+            
+            if response and (response.messages.resultCode=="Ok"):
+                print ("Successfully updated customer payment profile with id %s" % updateCustomerPaymentProfile.paymentProfile.customerPaymentProfileId)
+            else:
+                print (response.messages.message[0]['text'].text)
+                raise ValidationError(_("Failed to update customer with customer payment profile id %s" % updateCustomerPaymentProfile.paymentProfile.customerPaymentProfileId))
+        return
 
     def delete_customer_payment_profile(self, payment_profile_id,currency_id=None):
         for partner in self:
