@@ -6,7 +6,8 @@ from openerp.exceptions import AccessError
 from openerp.http import request
 
 from openerp.addons.website_portal_sale.controllers.main import website_account
-
+from authorizenet import apicontractsv1
+from openerp.tools.translate import _
 
 class website_account(website_account):
     @http.route(['/my/home'], type='http', auth="user", website=True)
@@ -20,16 +21,16 @@ class website_account(website_account):
         })
         return response
     
-    @http.route(['/my/profile/cim_profile'], type='http', auth="user", website=True)
-    def cim_profile(self, **kw):
-        acquirers = list(request.env['payment.acquirer'].search([('website_published', '=', True), ('registration_view_template_id', '!=', False)]))
-        partner = request.env.user.partner_id
-        profile = {}
-        values = {
-                  'error': {},
-                  'profile':profile
-                  }
-        return request.website.render("payment_authorize_aim_cim.cim_profile", values)
+#     @http.route(['/my/profile/cim_profile'], type='http', auth="user", website=True)
+#     def cim_profile(self, **kw):
+#         acquirers = list(request.env['payment.acquirer'].search([('website_published', '=', True), ('registration_view_template_id', '!=', False)]))
+#         partner = request.env.user.partner_id
+#         profile = {}
+#         values = {
+#                   'error': {},
+#                   'profile':profile
+#                   }
+#         return request.website.render("payment_authorize_aim_cim.cim_profile", values)
     
     @http.route(['/my/profile/delete_profile/'], type='http', auth="user", website=True)
     def delete_profile(self, profile='', **kw):
@@ -39,7 +40,7 @@ class website_account(website_account):
         ret = False
         if profile: 
             partner.delete_customer_payment_profile(profile)
-            ret = request.website.render("payment_authorize_aim_cim.delete_profile")
+            ret = request.redirect('/my/home')
         else:
             ret = request.website.render("payment_authorize_aim_cim.not_delete_profile")
         values = {
@@ -48,8 +49,105 @@ class website_account(website_account):
                   }
         return ret
     
+    def details_form_validate(self, data):
+        error = dict()
+        error_message = []
+
+        mandatory_billing_fields = ["cc_number", "exp_mm", "exp_yyyy"]
+
+        # Validation
+        for field_name in mandatory_billing_fields:
+            if not data.get(field_name):
+                error[field_name] = 'missing'
+
+        # card validation
+        if data.get('cc_number'):
+            cc_number = data.get('cc_number')
+            err = False
+            try:
+                int(cc_number)
+            except: 
+                err = True
+            if not len(cc_number) == 16:
+                err = True
+            if err:
+                error["cc_number"] = 'error'
+                error_message.append(_('Invalid Card Number! Please enter a valid 16 digits Card Number.'))
+                
+        # Date validation
+        
+        if data.get('exp_mm'):
+            exp_mm = data.get('exp_mm')
+            err = False
+            try:
+                int(exp_mm)
+            except: 
+                err = True
+            if not err and not (int(exp_mm) > 0 and int(exp_mm) <=12):
+                err = True
+            if err:
+                error["exp_mm"] = 'error'
+                error_message.append(_('Invalid Month! Please enter a valid value(01 to 12).'))
+                
+        if data.get('exp_yyyy'):
+            exp_yyyy = data.get('exp_yyyy')
+            err = False
+            try:
+                int(exp_yyyy)
+            except: 
+                err = True
+            if not err  and not (int(exp_yyyy) > 2000 and int(exp_yyyy) <=2100):
+                err = True
+            if err:
+                error["exp_yyyy"] = 'error'
+                error_message.append(_('Invalid Year! Please enter a valid year.'))
+        
+        if [err for err in error.values() if err == 'missing']:
+            error_message.append(_('Some required fields are empty.'))
+
+        return error, error_message
+
     
-    
-    
-    
+    @http.route(['/my/profile/cim_profile'], type='http', auth="user", website=True)
+    def cim_profile(self,reference='',redirect=None, **post):
+#         acquirers = list(request.env['payment.acquirer'].search([('website_published', '=', True), ('registration_view_template_id', '!=', False)]))
+        partner = request.env.user.partner_id
+        profile = {}
+        values = {
+                  'error': {},
+                  'profile':profile,
+                  'error_message': [],
+                  'profile_name':''
+                  }
+        
+        if reference:
+            profileobj = request.env['cust.payment.profile'].search([('name', '=', reference)])
+            ret = False
+            if profileobj:
+                values.update({'profile_name':profileobj.name})
+                values['profile'].update({
+                                          'cc_number':profileobj.last4number or '',
+                                          'desc':profileobj.description or '',
+                                          })
+        if post:
+            error, error_message = self.details_form_validate(post)
+            values.update({'error': error, 'error_message': error_message})
+            values['profile'].update(post)
+            if not error:
+                if post.get('profile_name'):
+                    profileobj = request.env['cust.payment.profile'].search([('name', '=', post.get('profile_name',''))])
+                    partner.update_customer_payment_profile(profileobj,{
+                                                                        'cardNumber' : post.get("cc_number"),
+                    'expirationDate' : ("%s-%s") % (str(post.get("exp_mm",'')), str(post.get("exp_yyyy",'')))
+                                                                        })
+                else:
+                    creditCard = apicontractsv1.creditCardType()
+                    creditCard.cardNumber = post.get("cc_number")
+                    creditCard.expirationDate = ("%s-%s") % (str(post.get("exp_mm",'')), str(post.get("exp_yyyy",'')))
+                    partner.create_customer_payment_profile(creditCard=creditCard,bankAccount=None,description=str(post.get("desc",'')))
+                if redirect:
+                    return request.redirect(redirect)
+                return request.redirect('/my/home')
+            
+        return request.website.render("payment_authorize_aim_cim.cim_profile", values)
     

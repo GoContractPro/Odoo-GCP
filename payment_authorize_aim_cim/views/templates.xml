@@ -10,7 +10,7 @@
     </template>
 
     <template id="payment_profiles" name="Payment Profiles">
-        <h3 class="page-header">Payment Profiles</h3>
+        <h3 class="page-header">Payment Profiles <a href="/my/profile/cim_profile" class="btn btn-default btn-xs">Add New Profile</a></h3>
         <t t-if="not payment_profiles">
             <p>There are currently no payment profiles added.</p>
         </t>
@@ -19,7 +19,8 @@
                 <thead>
                   <tr class="active">
                       <th>Name</th>
-                      <th></th>
+                      <th>Number</th>
+                      <th>Description</th>
                       <th>Edit</th>
                       <th>Delete</th>
                     </tr>
@@ -29,7 +30,8 @@
                         <td>
                             <a t-att-href="'/my/profile/'+str(profile.id)"><t t-esc="profile.name"/></a>
                         </td>
-                        <td></td>
+                        <td><t t-esc="profile.last4number"/></td>
+                        <td><t t-esc="profile.description"/></td>
                         <td>
                          	<a t-attf-href="/my/profile/cim_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
                         </td>
@@ -71,8 +73,9 @@
     <div id="wrap">
       <div class="container oe_website_sale">
           <h1>Your Profile Information</h1>
-          <form action="/profile/confirm_profile" method="post">
+          <form action="/my/profile/cim_profile" method="post">
           <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+          <input type="hidden" name="profile_name" t-att-value="profile_name"/>
           <div class="row">
           <div class="col-md-8 oe_cart">
               <h3 class="page-header mt16">Payment Profile
@@ -113,8 +116,8 @@
               </div>
               
               <div class="clearfix">
-                <a href="/my/home" class="btn btn-default mb32"><span class="fa fa-long-arrow-left"/> Return to Cart</a>
-                <a class="btn btn-default btn-primary pull-right mb32 a-submit">Confirm <span class="fa fa-long-arrow-right"/></a>
+                <a href="/my/home" class="btn btn-default mb32"><span class="fa fa-long-arrow-left"/> Return</a>
+                <a class="btn btn-default btn-primary pull-right mb32 a-submit">Save/Update <span class="fa fa-long-arrow-right"/></a>
               </div>
           </div>
           
