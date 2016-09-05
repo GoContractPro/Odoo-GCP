@@ -161,3 +161,88 @@ class website_account(website_account):
             
         return request.website.render("payment_authorize_aim_cim.cim_profile", values)
     
+    
+    def bank_details_form_validate(self, data):
+        error = dict()
+        error_message = []
+
+        mandatory_billing_fields = ["bank_name", "acc_number", "bank_routing"]
+
+        # Validation
+        for field_name in mandatory_billing_fields:
+            if not data.get(field_name):
+                error[field_name] = 'missing'
+
+        # card validation
+        if data.get('acc_number'):
+            acc_number = data.get('acc_number')
+            try:
+                int(acc_number)
+            except: 
+                error["acc_number"] = 'error'
+                error_message.append(_('Invalid Card Number! Please enter a valid 16 digits Card Number.'))
+                
+        # Date validation
+        
+        
+        if [err for err in error.values() if err == 'missing']:
+            error_message.append(_('Some required fields are empty.'))
+
+        return error, error_message
+    
+    @http.route(['/my/profile/bank_profile'], type='http', auth="user", website=True)
+    def bank_profile(self,reference='',redirect=None, **post):
+        partner = request.env.user.partner_id
+        profile = {'profile_name':False}
+        values = {
+                  'error': {},
+                  'profile':profile,
+                  'error_message': [],
+                  
+                  }
+        
+        if reference:
+            profileobj = request.env['cust.payment.profile'].search([('name', '=', reference)])
+            ret = False
+            if profileobj:
+                values['profile'].update({
+                                          'bank_name':profileobj.last4number or '',
+                                          'desc':profileobj.description or '',
+                                          'profile_name':profileobj.name
+                                          })
+        if post:
+            error, error_message = self.bank_details_form_validate(post)
+            values.update({'error': error, 'error_message': error_message})
+            values['profile'].update(post)
+            if not error:
+                try:
+                    if post.get('profile_name'):
+                        profileobj = request.env['cust.payment.profile'].search([('name', '=', post.get('profile_name',''))])
+#                         partner.update_customer_payment_profile(profileobj,{
+#                                                                             'cardNumber' : post.get("cc_number"),
+#                         'expirationDate' : ("%s-%s") % (month, str(post.get("exp_yyyy",''))), 'desc' : str(post.get("desc",''))
+#                                                                             })
+                    else:
+#                         creditCard = apicontractsv1.creditCardType()
+#                         creditCard.cardNumber = post.get("cc_number")
+#                         creditCard.expirationDate = ("%s-%s") % (month, str(post.get("exp_yyyy",'')))
+#                         partner.create_customer_payment_profile(creditCard=creditCard,bankAccount=None,description=str(post.get("desc",'')))
+                        
+                        bankAccount = apicontractsv1.bankAccountType()
+                        bankAccount.accountType = 'personal'#self.bank_account_type
+                        bankAccount.accountNumber = post.get("acc_number")
+                        bankAccount.routingNumber = post.get("bank_routing")
+                        bankAccount.bankName = post.get("bank_name")
+                        partner.create_customer_payment_profile(creditCard=None,bankAccount=bankAccount,description=str(post.get("desc",'')))
+                except Exception as e:
+                    exp = "Some Error occurred!!"
+#                     if e.name:
+#                         exp = e.name 
+                    values.update({'error_message': [exp]})
+                    return request.website.render("payment_authorize_aim_cim.bank_profile", values)
+                if redirect:
+                    return request.redirect(redirect)
+                return request.redirect('/my/home')
+            
+        return request.website.render("payment_authorize_aim_cim.bank_profile", values)
+    

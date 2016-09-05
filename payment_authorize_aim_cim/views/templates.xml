@@ -10,7 +10,10 @@
     </template>
 
     <template id="payment_profiles" name="Payment Profiles">
-        <h3 class="page-header">Payment Profiles <a href="/my/profile/cim_profile" class="btn btn-default btn-xs">Add New Profile</a></h3>
+        <h3 class="page-header">Payment Profiles 
+        	<a href="/my/profile/cim_profile" class="btn btn-default btn-xs">Add New CreditCard</a>
+        	<a href="/my/profile/bank_profile" class="btn btn-default btn-xs">Add New Bank Account</a>	
+    	</h3>
         <t t-if="not payment_profiles">
             <p>There are currently no payment profiles added.</p>
         </t>
@@ -21,6 +24,7 @@
                       <th>Name</th>
                       <th>Number</th>
                       <th>Description</th>
+                      <th>Account Type</th>
                       <th>Edit</th>
                       <th>Delete</th>
                     </tr>
@@ -32,8 +36,10 @@
                         </td>
                         <td><t t-esc="profile.last4number"/></td>
                         <td><t t-esc="profile.description"/></td>
+                        <td><t t-esc="profile.account_type=='cc' and 'Credit Card' or 'Bank'"/></td>
                         <td>
-                         	<a t-attf-href="/my/profile/cim_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
+                         	<a t-if="profile.account_type == 'cc'" t-attf-href="/my/profile/cim_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
+<!--                         	<a t-if="profile.account_type == 'bank'" t-attf-href="/my/profile/bank_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a-->
                         </td>
                         <td>
                         	<a t-attf-href="/my/profile/delete_profile?profile=#{profile.name}" alt="Delete Profile" class="btn btn-xs btn-primary"><i class="fa fa-delete"/> Delete Profile</a>
@@ -90,7 +96,7 @@
                       </div>
                   </div>
                   <div t-attf-class="form-group #{error.get('cc_number') and 'has-error' or ''} col-lg-6">
-                      <label class="control-label" for="contact_name">Credit Card Number</label>
+                      <label class="control-label" for="cc_number">Credit Card Number</label>
                       <input type="text" name="cc_number" class="form-control" t-att-value="profile.get('cc_number')"/>
                   </div>
                   <div class="clearfix"/>
@@ -103,7 +109,7 @@
                       <input type="text" name="exp_yyyy" class="form-control" t-att-value="profile.get('exp_yyyy')"/>
                   </div>
                   <div t-attf-class="form-group #{error.get('email') and 'has-error' or ''} col-lg-6">
-                      <label class="control-label" for="contact_name">Card Code </label>
+                      <label class="control-label" for="card_code">Card Code </label>
                       <input type="text" name="card_code" class="form-control" t-att-value="profile.get('card_code')"/>
                   </div>
                   <div t-attf-class="form-group #{error.get('phone') and 'has-error' or ''} col-lg-6">
@@ -113,6 +119,64 @@
 
                   
                   
+              </div>
+              
+              <div class="clearfix">
+                <a href="/my/home" class="btn btn-default mb32"><span class="fa fa-long-arrow-left"/> Return</a>
+                <a class="btn btn-default btn-primary pull-right mb32 a-submit">Save/Update <span class="fa fa-long-arrow-right"/></a>
+              </div>
+          </div>
+          
+      </div>
+      </form>
+    </div>
+    </div>
+  </t>
+</template>
+
+<template id="bank_profile">
+  <t t-call="website.layout">
+    <t t-set="additional_title">Manage Bank Profile</t>
+    <div id="wrap">
+      <div class="container oe_website_sale">
+          <h1>Your Bank Profile Information</h1>
+          <form action="/my/profile/bank_profile" method="post">
+          <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+          <input type="hidden" name="profile_name" t-att-value="profile.get('profile_name')"/>
+          <div class="row">
+          <div class="col-md-8 oe_cart">
+              <h3 class="page-header mt16">Bank Profile
+                  <small groups="base.group_public"> or
+                      <a class='btn btn-primary' t-if="not partner" t-attf-href="/web?redirect=#{ request.httprequest.url }">Sign in</a>
+                  </small>
+              </h3>
+              <div class="row">
+                  <div class="col-md-12">
+                      <div t-if="error_message" class="alert alert-danger">
+                          <t t-foreach="error_message" t-as="err"><t t-esc="err"/><br /></t>
+                      </div>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('bank_name') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="bank_name">Bank Name</label>
+                      <input type="text" name="bank_name" class="form-control" t-att-value="profile.get('bank_name')"/>
+                  </div>
+                  <div class="clearfix"/>
+                  <div t-attf-class="form-group #{error.get('acc_number') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="street">Account Number</label>
+                      <input type="text" name="acc_number" class="form-control" t-att-value="profile.get('acc_number')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('bank_routing') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="vat">ABA Bank Routing</label>
+                      <input type="text" name="bank_routing" class="form-control" t-att-value="profile.get('bank_routing')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('bank_account_type') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="bank_account_type">Bank Account Type</label>
+                      <input type="text" name="bank_account_type" class="form-control" t-att-value="profile.get('bank_account_type')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('desc') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="phone">Description</label>
+                      <input type="tel" name="desc" class="form-control" t-att-value="profile.get('desc')"/>
+                  </div>
               </div>
               
               <div class="clearfix">
