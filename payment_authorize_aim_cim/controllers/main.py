@@ -112,39 +112,49 @@ class website_account(website_account):
     def cim_profile(self,reference='',redirect=None, **post):
 #         acquirers = list(request.env['payment.acquirer'].search([('website_published', '=', True), ('registration_view_template_id', '!=', False)]))
         partner = request.env.user.partner_id
-        profile = {}
+        profile = {'profile_name':False}
         values = {
                   'error': {},
                   'profile':profile,
                   'error_message': [],
-                  'profile_name':''
+                  
                   }
         
         if reference:
             profileobj = request.env['cust.payment.profile'].search([('name', '=', reference)])
             ret = False
             if profileobj:
-                values.update({'profile_name':profileobj.name})
                 values['profile'].update({
                                           'cc_number':profileobj.last4number or '',
                                           'desc':profileobj.description or '',
+                                          'profile_name':profileobj.name
                                           })
         if post:
             error, error_message = self.details_form_validate(post)
             values.update({'error': error, 'error_message': error_message})
             values['profile'].update(post)
             if not error:
-                if post.get('profile_name'):
-                    profileobj = request.env['cust.payment.profile'].search([('name', '=', post.get('profile_name',''))])
-                    partner.update_customer_payment_profile(profileobj,{
-                                                                        'cardNumber' : post.get("cc_number"),
-                    'expirationDate' : ("%s-%s") % (str(post.get("exp_mm",'')), str(post.get("exp_yyyy",'')))
-                                                                        })
-                else:
-                    creditCard = apicontractsv1.creditCardType()
-                    creditCard.cardNumber = post.get("cc_number")
-                    creditCard.expirationDate = ("%s-%s") % (str(post.get("exp_mm",'')), str(post.get("exp_yyyy",'')))
-                    partner.create_customer_payment_profile(creditCard=creditCard,bankAccount=None,description=str(post.get("desc",'')))
+                month = str(post.get("exp_mm",''))
+                if len(month) == 1:
+                    month = '0' + month
+                try:
+                    if post.get('profile_name'):
+                        profileobj = request.env['cust.payment.profile'].search([('name', '=', post.get('profile_name',''))])
+                        partner.update_customer_payment_profile(profileobj,{
+                                                                            'cardNumber' : post.get("cc_number"),
+                        'expirationDate' : ("%s-%s") % (month, str(post.get("exp_yyyy",''))), 'desc' : str(post.get("desc",''))
+                                                                            })
+                    else:
+                        creditCard = apicontractsv1.creditCardType()
+                        creditCard.cardNumber = post.get("cc_number")
+                        creditCard.expirationDate = ("%s-%s") % (month, str(post.get("exp_yyyy",'')))
+                        partner.create_customer_payment_profile(creditCard=creditCard,bankAccount=None,description=str(post.get("desc",'')))
+                except Exception as e:
+                    exp = "Some Error occurred!!"
+                    if e.name:
+                        exp = e.name 
+                    values.update({'error_message': [exp]})
+                    return request.website.render("payment_authorize_aim_cim.cim_profile", values)
                 if redirect:
                     return request.redirect(redirect)
                 return request.redirect('/my/home')

@@ -166,14 +166,15 @@ class res_partner(models.Model):
             response = authorize_aquirer.updateCustomerPaymentProfileResponse(getCustomerPaymentProfile)
             
             if response and (response.messages.resultCode=="Ok"):
-                print ("Successfully updated customer payment profile with id %s" % updateCustomerPaymentProfile.paymentProfile.customerPaymentProfileId)
+                print ("Successfully updated customer payment profile with id %s" % payment_profile_id.name)
                 vals = {'partner_id':partner.id,
                         'last4number':'XXXX' + str(values.get('cardNumber',''))[-4:],
+                        'description':str(values.get('desc','')),
                         }
                 payment_profile_id.write(vals)
             else:
                 print (response.messages.message[0]['text'].text)
-                raise ValidationError(_("Failed to update customer with customer payment profile id "))
+                raise ValidationError(_("Failed to update customer with customer payment profile id %s : %s" % (payment_profile_id.name, response.messages.message[0]['text'].text)))
         return
 
     def delete_customer_payment_profile(self, payment_profile_id,currency_id=None):

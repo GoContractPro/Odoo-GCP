@@ -75,7 +75,7 @@
           <h1>Your Profile Information</h1>
           <form action="/my/profile/cim_profile" method="post">
           <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
-          <input type="hidden" name="profile_name" t-att-value="profile_name"/>
+          <input type="hidden" name="profile_name" t-att-value="profile.get('profile_name')"/>
           <div class="row">
           <div class="col-md-8 oe_cart">
               <h3 class="page-header mt16">Payment Profile
