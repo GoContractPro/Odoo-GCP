@@ -190,13 +190,24 @@ class PaymentAcquirerAuthorize(models.Model):
     
     @api.multi
     def updateCustomerPaymentProfile(self, customerProfileId, customerPaymentProfileId, vals={}):
-        creditCard = apicontractsv1.creditCardType()
-        creditCard.cardNumber = vals.get("cardNumber")
-        creditCard.expirationDate = vals.get("expirationDate")
-        creditCard.cardCode = vals.get("cardCode")
         payment = apicontractsv1.paymentType()
-        payment.creditCard = creditCard
-    
+        if vals.get('update_bank'):
+            bankAccount = apicontractsv1.bankAccountType()
+            bankAccount.accountType = vals.get("bank_account_type")
+            bankAccount.accountNumber = vals.get("acc_number")
+            bankAccount.routingNumber = vals.get("bank_routing")
+            bankAccount.bankName = vals.get("bank_name")
+            bankAccount.nameOnAccount = vals.get("partner_name")
+            bankAccount.echeckType = vals.get("echeckType")
+            payment.bankAccount = bankAccount
+        else:
+            creditCard = apicontractsv1.creditCardType()
+            creditCard.cardNumber = vals.get("cardNumber")
+            creditCard.expirationDate = vals.get("expirationDate")
+            creditCard.cardCode = vals.get("cardCode")
+            payment.creditCard = creditCard
+        
+        
         paymentProfile = apicontractsv1.customerPaymentProfileExType()
         paymentProfile.billTo = apicontractsv1.customerAddressType()
         paymentProfile.billTo.firstName = vals.get("firstName",'')

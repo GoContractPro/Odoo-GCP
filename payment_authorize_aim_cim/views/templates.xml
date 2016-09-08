@@ -39,7 +39,7 @@
                         <td><t t-esc="profile.account_type=='cc' and 'Credit Card' or 'Bank'"/></td>
                         <td>
                          	<a t-if="profile.account_type == 'cc'" t-attf-href="/my/profile/cim_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
-<!--                         	<a t-if="profile.account_type == 'bank'" t-attf-href="/my/profile/bank_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a-->
+                         	<a t-if="profile.account_type == 'bank'" t-attf-href="/my/profile/bank_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
                         </td>
                         <td>
                         	<a t-attf-href="/my/profile/delete_profile?profile=#{profile.name}" alt="Delete Profile" class="btn btn-xs btn-primary"><i class="fa fa-delete"/> Delete Profile</a>
@@ -169,9 +169,24 @@
                       <label class="control-label label-optional" for="vat">ABA Bank Routing</label>
                       <input type="text" name="bank_routing" class="form-control" t-att-value="profile.get('bank_routing')"/>
                   </div>
+                  
+                  
                   <div t-attf-class="form-group #{error.get('bank_account_type') and 'has-error' or ''} col-lg-6">
                       <label class="control-label" for="bank_account_type">Bank Account Type</label>
-                      <input type="text" name="bank_account_type" class="form-control" t-att-value="profile.get('bank_account_type')"/>
+                      <select name="bank_account_type" class="form-control">
+                          <option value="checking" t-att-selected="profile.get('bank_account_type')=='personal'">Personal Checking</option>
+                          <option value="businessChecking" t-att-selected="profile.get('bank_account_type')=='business'">Business Checking</option>
+                          <option value="savings" t-att-selected="profile.get('bank_account_type')=='saving'">Personal Saving</option>
+                      </select>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('echeckType') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="echeckType">E-Check Type</label>
+                      <select name="echeckType" class="form-control">
+                          <option value="CCD" t-att-selected="profile.get('echeckType')=='CCD'">CCD</option>
+                          <option value="PPD" t-att-selected="profile.get('echeckType')=='PPD'">PPD</option>
+                          <option value="TEL" t-att-selected="profile.get('echeckType')=='TEL'">TEL</option>
+                          <option value="WEB" t-att-selected="profile.get('echeckType')=='WEB'">WEB</option>
+                      </select>
                   </div>
                   <div t-attf-class="form-group #{error.get('desc') and 'has-error' or ''} col-lg-6">
                       <label class="control-label" for="phone">Description</label>

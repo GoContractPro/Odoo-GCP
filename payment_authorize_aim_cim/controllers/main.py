@@ -166,21 +166,35 @@ class website_account(website_account):
         error = dict()
         error_message = []
 
-        mandatory_billing_fields = ["bank_name", "acc_number", "bank_routing"]
+        mandatory_billing_fields = ["bank_name", "acc_number", "bank_routing", "echeckType"]
 
         # Validation
         for field_name in mandatory_billing_fields:
             if not data.get(field_name):
                 error[field_name] = 'missing'
 
-        # card validation
-        if data.get('acc_number'):
-            acc_number = data.get('acc_number')
+        # Acc validation
+#         if data.get('acc_number'):
+#             acc_number = data.get('acc_number')
+#             try:
+#                 int(acc_number)
+#             except: 
+#                 error["acc_number"] = 'error'
+#                 error_message.append(_('Invalid Card Number! Please enter a valid 16 digits Card Number.'))
+                
+        if data.get('bank_routing'):
+            bank_routing = data.get('bank_routing')
+            
+            err = False
             try:
-                int(acc_number)
+                int(bank_routing)
             except: 
-                error["acc_number"] = 'error'
-                error_message.append(_('Invalid Card Number! Please enter a valid 16 digits Card Number.'))
+                err = True
+            if not len(bank_routing) == 9:
+                err = True
+            if err:
+                error["bank_routing"] = 'error'
+                error_message.append(_('Invalid Routing Number! Please enter a valid 9 digits Routing Number.'))
                 
         # Date validation
         
@@ -193,7 +207,7 @@ class website_account(website_account):
     @http.route(['/my/profile/bank_profile'], type='http', auth="user", website=True)
     def bank_profile(self,reference='',redirect=None, **post):
         partner = request.env.user.partner_id
-        profile = {'profile_name':False}
+        profile = {'profile_name':False,'bank_account_type':'checking'}
         values = {
                   'error': {},
                   'profile':profile,
@@ -206,9 +220,10 @@ class website_account(website_account):
             ret = False
             if profileobj:
                 values['profile'].update({
-                                          'bank_name':profileobj.last4number or '',
+                                          'acc_number':profileobj.last4number or '',
                                           'desc':profileobj.description or '',
-                                          'profile_name':profileobj.name
+                                          'profile_name':profileobj.name,
+#                                           'bank_account_type' : profileobj.bank_account_type
                                           })
         if post:
             error, error_message = self.bank_details_form_validate(post)
@@ -218,26 +233,28 @@ class website_account(website_account):
                 try:
                     if post.get('profile_name'):
                         profileobj = request.env['cust.payment.profile'].search([('name', '=', post.get('profile_name',''))])
-#                         partner.update_customer_payment_profile(profileobj,{
-#                                                                             'cardNumber' : post.get("cc_number"),
-#                         'expirationDate' : ("%s-%s") % (month, str(post.get("exp_yyyy",''))), 'desc' : str(post.get("desc",''))
-#                                                                             })
+                        partner.update_customer_payment_profile(profileobj,{
+                                            'bank_account_type' : post.get("bank_account_type"),
+                                            'acc_number' : post.get("acc_number"), 
+                                            'desc' : str(post.get("desc",'')),
+                                            'bank_routing' : post.get("bank_routing"),
+                                            'bank_name' : post.get("bank_name"),
+                                            'partner_name' : partner.name,
+                                            'echeckType' : post.get("echeckType"),
+                                             'update_bank' : True   })
                     else:
-#                         creditCard = apicontractsv1.creditCardType()
-#                         creditCard.cardNumber = post.get("cc_number")
-#                         creditCard.expirationDate = ("%s-%s") % (month, str(post.get("exp_yyyy",'')))
-#                         partner.create_customer_payment_profile(creditCard=creditCard,bankAccount=None,description=str(post.get("desc",'')))
-                        
                         bankAccount = apicontractsv1.bankAccountType()
-                        bankAccount.accountType = 'personal'#self.bank_account_type
+                        bankAccount.accountType = post.get("bank_account_type") or 'checking'#self.bank_account_type
                         bankAccount.accountNumber = post.get("acc_number")
                         bankAccount.routingNumber = post.get("bank_routing")
                         bankAccount.bankName = post.get("bank_name")
+                        bankAccount.echeckType = post.get("echeckType")
+                        bankAccount.nameOnAccount = partner.name
                         partner.create_customer_payment_profile(creditCard=None,bankAccount=bankAccount,description=str(post.get("desc",'')))
                 except Exception as e:
                     exp = "Some Error occurred!!"
-#                     if e.name:
-#                         exp = e.name 
+                    if e.name:
+                        exp = e.name 
                     values.update({'error_message': [exp]})
                     return request.website.render("payment_authorize_aim_cim.bank_profile", values)
                 if redirect:

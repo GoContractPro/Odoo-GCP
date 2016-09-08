@@ -168,7 +168,7 @@ class res_partner(models.Model):
             if response and (response.messages.resultCode=="Ok"):
                 print ("Successfully updated customer payment profile with id %s" % payment_profile_id.name)
                 vals = {'partner_id':partner.id,
-                        'last4number':'XXXX' + str(values.get('cardNumber',''))[-4:],
+                        'last4number':'XXXX' + str(values.get('cardNumber') or values.get('acc_number') or '')[-4:],
                         'description':str(values.get('desc','')),
                         }
                 payment_profile_id.write(vals)
