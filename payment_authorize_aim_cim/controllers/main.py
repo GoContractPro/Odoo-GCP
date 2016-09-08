@@ -183,15 +183,17 @@ class website_account(website_account):
 #                 error_message.append(_('Invalid Card Number! Please enter a valid 16 digits Card Number.'))
                 
         if data.get('bank_routing'):
-            bank_routing = data.get('bank_routing')
-            
+            bank_routing = data.get('bank_routing' '')
+            masked = 'XXXX' in bank_routing
             err = False
-            try:
-                int(bank_routing)
-            except: 
-                err = True
-            if not len(bank_routing) == 9:
-                err = True
+            print "masked", masked
+            if not masked:
+                try:
+                    int(bank_routing)
+                except: 
+                    err = True
+                if not len(bank_routing) == 9:
+                    err = True
             if err:
                 error["bank_routing"] = 'error'
                 error_message.append(_('Invalid Routing Number! Please enter a valid 9 digits Routing Number.'))
@@ -219,11 +221,16 @@ class website_account(website_account):
             profileobj = request.env['cust.payment.profile'].search([('name', '=', reference)])
             ret = False
             if profileobj:
+                res = partner.read_customer_payment_profile(profileobj)
+                print res
                 values['profile'].update({
-                                          'acc_number':profileobj.last4number or '',
+                                          'acc_number':res.get('accountNumber') or profileobj.last4number or '',
                                           'desc':profileobj.description or '',
                                           'profile_name':profileobj.name,
-#                                           'bank_account_type' : profileobj.bank_account_type
+                                          'bank_name' : res.get('bankName', ''),
+                                          'echeckType' : res.get('echeckType', ''),
+                                          'bank_routing' : res.get('routingNumber', ''),
+                                          'bank_account_type' : res.get('accountType', ''),
                                           })
         if post:
             error, error_message = self.bank_details_form_validate(post)
@@ -244,7 +251,7 @@ class website_account(website_account):
                                              'update_bank' : True   })
                     else:
                         bankAccount = apicontractsv1.bankAccountType()
-                        bankAccount.accountType = post.get("bank_account_type") or 'checking'#self.bank_account_type
+                        bankAccount.accountType = post.get("bank_account_type")#self.bank_account_type
                         bankAccount.accountNumber = post.get("acc_number")
                         bankAccount.routingNumber = post.get("bank_routing")
                         bankAccount.bankName = post.get("bank_name")
@@ -253,8 +260,10 @@ class website_account(website_account):
                         partner.create_customer_payment_profile(creditCard=None,bankAccount=bankAccount,description=str(post.get("desc",'')))
                 except Exception as e:
                     exp = "Some Error occurred!!"
-                    if e.name:
-                        exp = e.name 
+                    if hasattr(e, 'name') and e.name:
+                        exp = e.name
+                    if hasattr(e, 'message') and e.message:
+                        exp = e.message
                     values.update({'error_message': [exp]})
                     return request.website.render("payment_authorize_aim_cim.bank_profile", values)
                 if redirect:

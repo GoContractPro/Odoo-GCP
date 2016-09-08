@@ -148,6 +148,13 @@ class res_partner(models.Model):
                             res['expirationDate'] = response.paymentProfile.payment.creditCard.expirationDate
                             if hasattr(response.paymentProfile.payment.creditCard, 'cardCode'):
                                 res['cardCode'] = response.paymentProfile.payment.creditCard.cardCode
+                                
+                        if hasattr(response.paymentProfile.payment, 'bankAccount') == True:
+                            res['accountNumber'] = response.paymentProfile.payment.bankAccount.accountNumber
+                            res['accountType'] = response.paymentProfile.payment.bankAccount.accountType
+                            res['routingNumber'] = response.paymentProfile.payment.bankAccount.routingNumber
+                            res['bankName'] = response.paymentProfile.payment.bankAccount.bankName
+                            res['echeckType'] = response.paymentProfile.payment.bankAccount.echeckType
             else:
                 print("response code: %s" % response.messages.resultCode)
                 print("Failed to get payment profile information with id %s" % getCustomerPaymentProfile.customerPaymentProfileId)
