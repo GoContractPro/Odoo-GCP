@@ -100,6 +100,7 @@ class import_data_header(models.Model):
     sequence = fields.Integer('Sequence')
     sub_string = fields.Char('Substring', size=8)
     is_db_id = fields.Boolean('Is Record ID')
+    
       
     def _get_model(self, cr, uid, context=None):
         
