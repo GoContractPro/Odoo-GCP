@@ -310,39 +310,39 @@ class auth_net_cc_api(osv.Model):
 
         ret_dic = {}
         if x_type == 'AUTH_ONLY':
-             status = 'Authorization: ' + str(results[3])
-             ret_dic.update({
+            status = 'Authorization: ' + str(results[3])
+            ret_dic.update({
                         'cc_status' :status,
                         'cc_auth_code':results[4],
                         'cc_trans_id':results[6]
-             })
-             voucher_obj.write(cr, uid, ids, ret_dic)
-             voucher_obj._historise(cr, uid, acc_voucher_obj.id, 'Authorization', trans_id=results[6], status=status, amount=total)
+            })
+            voucher_obj.write(cr, uid, ids, ret_dic)
+            voucher_obj._historise(cr, uid, acc_voucher_obj.id, 'Authorization', trans_id=results[6], status=status, amount=total)
 #         if x_type == 'CAPTURE_ONLY':
 #             status = "Capture: " + str(results[3])
 #             ret_dic['cc_status'] = status
 #             voucher_obj.write(cr, uid, ids, ret_dic)
              
         elif x_type == 'PRIOR_AUTH_CAPTURE':
-             status = 'Prior Authorization and Capture: ' + str(results[3])
-             ret_dic['amount'] = acc_voucher_obj.cc_order_amt
-             ret_dic['cc_status'] = status
-             ret_dic['cc_trans_id'] = results[6]
-             ret_dic['cc_transaction'] = True
-             voucher_obj.write(cr, uid, ids, ret_dic)
-             voucher_obj._historise(cr, uid, acc_voucher_obj.id, 'Capture',trans_id=results[6], status=status, amount=acc_voucher_obj.cc_order_amt)
-             cr.commit()
-             if results[0] == '1':
-                 '''
+            status = 'Prior Authorization and Capture: ' + str(results[3])
+            ret_dic['amount'] = acc_voucher_obj.cc_order_amt
+            ret_dic['cc_status'] = status
+            ret_dic['cc_trans_id'] = results[6]
+            ret_dic['cc_transaction'] = True
+            voucher_obj.write(cr, uid, ids, ret_dic)
+            voucher_obj._historise(cr, uid, acc_voucher_obj.id, 'Capture',trans_id=results[6], status=status, amount=acc_voucher_obj.cc_order_amt)
+            cr.commit()
+            if results[0] == '1':
+                '''
                      Validating sales receipt
-                 '''
-                 #self.validate_sales_reciept(cr, uid, ids, context=context)
-                 '''
+                '''
+                #self.validate_sales_reciept(cr, uid, ids, context=context)
+                '''
                      Posting payment voucher
-                 '''
-                 voucher_obj.action_move_line_create(cr, uid, ids, context)
-                 ret = True
-                 voucher_obj.write(cr, uid, ids, {'is_charged':True}, context=context)
+                '''
+                voucher_obj.action_move_line_create(cr, uid, ids, context)
+                ret = True
+                voucher_obj.write(cr, uid, ids, {'is_charged':True}, context=context)
              
         elif x_type == 'CREDIT':
             status = 'Refund: ' + str(results[3])
@@ -504,10 +504,10 @@ class account_voucher(osv.Model):
     def check_transaction(self, cr, uid, ids, context=None):
         transaction_record = self.browse( cr, uid, ids,context)
         for record in transaction_record:
-             if record.cc_p_authorize and record.cc_auth_code:
-                 raise osv.except_osv(_('Error'), _("Already Authorized!"))
-             if record.cc_charge and not record.cc_auth_code:
-                 raise osv.except_osv(_('Error'), _("Pre-Authorize the transaction first!"))
+            if record.cc_p_authorize and record.cc_auth_code:
+                raise osv.except_osv(_('Error'), _("Already Authorized!"))
+            if record.cc_charge and not record.cc_auth_code:
+                raise osv.except_osv(_('Error'), _("Pre-Authorize the transaction first!"))
         return True
 
     def authorize(self, cr, uid, ids, context=None):
@@ -528,7 +528,7 @@ class sale_order(osv.Model):
         if product_id and product_id.property_account_income:
             return product_id.property_account_income.id
         elif product_id and product_id.categ_id.property_account_income_categ:
-             return product_id.categ_id.property_account_income_categ.id
+            return product_id.categ_id.property_account_income_categ.id
         else:
             if journal_obj.default_credit_account_id:
                 return journal_obj.default_credit_account_id.id

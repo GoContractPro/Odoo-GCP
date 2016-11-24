@@ -113,29 +113,29 @@ class AccountVoucher(osv.Model):
                 return zip_code.zipcode
         return ''
     
-    def _get_country(self, cr, uid, ids, country_id, context={}):
+    def _get_country(self, country_id):
             if country_id:
-                country = self.pool.get('res.country').browse(cr, uid, country_id)
+                country = self.env['res.country'].browse(country_id)
                 return country.name
             return ''
 
-    def _get_state(self, cr, uid, ids, state_id, context={}):
+    def _get_state(self,state_id):
         if state_id:
-            state = self.pool.get('res.country.state').browse(cr, uid, state_id)
+            state = self.env['res.country.state'].browse(state_id)
             return state.name
         return ''
 
-    def _get_cardholder_details(self, cr, uid, ids, partner_id, context={}):
+    def _get_cardholder_details(self,partner_id):
         ret = {}
         if partner_id:
-            partner = self.pool.get('res.partner').browse(cr, uid, partner_id)
+            partner = partner_id
             ret = {'name':partner.name,
                 'street':partner.street,
                 'street2':partner.street2,
                 'city':partner.city,
-                'country':self._get_country(cr, uid, ids, partner.country_id.id),
+                'country':self._get_country(partner.country_id.id),
                 "zip":partner.zip,
-                "state":self._get_state(cr, uid, ids, partner.state_id.id),
+                "state":self._get_state(partner.state_id.id),
                 'title':partner.title and partner.title.name
                 }
         return ret
@@ -173,16 +173,17 @@ class AccountVoucher(osv.Model):
         '''
         if context is None:
             context = {}
-        context.update({'cc_no':'no_mask'})
+        new_context = context.copy()
+        new_context.update({'cc_no':'no_mask'})
         if not isinstance(ids,list):
             ids = [ids]
-        for record in self.browse(cr, uid, ids, context=context):
+        for record in self.browse(cr, uid, ids, context=new_context):
             if vals.get('cc_number', False):
                 res = rsa_encrypt.encrypt(vals.get('cc_number', False), record.key)
                 res['cc_number'] = res['enc_value']
                 del res['enc_value']
                 vals.update(res)
-        result = super(AccountVoucher, self).write(cr, uid, ids, vals, context)
+        result = super(AccountVoucher, self).write(cr, uid, ids, vals, new_context)
         return result
     
     def read(self, cr, uid, ids, fields=None, context=None, load='_classic_read'):
@@ -225,11 +226,6 @@ class AccountVoucher(osv.Model):
         res = super(AccountVoucher, self).onchange_amount(cr, uid, ids, amount, rate, partner_id, journal_id, currency_id, ttype, date, payment_rate_currency_id, company_id, context=context)
         res['value'].update({'cc_order_amt':amount, 'cc_refund_amt':amount}) 
         return res
-
-    
-    
-    
-    
 
     _columns = {
                 'origin':fields.char('Origin', size=16, help='Mentions the reference of Sale/Purchase document'),
@@ -298,8 +294,59 @@ class AccountVoucher(osv.Model):
     @api.onchange('partner_id', 'pay_now')
     def onchange_partner_id(self):
         res = super(AccountVoucher, self).onchange_partner_id()
+        if not res:
+            res = {}
         print "res",res
-    
+        payment_obj = self.env['cust.payment.profile']
+        payment_profile_id = None
+        if self.partner_id:
+            cust_pay_profile_ids = payment_obj.search([('cust_profile_id', '=', self.partner_id.payment_profile_id.id)], limit = 1)
+            payment_profile_id = cust_pay_profile_ids and cust_pay_profile_ids[0] or False
+            if res.get('value'):
+                self.payment_profile_id  = payment_profile_id
+#        if not res.has_key('value'):
+#            res['value'] = {}
+        cc_allow_refunds = jorurnal_cc_allow = False
+        cardholder_details = self._get_cardholder_details(self.partner_id)
+        if self.journal_id and cardholder_details: 
+            journal_read = {}   
+            account_journal = self.env['account.journal'].search([('id','=',self.journal_id.id)]) 
+            jorurnal_cc_allow = account_journal.cc_allow_processing,
+            cc_allow_refunds = account_journal.cc_allow_refunds
+            self.cc_name = cardholder_details['name']
+            self.cc_b_addr_1 = cardholder_details['street']
+            self.cc_b_addr_2 = cardholder_details['street2']
+            self.cc_city = cardholder_details['city']
+            self.cc_country = cardholder_details['country']
+            self.cc_zip = cardholder_details['zip']
+            self.cc_state = cardholder_details['state']
+            self.cc_reseller = cardholder_details['title'] == 'Reseller' and True or False
+            self.cc_save_card_details = False
+           
+            self.cc_info_hide = True
+            if jorurnal_cc_allow:
+                self.cc_info_hide = False
+#        if cc_allow_refunds:
+#            self.cc_info_hide = True
+        #self._context.update({'sale_order_id':self.sale_order_id.id})
+        #if not self.sale_id:
+        #    sale_order_id = self._context.get('sale_order_id')
+        #if sale_id and self.line_cr_ids :
+        #    sale = self.env['sale.order'].browse(sale_order_id)
+        #    lines = []
+        #    for line in self.line_cr_ids:
+        #        for invoice in sale.invoice_ids:
+        #            if not (line.get('invoice_id') and line.get('invoice_id') and line['invoice_id'] == invoice.id):
+        #                line['pay'] = False
+        #            else:
+        #                line['pay'] = True
+        #                line['amount'] = line['amount_original']
+        #        lines.append(line)
+         #   self.line_cr_ids = lines
+        return res
+        
+
+                
 #     def onchange_partner_id(self, cr, uid, ids, partner_id, journal_id, price, currency_id, ttype, date, context={}, sale_id=False):
 #         if not context:
 #             context = {}

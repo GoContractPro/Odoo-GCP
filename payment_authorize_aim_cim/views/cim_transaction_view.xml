@@ -7,9 +7,23 @@
 			<field name="model">cust.profile</field>
 			<field name="arch" type="xml">
 				<form string="Profile">
-					<field name="name"/>
-					<field name="payment_profile_ids"/>
-					<field name="shipping_address_id"/>
+					<sheet>
+					<div class="oe_title">
+                        <h1>
+                        	<label for="name"/>
+                        	<field name="name"/>
+                        </h1>
+                    </div>
+                    
+                    <group>
+                    	<field name="partner_id"/>
+                    </group>
+                    
+					<group>
+						
+						<field name="payment_profile_ids" nolabel="1"/>
+					</group>
+					</sheet> 
 				</form>
 			</field>
 		</record>
@@ -21,7 +35,7 @@
 				<tree string="Profile">
 					<field name="name"/>
 					<field name="payment_profile_ids"/>
-					<field name="shipping_address_id"/>
+					
 				</tree>
 			</field>
 		</record>
@@ -32,12 +46,17 @@
 			<field name="model">cust.payment.profile</field>
 			<field name="arch" type="xml">
 				<form string="Payment Profile">
-					<field name="name"/>
-					<field name='cust_profile_id'/>
-					<field name="address_id"/>
-					<field name="description"/>
-					<newline/>
-					<field name="transaction_history_ids" colspan='4' nolabel='1'/>
+					<group>
+						<field name="last4number"/>
+						<field name="account_type"/>
+						<field name="description"/>
+						<field name="name"/>
+						<field name='cust_profile_id'/>
+						<field name="address_id"/>
+						
+						<newline/>
+						<field name="transaction_history_ids" colspan='4' nolabel='1'/>
+					</group>
 				</form>
 			</field>
 		</record>
@@ -47,11 +66,17 @@
 			<field name="name">view_cim_transaction_cust_payment_profile_tree</field>
 			<field name="model">cust.payment.profile</field>
 			<field name="arch" type="xml">
-				<tree string="Payment Profile">
-					<field name="description"/>
+				<tree string='Payment Profiles'>
+					<field name="last4number" />
+					<field name="account_type" />
 					<field name="name"/>
-					<field name="address_id"/>
-					<field name="transaction_history_ids" />
+					<field name="cust_profile_id" invisible='1'/>
+					<field name="transaction_history_ids"/>
+					<field name="description"/>
+					<field name="use_default" invisible='1'/>
+					<button name="%(action_edit_payment_profile)d" type='action' string='Edit Payment Profile' icon="gtk-edit"/>
+					<button name="%(action_delete_payment_profile)d" type='action' string='Delete Payment Profile' icon="gtk-cancel"/>
+					<button name='set_default' string='Set as Default' icon="gtk-execute" type='object' attrs="{'invisible':[('use_default','=',True)]}"/>
 				</tree>
 			</field>
 		</record>

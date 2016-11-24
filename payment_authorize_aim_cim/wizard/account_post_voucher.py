@@ -60,8 +60,8 @@ class account_post_voucher(osv.TransientModel):
         obj_voucher = self.pool.get('account.voucher')
         voucher = obj_voucher.browse(cr, uid, context.get('active_id', []), context=context)
         total_allocated = 0.0
-        for line in voucher.line_cr_ids:
-            total_allocated += line.amount
+        for line in voucher.line_ids:
+            total_allocated += line.price_subtotal
         
         return total_allocated
 
@@ -79,8 +79,8 @@ class account_post_voucher(osv.TransientModel):
         total_allocated = 0.0
         if context.get('invoice_type', '') == 'out_refund':
             return total_allocated
-        for line in voucher.line_cr_ids:
-            total_allocated += line.amount
+        for line in voucher.line_ids:
+            total_allocated += line.price_subtotal
         return total_allocated - voucher.amount
 
     _defaults = {

@@ -22,15 +22,31 @@
 
 
 {
-    'name': 'CreditCard Payment',
+    'name': 'Authorize.net Payment AIM CIM',
     'version': '2.0',
-    'category': 'Generic Modules/Others',
+    'category': 'payments',
     'description': """
-    Module for Credit card payment using authorise.net
+Authorize.net CIM and AIM Payments 
+==================================
+
+Extends base Authorize.net payment gateway module, It allows the
+following:
+
+* Saved payment profiles. 
+* Use either credit cards or bank accounts through Authorize.net payment gateway.
+* eCommerce customers can manage and re-use saved payment profiles through website and shoping cart.
+* No redirect to Authorize.net site, Payment entry forms integrated cleanly in Odoo web pages.
+* PCI DSS compliance through Authorize.net secure off site storage of sensitive customer data.
+* Automatic creation of journal entries for payment gateway transactions.
+* Reconciliation of Authorize.net payment gateway transactions with accounting journal entries.
+* Multiple Authorize.net accounts for different currencies
+
     """,
-    'author': 'Verts Service Pvt Ltd.',
-    'website': ' http://www.verts.co.in',
-    'depends': ['sale_stock','sale', 'account_voucher', 'stock'],
+    'author': 'GoContractPro LLC',
+    'website': ' https://gocontractpro.com',
+    'depends': ['sale_stock','sale', 'account_voucher', 'stock',
+        'website_portal','website_portal_sale',
+        'website_payment','payment_authorize','payment_authorize_currency'],
     'data': [
         'wizard/account_post_voucher.xml',
         'wizard/create_payment_profile_view.xml',
@@ -46,6 +62,7 @@
         'views/sale_stock_view.xml',
         'views/stock_picking_view.xml',
         'views/stock_view.xml',
+        'views/templates.xml',
         'views/account_voucher.xml',
         'security/account_security.xml',
         'security/ir.model.access.csv',
@@ -53,9 +70,6 @@
     'demo': [
     ],
     'test':[
-            'test/ccapi_authdotnet.yml',
-            'test/account_payment_cim_authdotnet.yml'
-            'test/account_payment_creditcard.yml'
             ],
     'installable': True,
     'auto_install': False,

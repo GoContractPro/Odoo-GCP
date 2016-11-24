@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    
+
+    <template id="payment_profiles_aim_cim" name="Account" inherit_id="website_portal.account">
+        <xpath expr="//div[contains(@class,'o_my_documents')]" position="inside">
+            <t t-call="payment_authorize_aim_cim.payment_profiles" />
+        </xpath>
+    </template>
+
+    <template id="payment_profiles" name="Payment Profiles">
+        <h3 class="page-header">Payment Profiles 
+        	<a href="/my/profile/cim_profile" class="btn btn-default btn-xs">Add New CreditCard</a>
+        	<a href="/my/profile/bank_profile" class="btn btn-default btn-xs">Add New Bank Account</a>	
+    	</h3>
+        <t t-if="not payment_profiles">
+            <p>There are currently no payment profiles added.</p>
+        </t>
+        <t t-if="payment_profiles">
+            <table class="table table-hover o_my_status_table">
+                <thead>
+                  <tr class="active">
+                      <th>Name</th>
+                      <th>Number</th>
+                      <th>Description</th>
+                      <th>Account Type</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                    </tr>
+                </thead>
+                <t t-foreach="payment_profiles" t-as="profile">
+                    <tr>
+                        <td>
+                            <a t-att-href="'/my/profile/'+str(profile.id)"><t t-esc="profile.name"/></a>
+                        </td>
+                        <td><t t-esc="profile.last4number"/></td>
+                        <td><t t-esc="profile.description"/></td>
+                        <td><t t-esc="profile.account_type=='cc' and 'Credit Card' or 'Bank'"/></td>
+                        <td>
+                         	<a t-if="profile.account_type == 'cc'" t-attf-href="/my/profile/cim_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
+                         	<a t-if="profile.account_type == 'bank'" t-attf-href="/my/profile/bank_profile?reference=#{profile.name}" alt="Edit Profile" class="btn btn-xs btn-primary"><i class="fa fa-edit"/> Edit Profile</a>
+                        </td>
+                        <td>
+                        	<a t-attf-href="/my/profile/delete_profile?profile=#{profile.name}" alt="Delete Profile" class="btn btn-xs btn-primary"><i class="fa fa-delete"/> Delete Profile</a>
+                        </td>
+                    </tr>
+                </t>
+                <tr t-att-class="'hidden' if len(quotations) &lt; 5 else ''">
+                  <td colspan="5"><a href="" class="o_my_show_more btn btn-xs btn-default"><span>Show more</span><span class="hidden">Show less</span></a></td>
+                </tr>
+            </table>
+        </t>
+    </template>
+
+   <template id="delete_profile">
+	  <t t-call="website.layout">
+	    <t t-set="additional_title">Delete Profile</t>
+	    <div id="wrap">
+	      <div class="container oe_website_sale">
+	          <h1>Your Profile is Deleted</h1> 
+	         </div>
+    </div>
+  </t>
+</template>
+ <template id="not_delete_profile">
+	  <t t-call="website.layout">
+	    <t t-set="additional_title">Delete Profile</t>
+	    <div id="wrap">
+	      <div class="container oe_website_sale">
+	          <h1>There is some technical issue in deleting your payment profile.</h1> 
+	         </div>
+    </div>
+  </t>
+</template>
+<template id="cim_profile">
+  <t t-call="website.layout">
+    <t t-set="additional_title">Manage Profile</t>
+    <div id="wrap">
+      <div class="container oe_website_sale">
+          <h1>Your Profile Information</h1>
+          <form action="/my/profile/cim_profile" method="post">
+          <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+          <input type="hidden" name="profile_name" t-att-value="profile.get('profile_name')"/>
+          <div class="row">
+          <div class="col-md-8 oe_cart">
+              <h3 class="page-header mt16">Payment Profile
+                  <small groups="base.group_public"> or
+                      <a class='btn btn-primary' t-if="not partner" t-attf-href="/web?redirect=#{ request.httprequest.url }">Sign in</a>
+                  </small>
+              </h3>
+              <div class="row">
+                  <div class="col-md-12">
+                      <div t-if="error_message" class="alert alert-danger">
+                          <t t-foreach="error_message" t-as="err"><t t-esc="err"/><br /></t>
+                      </div>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('cc_number') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="cc_number">Credit Card Number</label>
+                      <input type="text" name="cc_number" class="form-control" t-att-value="profile.get('cc_number')"/>
+                  </div>
+                  <div class="clearfix"/>
+                  <div t-attf-class="form-group #{error.get('exp_mm') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="street">Expiration Date MM</label>
+                      <input type="text" name="exp_mm" class="form-control" t-att-value="profile.get('exp_mm')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('exp_yyyy') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="vat">Expiration Date YYYY</label>
+                      <input type="text" name="exp_yyyy" class="form-control" t-att-value="profile.get('exp_yyyy')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('email') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="card_code">Card Code </label>
+                      <input type="text" name="card_code" class="form-control" t-att-value="profile.get('card_code')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('phone') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="phone">Description</label>
+                      <input type="tel" name="desc" class="form-control" t-att-value="profile.get('desc')"/>
+                  </div>
+
+                  
+                  
+              </div>
+              
+              <div class="clearfix">
+                <a href="/my/home" class="btn btn-default mb32"><span class="fa fa-long-arrow-left"/> Return</a>
+                <a class="btn btn-default btn-primary pull-right mb32 a-submit">Save/Update <span class="fa fa-long-arrow-right"/></a>
+              </div>
+          </div>
+          
+      </div>
+      </form>
+    </div>
+    </div>
+  </t>
+</template>
+
+<template id="bank_profile">
+  <t t-call="website.layout">
+    <t t-set="additional_title">Manage Bank Profile</t>
+    <div id="wrap">
+      <div class="container oe_website_sale">
+          <h1>Your Bank Profile Information</h1>
+          <form action="/my/profile/bank_profile" method="post">
+          <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+          <input type="hidden" name="profile_name" t-att-value="profile.get('profile_name')"/>
+          <div class="row">
+          <div class="col-md-8 oe_cart">
+              <h3 class="page-header mt16">Bank Profile
+                  <small groups="base.group_public"> or
+                      <a class='btn btn-primary' t-if="not partner" t-attf-href="/web?redirect=#{ request.httprequest.url }">Sign in</a>
+                  </small>
+              </h3>
+              <div class="row">
+                  <div class="col-md-12">
+                      <div t-if="error_message" class="alert alert-danger">
+                          <t t-foreach="error_message" t-as="err"><t t-esc="err"/><br /></t>
+                      </div>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('bank_name') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="bank_name">Bank Name</label>
+                      <input type="text" name="bank_name" class="form-control" t-att-value="profile.get('bank_name')"/>
+                  </div>
+                  <div class="clearfix"/>
+                  <div t-attf-class="form-group #{error.get('acc_number') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="street">Account Number</label>
+                      <input type="text" name="acc_number" class="form-control" t-att-value="profile.get('acc_number')"/>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('bank_routing') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label label-optional" for="vat">ABA Bank Routing</label>
+                      <input type="text" name="bank_routing" class="form-control" t-att-value="profile.get('bank_routing')"/>
+                  </div>
+                  
+                  
+                  <div t-attf-class="form-group #{error.get('bank_account_type') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="bank_account_type">Bank Account Type</label>
+                      <select name="bank_account_type" class="form-control">
+                          <option value="checking" t-att-selected="profile.get('bank_account_type')=='checking'">Personal Checking</option>
+                          <option value="businessChecking" t-att-selected="profile.get('bank_account_type')=='businessChecking'">Business Checking</option>
+                          <option value="savings" t-att-selected="profile.get('bank_account_type')=='savings'">Personal Saving</option>
+                      </select>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('echeckType') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="echeckType">E-Check Type</label>
+                      <select name="echeckType" class="form-control">
+                          <option value="CCD" t-att-selected="profile.get('echeckType')=='CCD'">CCD</option>
+                          <option value="PPD" t-att-selected="profile.get('echeckType')=='PPD'">PPD</option>
+                          <option value="TEL" t-att-selected="profile.get('echeckType')=='TEL'">TEL</option>
+                          <option value="WEB" t-att-selected="profile.get('echeckType')=='WEB'">WEB</option>
+                      </select>
+                  </div>
+                  <div t-attf-class="form-group #{error.get('desc') and 'has-error' or ''} col-lg-6">
+                      <label class="control-label" for="phone">Description</label>
+                      <input type="tel" name="desc" class="form-control" t-att-value="profile.get('desc')"/>
+                  </div>
+              </div>
+              
+              <div class="clearfix">
+                <a href="/my/home" class="btn btn-default mb32"><span class="fa fa-long-arrow-left"/> Return</a>
+                <a class="btn btn-default btn-primary pull-right mb32 a-submit">Save/Update <span class="fa fa-long-arrow-right"/></a>
+              </div>
+          </div>
+          
+      </div>
+      </form>
+    </div>
+    </div>
+  </t>
+</template>
+ 
+</odoo>
