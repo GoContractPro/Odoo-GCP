@@ -144,8 +144,8 @@ class import_data_file(osv.osv):
             'state': fields.selection([('draft','Draft'),('map','Mapping Fields'),('ready','Map Confirmed'),('importing','Import Running')], "Status"),
             'sequence': fields.integer("Sequence"),
             'ir_cron_id': fields.many2one('ir.cron', 'Scheduled Job',domain="[('is_import_data_job','=',True)]",),
-            'remove_records' : fields.selection(  [    ('1','Delete'  ),('2' ,'Set In-Active' ),('0','No Action' )],'Remove Old Records', help=' If importing records not in import will have these actions taken ' ) ,
-            'Remove_records_filter': fields.char( "Remove Filter" , size=256, help="set domian filter for rmoving records") ,
+            'remove_records_xyz' : fields.selection([('1','Delete'),('2' ,'Set In-Active'),('0','No Action' )],'Remove Old Records') ,
+            'remove_records_filter': fields.char( "Remove Filter" , size=256, help="set domain filter for removing records") ,
             
                        }
     

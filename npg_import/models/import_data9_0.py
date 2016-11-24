@@ -702,7 +702,7 @@ class import_data_file(models.Model):
             
             # Exit Import Records Loop  
             return True
-        elif not test_mode or not self.rollback and self.remove_records == '0':
+        elif not test_mode or not self.rollback and self.remove_records_xyz == '0':
             self.env.cr.commit()
             return False
         return False
@@ -771,7 +771,7 @@ class import_data_file(models.Model):
                     row_count = %s,
                     count = %s,
                     tot_record_num = %s 
-                    where id = %s)
+                    where id = %s
                     '''
         self.env.cr.execute(update_sql,(start_time,self.error_log,estimate_time, row_count,count,self.tot_record_num,self.id))
         
@@ -901,13 +901,14 @@ class import_data_file(models.Model):
     def remove_records(self):    
         
         domain =  []
-        domain += eval(self.remove_records_filter)
-        if self.remove_records == '1' : 
-             record_objs = self.env[self.model_id.model].search(domain)
-             records_objs.delete()
-        elif self.remove_records == '2' :
+        if self.remove_records_filter :
+            domain += eval(self.remove_records_filter)
+        if self.remove_records_xyz == '1' : 
             record_objs = self.env[self.model_id.model].search(domain)
-            records_objs.update({'active' : False})   
+            record_objs.unlink()
+        elif self.remove_records_xyz == '2' :
+            record_objs = self.env[self.model_id.model].search(domain)
+            record_objs.update({'active' : False})   
          
     @api.multi
     def action_import_dbf(self,stats_vals=None):
@@ -918,8 +919,8 @@ class import_data_file(models.Model):
             dbf_table.open()
             self.tot_record_num = len(dbf_table)
             self.update_statistics(remaining=True)
-            self.env.cr.commit()
-            
+            #self.env.cr.commit()
+            self.remove_records()
            
             n = (self.start_row and self.start_row > 1 and self.start_row - 1) or 0
             while n < self.tot_record_num:
@@ -952,7 +953,9 @@ class import_data_file(models.Model):
 #            self.tot_record_num = self.get_row_count_odbc(self.odbc_import_query(),cur)
             stats_vals['tot_record_num'] = self.get_row_count_odbc(self.odbc_import_query(),cur)
             self.update_statistics(remaining=True, stats_vals=stats_vals)
-            self.env.cr.commit()
+            #self.env.cr.commit()
+            self.remove_records()
+
             qry = self.odbc_import_query()
             cur.execute(qry)
             
@@ -1016,7 +1019,8 @@ class import_data_file(models.Model):
             csv_data = self.get_csv_data_file()
             header_dict = self.get_csv_header_dict(rec, csv_data)
             self.update_statistics(remaining=True)
-            self.env.cr.commit()
+            #self.env.cr.commit()
+            self.remove_records()
             
             for csv_row in csv_data[1:]:
 
