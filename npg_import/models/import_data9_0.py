@@ -764,8 +764,12 @@ class import_data_file(models.Model):
                     'count': count,
                     'tot_record_num':self.tot_record_num}
             
+        has_errors = self.has_errors or stats_vals.get('has_errors',False)
+        error_log = self.error_log or stats_vals.get('error_log','')
+        
         update_sql = ''' update import_data_file 
             set start_time =  %s,
+                    has_errors = %s,
                     error_log =  %s,
                     time_estimate = %s,
                     row_count = %s,
@@ -773,7 +777,6 @@ class import_data_file(models.Model):
                     tot_record_num = %s 
                     where id = %s
                     '''
-        self.env.cr.execute(update_sql,(start_time,self.error_log,estimate_time, row_count,count,self.tot_record_num,self.id))
         
         if not remaining:
             stats_vals['end_time'] = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)  
@@ -783,8 +786,15 @@ class import_data_file(models.Model):
             row_count = 0
                         
         #self.write(stats_vals) 
-        self.env.cr.execute(update_sql,(start_time,self.error_log,estimate_time, row_count,count,self.tot_record_num,self.id))
-        
+        #self.env.cr.execute(update_sql,(start_time,self.error_log,estimate_time, row_count,count,self.tot_record_num,self.id))
+        self.env.cr.execute(update_sql,(stats_vals.get('start_time'),
+                                        has_errors,error_log,
+                                        stats_vals.get('estimate_time'), 
+                                        stats_vals.get('row_count'),
+                                        stats_vals.get('count'),
+                                        self.tot_record_num,
+                                        self.id))
+       
         return stats_vals
     
     @api.multi   
@@ -871,7 +881,7 @@ class import_data_file(models.Model):
             return  
         
         test_mode = self.env.context.get('test', False)
-        '''
+        
         self.has_errors = False
         self.error_log = '' 
         self.row_count = 0
@@ -879,7 +889,7 @@ class import_data_file(models.Model):
         self.tot_record_num = 0
         
         self.start_time = start_time
-        '''
+        
         start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         stats = {'has_errors':False,
                 'error_log':'',
@@ -908,7 +918,7 @@ class import_data_file(models.Model):
             record_objs.unlink()
         elif self.remove_records_xyz == '2' :
             record_objs = self.env[self.model_id.model].search(domain)
-            record_objs.update({'active' : False})   
+            record_objs.write({'active' : False})   
          
     @api.multi
     def action_import_dbf(self,stats_vals=None):
@@ -919,7 +929,7 @@ class import_data_file(models.Model):
             dbf_table.open()
             self.tot_record_num = len(dbf_table)
             self.update_statistics(remaining=True)
-            #self.env.cr.commit()
+            self.env.cr.commit()
             self.remove_records()
            
             n = (self.start_row and self.start_row > 1 and self.start_row - 1) or 0
@@ -953,7 +963,7 @@ class import_data_file(models.Model):
 #            self.tot_record_num = self.get_row_count_odbc(self.odbc_import_query(),cur)
             stats_vals['tot_record_num'] = self.get_row_count_odbc(self.odbc_import_query(),cur)
             self.update_statistics(remaining=True, stats_vals=stats_vals)
-            #self.env.cr.commit()
+            self.env.cr.commit()
             self.remove_records()
 
             qry = self.odbc_import_query()
@@ -1019,7 +1029,7 @@ class import_data_file(models.Model):
             csv_data = self.get_csv_data_file()
             header_dict = self.get_csv_header_dict(rec, csv_data)
             self.update_statistics(remaining=True)
-            #self.env.cr.commit()
+            self.env.cr.commit()
             self.remove_records()
             
             for csv_row in csv_data[1:]:
