@@ -774,7 +774,8 @@ class import_data_file(models.Model):
                     time_estimate = %s,
                     row_count = %s,
                     count = %s,
-                    tot_record_num = %s 
+                    tot_record_num = %s,
+                    state = %s, 
                     where id = %s
                     '''
         
@@ -793,6 +794,7 @@ class import_data_file(models.Model):
                                         stats_vals.get('row_count'),
                                         stats_vals.get('count'),
                                         self.tot_record_num,
+                                        stats_vals.get('state',''),
                                         self.id))
        
         return stats_vals
@@ -892,6 +894,7 @@ class import_data_file(models.Model):
         
         start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         stats = {'has_errors':False,
+                 'state':'importing',
                 'error_log':'',
                 'row_count':0,
                 'count':0,
