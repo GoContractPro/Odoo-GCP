@@ -220,6 +220,7 @@ class import_data_file(models.Model):
    # remove_records_xyz = fields.Selection(string = 'Remove Old Records', selection= [('1','Delete'),('2' ,'Set In-Active'),('0','No Action' )], default='0')
     remove_records_xyz = fields.Selection(string = 'Remove Old Records', selection= _get_remove_options, default='0')
     remove_records_filter =  fields.Char( string="Remove Filter" ,  help="set domain filter for removing records") 
+    odbc_fetch_size = fields.Integer('ODBC Fetch Size' , default=25)
     
     
     @api.onchange('remove_records_xyz', 'model_id') 
@@ -1028,7 +1029,7 @@ class import_data_file(models.Model):
         elif self.src_type == 'odbc':
             return self.action_import_odbc()
      
-        stats_cr.close()
+        stats.stats_cr.close()
      #   if hasattr(threading.current_thread(), 'dbname'): 
      #       del threading.current_thread().dbname
      
@@ -1144,7 +1145,7 @@ class import_data_file(models.Model):
 
             while all_data:
                 
-                all_data = cur.fetchmany(25)
+                all_data = cur.fetchmany(self.odbc_fetch_size or 25)
                 
                 if not all_data:
                     break

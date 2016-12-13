@@ -58,6 +58,7 @@
 	                        <field name="dbf_path" attrs="{'invisible':[('src_type', '!=', 'dbf')], 'required':[('src_type', '=', 'dbf')]}"/>
 	                        <field name="base_external_dbsource" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
 	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
+	                        <field name ="odbc_fetch_size" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
 	                       <field name="remove_records_xyz" colspan="2" />
 	                        <field name="remove_records_filter" colspan="2" />
 	                      
