@@ -2,11 +2,11 @@
 <openerp>
     <data>
 
-        <record id="npg_view_import_data_form" model="ir.ui.view">
+         <record id="npg_view_import_data_form" model="ir.ui.view">
             <field name="name">import.data.form</field>
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
-                <form string="Read File" version="7.0">
+                <form string="Read File" >
                 	<header>
                 		<button name="delete_header_columns" string="Delete Columns" type="object" class="oe_highlight"
                 			
@@ -58,9 +58,9 @@
 	                        <field name="dbf_path" attrs="{'invisible':[('src_type', '!=', 'dbf')], 'required':[('src_type', '=', 'dbf')]}"/>
 	                        <field name="base_external_dbsource" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')], 'required':[('src_type', '=', 'odbc')]}"/>
 	                        <field name="src_table_name" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
-	                        <field name="remove_records_xyz" colspan="2" />
+	                       <field name="remove_records_xyz" colspan="2" />
 	                        <field name="remove_records_filter" colspan="2" />
-	                        
+	                      
                         </group>
                     	
                     </group>
@@ -117,13 +117,13 @@
  				</notebook>
                 </form>
             </field>
-        </record>
+        </record>   
         
         <record id="view_import_data_tree" model="ir.ui.view">
             <field name="name">import.data.tree</field>
             <field name="model">import.data.file</field>
             <field name="arch" type="xml">
-                <tree string="Import Data Files" version="7.0">
+                <tree string="Import Data Files" >
                 		<field name="sequence" string="#"/>
                 		<field name="sequence" widget="handle"/>
                     	<field name="name"/>
@@ -153,7 +153,6 @@
                 </search>
             </field>
         </record>	
-
 
     </data>
 </openerp>

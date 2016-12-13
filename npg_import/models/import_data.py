@@ -139,15 +139,15 @@ class import_data_file(osv.osv):
             'start_row':fields.integer("Test Start Row"),
             'base_external_dbsource' : fields.many2one('base.external.dbsource', string="ODBC Connection", help="External Database connection to foreign databases using ODBC, MS-SQL, Postgres, Oracle Client or SQLAlchemy."),
             'src_table_name' : fields.char('Source Table Name',size=256),
-            'src_type' : fields.selection(SOURCE_TYPES, "Data Source Type", required=True),
+            'src_type' : fields.selection(SOURCE_TYPES, "Data Source Type", required=False),
             'sql_source': fields.text('SQL', help='Write a valid "SELECT" SQL query to fetch data from Source database'),
             'state': fields.selection([('draft','Draft'),('map','Mapping Fields'),('ready','Map Confirmed'),('importing','Import Running')], "Status"),
             'sequence': fields.integer("Sequence"),
             'ir_cron_id': fields.many2one('ir.cron', 'Scheduled Job',domain="[('is_import_data_job','=',True)]",),
-            'remove_records_xyz' : fields.selection([('1','Delete'),('2' ,'Set In-Active'),('0','No Action' )],'Remove Old Records') ,
-            'remove_records_filter': fields.char( "Remove Filter" , size=256, help="set domain filter for removing records") ,
+            #'remove_records_xyz' : fields.selection([('1','Delete'),('2' ,'Set In-Active'),('0','No Action' )],'Remove Old Records') ,
+            #'remove_records_filter': fields.char( "Remove Filter" , size=256, help="set domain filter for removing records") ,
             
-                       }
+            }
     
     _defaults = {
         'test_sample_size':10,
@@ -157,33 +157,7 @@ class import_data_file(osv.osv):
 
     _order = 'sequence'
 
-    def action_import_cron(self, cr, uid, ids, context=None):
-        
-        for rec in self.browse(cr, uid, ids, context=context):      
-                   
-            vals={'name': 'Import %s' % (rec.name),
-                    'user_id': uid,
-                    'model': 'import.data.file',
-                    'function':'action_import',
-                    'args': repr([ids[0]])\
-                    }
-                 
-            self.pool.get('ir.cron').create(cr, uid, vals)
-                
-            stats_vals = {'start_time':False,
-                'end_time': False,
-                'error_log': '',
-                'time_estimate': False,
-                'row_count': False,
-                'count': False,
-                'state': 'importing'}   
-            
-            self.write(cr,uid,ids,stats_vals)
-            cr.commit()
-            return stats_vals
-        
-            
-        raise osv.except_osv('Warning', 'No Data files to Import')
+
 
      
 class ir_model_fields(osv.osv):
