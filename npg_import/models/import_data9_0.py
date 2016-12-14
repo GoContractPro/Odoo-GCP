@@ -437,7 +437,8 @@ class import_data_file(models.Model):
     def get_o2m_m2m_vals(self, field, field_val, import_record): 
         
         rec = self
-               
+        
+  
         search_result = self.do_search_related_records(field, import_record, field_val)
         res_id = search_result.get('res_id', False)
         external_id_name = search_result.get('external_id_name', False)
@@ -572,7 +573,7 @@ class import_data_file(models.Model):
                 error_txt = _('Error: Incorrect Selection Field %s - %s  Import Value %s: %s' % (field.model.model, field.model_field.name, field.name,field_val))
                 self.update_log_error(error_txt=error_txt)
         
-        elif field.model_field_type in ['char', 'text', 'html'] and  field_val:
+        elif field.model_field_type in ['char', 'text', 'html']  :
             if not field_val:
                 field_val = ''
             else:
@@ -580,28 +581,31 @@ class import_data_file(models.Model):
         elif field.model_field_type == 'binary' and  field_val:
             
             pass
-        elif field.model_field_type in ['one2many', 'many2many'] and  field_val:
-   
-            result = self.get_o2m_m2m_vals(field=field, field_val=field_val, import_record=import_record)
-            if result and [result.get('field_val', False)]:
-                field_val = [result.get('field_val', False)]
+        elif field.model_field_type in ['one2many', 'many2many'] :
+            if not field_val:
+                field_val = [(5,)]
             else:
-                error_txt = _('Warning: Create %s for Model: %s Field: %s Val: %s has no result set.' % (field.model_field_type, field.model.model, field.model_field.name, field_val))
-                self.update_log_error(error_txt=error_txt)
-                field_val = False
-                return {'required_missing':True, 'field_val':field_val}
+                result = self.get_o2m_m2m_vals(field=field, field_val=field_val, import_record=import_record)
+                if result and [result.get('field_val', False)]:
+                    field_val = [result.get('field_val', False)]
+                else:
+                    error_txt = _('Warning: Create %s for Model: %s Field: %s Val: %s has no result set.' % (field.model_field_type, field.model.model, field.model_field.name, field_val))
+                    self.update_log_error(error_txt=error_txt)
+                    field_val = False
+                    return {'required_missing':True, 'field_val':field_val}
             
         if field.model_field.required and not field_val:
             
             error_txt = _('Error: %s %s Required Field: %s Has No Odoo Value For Source: %s : %s' % (field.model_field_type, field.model.model, field.model_field.name, field.name, source_field_val))
             self.update_log_error(error_txt=error_txt)
             required_missing = True
-                
+   
         if append_vals:
-            
+        
             if field.model_field_type in ['one2many', 'many2many']:
-            
-                if field_val: 
+                if field_val == [{(5)}] and append_vals == {(5)} :
+                    pass
+                elif field_val and field_val <>{(5)}: 
                     append_vals.append(field_val)
                     field_val = append_vals
                 else:field_val = append_vals
@@ -611,7 +615,7 @@ class import_data_file(models.Model):
             else:
                 if field_val and append_vals:
                     error_txt = _('Warning: Odoo field has been Mapped to multiple source fields, Last value found used for import')
-                 
+             
         return {'required_missing':required_missing, 'field_val':field_val}
      
     @api.multi    
@@ -747,6 +751,7 @@ class import_data_file(models.Model):
             self.update_log_error(error_txt=error_txt)
             
             return False
+
         
     def create_or_update_record(self, res_id, vals, external_id_name, model, update):        
         
@@ -762,6 +767,7 @@ class import_data_file(models.Model):
                  result =  res_id
                 
             elif res_id and update:
+                
                 record_obj = self.env[model].browse(res_id)
                 record_obj.write(vals)
                 if record_obj: 
@@ -843,6 +849,8 @@ class import_data_file(models.Model):
                 self.update_log_error(error_txt=error_txt)
                 skip_record = True
                 return False
+        
+        
         
         try:  # Finding existing Records  
 
