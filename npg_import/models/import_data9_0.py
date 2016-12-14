@@ -221,6 +221,7 @@ class import_data_file(models.Model):
     remove_records_xyz = fields.Selection(string = 'Remove Old Records', selection= _get_remove_options, default='0')
     remove_records_filter =  fields.Char( string="Remove Filter" ,  help="set domain filter for removing records") 
     odbc_fetch_size = fields.Integer('ODBC Fetch Size' , default=25)
+    commit_in_batch = fields.Boolean('Batch Commit' , help="Commit this Data after  Importing in batch Scheduler" ,default=False) 
     
     
     @api.onchange('remove_records_xyz', 'model_id') 
@@ -991,7 +992,8 @@ class import_data_file(models.Model):
             recs = obj.browse(cr,uid,ids)
             for rec in recs:
                 rec.action_import()
-                
+                if self.commit_in_batch:
+                    env.cr.commit()
             return True
             
     @api.multi

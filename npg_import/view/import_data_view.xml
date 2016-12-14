@@ -48,6 +48,7 @@
                     		<field name="time_estimate" widget="float_time" />
                     		
                    			<field name="ir_cron_id" context="{'active_test':False}" />
+                   			<field name="commit_in_batch" colspan="2"  string="Commit During Schedule Batch"/>
                    			<button name="import_schedule" string="Create Cron Job" type="object" clase="oe_highlight"
                     				attrs="{'invisible':[('ir_cron_id','!=',False)]}" />
                     	</group>
@@ -61,6 +62,7 @@
 	                        <field name ="odbc_fetch_size" colspan="2" attrs="{'invisible':[('src_type', '!=', 'odbc')]}" />
 	                       <field name="remove_records_xyz" colspan="2" />
 	                        <field name="remove_records_filter" colspan="2" />
+	                        
 	                      
                         </group>
                     	
