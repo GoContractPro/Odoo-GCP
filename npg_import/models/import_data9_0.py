@@ -155,7 +155,7 @@ class Stats(object):
         
         if not remaining:
             self.end_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)  
-            if self.has_errors:stats.state = 'map'
+            if self.has_errors:self.state = 'map'
             else: self.state = 'ready'  
             
             sql_qry = ''' UPDATE   import_data_file  SET
@@ -1043,7 +1043,8 @@ class import_data_file(models.Model):
         #self.env.cr.commit()
         self.stats.update_statistics(remaining=True)
          
-        self.remove_records(self.model_id)
+        self.remove_records(self.model_id.model)
+        self.remove_external_id_orphans(self.model_id.model)
         if not self.src_type:
             return   
         
@@ -1075,19 +1076,19 @@ class import_data_file(models.Model):
         table_name = self.env[model]._table
         
         cr  = self.env.cr
-        query = '''SELECT id  FROM ir_model_data
+        query = '''DELETE  FROM ir_model_data
                             WHERE  model = %s
                             AND res_id  NOT IN 
                         '''
         query +=   ' (SELECT id FROM %s )' % (table_name)
                        
         cr.execute(query, (model,))
-        orphan_ids  =  cr.fetchall()
+       # orphan_ids  =  cr.fetchall()
 
-        if orphan_ids:
+        #if orphan_ids:
             
-            res = self.env['ir.model.data'].browse(orphan_ids)
-            res.unlink()       
+         #   res = self.env['ir.model.data'].browse(orphan_ids)
+          #  res.unlink()       
            
     @api.multi      
     def remove_records(self, model):    
@@ -1095,20 +1096,21 @@ class import_data_file(models.Model):
         if self.remove_records_xyz not in ('1','2'):
             return
         
+        if not isinstance(model, (str,unicode)):
+            model = model.model
+        
         domain =  []
         if self.remove_records_filter :
             domain += eval(self.remove_records_filter)
         res = self.search_all(model = model, domain = domain)
         
         if self.remove_records_xyz == '1' : 
-            _logger.info(_('Deleting  records in  Model %s') %(model.model, ))
+            _logger.info(_('Deleting  records in  Model %s') %(model, ))
             res.unlink()
         elif self.remove_records_xyz == '2' :
-            _logger.info(_('Setting records In-Active in  Model %s') %(model.model, ))
+            _logger.info(_('Setting records In-Active in  Model %s') %(model, ))
             res.write({'active' : False})   
-            
-        self.remove_external_id_orphans(model)
-            
+        
          
     @api.multi
     def action_import_dbf(self):
