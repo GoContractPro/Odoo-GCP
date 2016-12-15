@@ -75,6 +75,7 @@ class Stats(object):
     
     start_time = None
     error_log = None
+    has_errors = None
     estimate_time = None
     row_count = None
     count = None
