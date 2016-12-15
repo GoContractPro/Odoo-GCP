@@ -67,15 +67,13 @@ current_record = 0
 dbf_table = None
 odbc_cursor = None
 csv_file = None
-stats_cr = None
-stats = None
+
 #test_mode = False      
 #error_log = ""
 
 class Stats(object):
     
     start_time = None
-    has_errors = None
     error_log = None
     estimate_time = None
     row_count = None
@@ -83,32 +81,34 @@ class Stats(object):
     tot_record_num = None
     state = None
     db = None
-    stats_cr = None
+    cr = None
     import_data_obj = None
 
         
     def check_cr(self):
         
-        if not self.stats_cr:
+        if not self.cr:
             db = sql_db.db_connect(self.import_data_obj.env.cr.dbname)
-            self.stats_cr = db.cursor()
+            self.cr = db.cursor()
             
-        if  self.stats_cr: return True
+        if  self.cr: return True
         else: return False
     
     def __init__(self, import_data):
-        self.start_time = None
-        self.has_errors = None
-        self.error_log = None
-        self.estimate_time = None
-        self.row_count = None
-        self.count = None
-        self.tot_record_num = None
-        self.state = None
+        self.start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)  
+        self.has_errors = False
+        self.error_log = ''
+        self.estimate_time = 0
+        self.row_count = 0
+        self.count = 0
+        self.tot_record_num = 0
+        self.state = 'importing'
         self.import_data_obj =  import_data 
         self.check_cr()
-        
-       
+    
+    def __del__(self):
+        if self.cr:
+            self.cr.close()
     
     def update_statistics(self, remaining=True):   
         '''params:
@@ -169,12 +169,12 @@ class Stats(object):
         
     def execute(self, sql_qry,values=None):
          if not  self.check_cr(): return
-         self.stats_cr.execute(sql_qry,values)
+         self.cr.execute(sql_qry,values)
         
         
     def fetchall(self):  
         if not self.check_cr(): return
-        return self.stats_cr.fetchall()
+        return self.cr.fetchall()
 
 
     def estimate_import_time(self, processed_rows, remaining=True):
@@ -185,7 +185,7 @@ class Stats(object):
         remaining: Boolean if Tru return time left in import if false return total Estimated time
         '''
         t2 = datetime.datetime.now()
-        time_delta = (t2 - datetime.datetime.strptime(stats.start_time, DEFAULT_SERVER_DATETIME_FORMAT))
+        time_delta = (t2 - datetime.datetime.strptime(self.start_time, DEFAULT_SERVER_DATETIME_FORMAT))
         if processed_rows > 0:
             time_each = time_delta / processed_rows
             time_each = time_each.total_seconds()
@@ -202,7 +202,42 @@ class import_data_file(models.Model):
             
     _inherit = "import.data.file"  
     
-    
+    ''' 
+    def model_search_all(self,model,domain):
+        model_orm = self.env[model]
+        if 'active' in model_orm._fields:
+            domain.append(('active','in',(True,False)))
+        
+        return model_orm.search(domain) 
+     '''       
+    def search_all(self,model,domain):
+        
+        cr = self.env.cr
+        if isinstance(model, (str,unicode)):
+            model = self.env[model]
+        elif model.model:
+            model = self.env[model.model]
+        else:
+            raise  ValueError('Error! not correct type Model %s', model)
+        
+        query = model._where_calc(domain=domain, active_test=False )
+        
+        model._apply_ir_rules(query=query, mode='read')
+        
+        from_clause, where_clause, where_clause_params = query.get_sql()
+        where_str = where_clause and (" WHERE %s" % where_clause) or ''
+        query_str = 'SELECT "%s".id FROM ' % model._table + from_clause + where_str 
+        cr.execute(query_str, where_clause_params)
+        res = cr.fetchall()
+
+        # TDE note: with auto_join, we could have several lines about the same result
+        # i.e. a lead with several unread messages; we uniquify the result using
+        # a fast way to do it while preserving order (http://www.peterbe.com/plog/uniqifiers-benchmark)
+        def _uniquify_list(seq):
+            seen = set()
+            return [x for x in seq if x not in seen and not seen.add(x)]
+        ids = _uniquify_list([x[0] for x in res])
+        return  model.browse(ids)
     
     def _get_remove_options(self):
         
@@ -223,7 +258,7 @@ class import_data_file(models.Model):
     odbc_fetch_size = fields.Integer('ODBC Fetch Size' , default=25)
     commit_in_batch = fields.Boolean('Batch Commit' , help="Commit this Data after  Importing in batch Scheduler" ,default=False) 
     
-    
+    stats = None 
     @api.onchange('remove_records_xyz', 'model_id') 
     def onchange_remove_records_xyz(self):
         if not self.model_id: return
@@ -297,7 +332,7 @@ class import_data_file(models.Model):
     
     @api.multi
     def check_external_id_name(self, external_id_name=False):  
-          
+        
         #  When Using field for External ID 
         if external_id_name:
             return external_id_name 
@@ -324,8 +359,8 @@ class import_data_file(models.Model):
     @api.multi
     def search_external_id(self, external_id_name, model): 
                 
-        search = [('name', '=', external_id_name), ('model', '=', model)]                     
-        record = self.env['ir.model.data'].search(search) or None
+        domain = [('name', '=', external_id_name), ('model', '=', model)]                     
+        record = self.search_all(domain=domain,model='ir.model.data') or None
         if record:
             return record.res_id or False
         else:
@@ -348,7 +383,7 @@ class import_data_file(models.Model):
                 search_unique.append((field.model_field.name, "=", field_val))
         
         if len(search_unique) > 0:      
-            record = self.model_search_all(model.model,search_unique)
+            record = self.search_all(model = model,domain=search_unique)
             if record:
                 try:
                     record.ensure_one()
@@ -392,13 +427,7 @@ class import_data_file(models.Model):
            
         return search_result
     
-    def model_search_all(self,model,domain):
-        model_orm = self.env[model]
-        if 'active' in model_orm._fields:
-            domain.append(('active','in',(True,False)))
-        
-        return model_orm.search(domain) 
-            
+
     @api.multi
     def do_search_related_records(self, field, import_record, field_val): 
         
@@ -421,7 +450,7 @@ class import_data_file(models.Model):
         if field.search_other_field:    
             domain = [(field.search_other_field.name, '=', field_val)]
             
-            result = self.model_search_all(model, domain)
+            result = self.search_all(model=model, domain=domain)
             if result:
                 if result.ensure_one():
                     search_result['res_id'] = result.id or False
@@ -540,7 +569,7 @@ class import_data_file(models.Model):
             try:
                 field_val = float(field_val)
             except:
-                stats.has_errors = True
+                self.stats.has_errors = True
                 field_val = 0.0
                 error_txt = _('Error: Field: %s -- %s is not required  Floating Point type' % (field.model_field.name, field_val))
                 self.update_log_error(error_txt=error_txt)
@@ -556,7 +585,7 @@ class import_data_file(models.Model):
                 try:
                     field_val = int(field_val)
                 except:
-                    stats.has_errors = True
+                    self.stats.has_errors = True
                     field_val = 0
                     error_txt = _('Error:  Field %s -- not required Integer  type' % (field.model_field.name, field_val))
                     self.update_log_error(error_txt=error_txt)
@@ -568,7 +597,7 @@ class import_data_file(models.Model):
             if field_val:
                 pass
             else:
-                stats.has_errors = True
+                self.stats.has_errors = True
                 field_val = False
                 error_txt = _('Error: Incorrect Selection Field %s - %s  Import Value %s: %s' % (field.model.model, field.model_field.name, field.name,field_val))
                 self.update_log_error(error_txt=error_txt)
@@ -714,7 +743,7 @@ class import_data_file(models.Model):
             
         except:
             self.env.cr.rollback()
-            stats.has_errors = True
+            self.stats.has_errors = True
             error_txt = _('Error: Related record Vals: %s   Model: %s' % (vals or 'No Values Dictionary Created' , field.relation))
             self.update_log_error(error_txt=error_txt)
             
@@ -740,13 +769,13 @@ class import_data_file(models.Model):
                 
                 self.env['ir.model.data'].create(external_vals)
                 
-            _logger.info(_('Created Record in %s with ID: %s %s from Source row %s' % (model, external_id_name , res_id, stats.row_count)))
+            _logger.info(_('Created Record in %s with ID: %s %s from Source row %s' % (model, external_id_name , res_id, self.stats.row_count)))
 
             return res_id
 
         except:
             self.env.cr.rollback()
-            stats.has_errors = True
+            self.stats.has_errors = True
             error_txt = _('Error: Import vals %s not created for model \'%s\'' % (vals, model))
             self.update_log_error(error_txt=error_txt)
             
@@ -772,14 +801,14 @@ class import_data_file(models.Model):
                 record_obj.write(vals)
                 if record_obj: 
                     res_id = record_obj.id
-                    _logger.info(_('Source row %s Updated Odoo Model %s ID: %s %s') % (stats.row_count, model, external_id_name or '', res_id,)) 
+                    _logger.info(_('Source row %s Updated Odoo Model %s ID: %s %s') % (self.stats.row_count, model, external_id_name or '', res_id,)) 
                     result =  res_id
                 else:
-                    _logger.info(_('Source row %s Update Failed Odoo Model %s ID: %s %s') % (stats.row_count, model, external_id_name or '', res_id,)) 
+                    _logger.info(_('Source row %s Update Failed Odoo Model %s ID: %s %s') % (self.stats.row_count, model, external_id_name or '', res_id,)) 
                     result =  False
             
             elif res_id and not self.do_update:
-                error_txt = _(('Warning: %s Duplicate found in Odoo Model %s ID: %s %s, record skipped') % (stats.row_count, model, external_id_name or '', res_id,)) 
+                error_txt = _(('Warning: %s Duplicate found in Odoo Model %s ID: %s %s, record skipped') % (self.stats.row_count, model, external_id_name or '', res_id,)) 
                 self.update_log_error(error_txt=error_txt)
                 result =  False   
             time_delta = datetime.datetime.now() - dbWriteStartTime
@@ -788,7 +817,7 @@ class import_data_file(models.Model):
             return result
         except:  # Error Writing or Creating Records
             self.env.cr.rollback()
-            stats.has_errors = True
+            self.stats.has_errors = True
             error_txt = _('Writing or Creating vals %s ' % (vals,))
             self.update_log_error(error_txt=error_txt)
             return self.show_warn(error_txt)
@@ -805,11 +834,11 @@ class import_data_file(models.Model):
         
         external_id_name = ''
         skip_record = False
-        stats.row_count += 1
+        self.stats.row_count += 1
         
         self.row_process_time(set_start=True)      
-        if stats.row_count % 25 == 0:  # Update Statics every 10 records
-            stats.update_statistics(remaining=True)
+        if self.stats.row_count % 25 == 0:  # Update Statics every 10 records
+            self.stats.update_statistics(remaining=True)
                
                
                     
@@ -844,7 +873,7 @@ class import_data_file(models.Model):
                                                             
             except:  # Buidling Vals DIctionary
                 self.env.cr.rollback()
-                stats.has_errors = True
+                self.stats.has_errors = True
                 error_txt = _('Error: Building Vals Dict at Field: %s == %s \n Val Dict:  %s ' % (field.model_field.name, field_val, vals,))
                 self.update_log_error(error_txt=error_txt)
                 skip_record = True
@@ -859,15 +888,15 @@ class import_data_file(models.Model):
             external_id_name = search_result.get('external_id_name', False)
         except:  # Finding Existing Records
             self.env.cr.rollback()
-            stats.has_errors = True
+            self.stats.has_errors = True
             error_txt = _('Error: Search for Existing records: %s-%s ' % (search_unique, external_id_name))
             self.update_log_error(error_txt=error_txt)                    
             return False
         
         if self.create_or_update_record(res_id, vals, external_id_name, self.model_id.model, update = self.do_update):
             self.row_process_time()
-            stats.count += 1
-            return stats.count
+            self.stats.count += 1
+            return self.stats.count
             
         else:
             self.row_process_time()
@@ -878,7 +907,7 @@ class import_data_file(models.Model):
     def exit_test_mode(self):
         
         
-        if  self.env.context.get('test', False) and (stats.count >= self.test_sample_size  or stats.row_count >= self.test_sample_size + 100) :
+        if  self.env.context.get('test', False) and (self.stats.count >= self.test_sample_size  or self.stats.row_count >= self.test_sample_size + 100) :
             
             if self.rollback: self.env.cr.rollback()
             
@@ -897,22 +926,22 @@ class import_data_file(models.Model):
         
         #global error_log
         
-        if not stats.error_log:
-            stats.error_log = ""
+        if not self.stats.error_log:
+            self.stats.error_log = ""
         
         e = traceback.format_exc()
         
-        if stats.row_count:
-            error_txt = 'Row: ' + str(stats.row_count) + ' ' + error_txt
+        if self.stats.row_count:
+            error_txt = 'Row: ' + str(self.stats.row_count) + ' ' + error_txt
         logger_msg = error_txt + '\n' + 'TraceBack: ' + e
         _logger.error(logger_msg)
         
         e = sys.exc_info()
-        stats.error_log += error_txt + '\n'
+        self.stats.error_log += error_txt + '\n'
         if e[2]:
             e = traceback.format_exception(e[0], e[1], e[2], 1)
             error_msg = e[2]
-            stats.error_log += error_msg + '\n'
+            self.stats.error_log += error_msg + '\n'
              
         sql_qry = '''UPDATE  import_data_file
                                 set error_log = %s,
@@ -920,10 +949,10 @@ class import_data_file(models.Model):
                                 WHERE id = %s
                             '''
             
-        values = (stats.error_log,stats.has_errors,self.id)
-        stats.execute(sql_qry, values)
+        values = (self.stats.error_log,self.stats.has_errors,self.id)
+        self.stats.execute(sql_qry, values)
 #        self.env.cr.commit()
-        return { 'error_log':stats.error_log, 'has_errors' :stats.has_errors }
+        return { 'error_log':self.stats.error_log, 'has_errors' :self.stats.has_errors }
     
     
         
@@ -1006,22 +1035,14 @@ class import_data_file(models.Model):
             
     @api.multi
     def action_import(self):
-        
+       
+         
+        self.stats = Stats(self) 
 
-        global stats
-         
-        stats = Stats(self) 
-        stats.has_errors = False
-        stats.state ='importing'
-        stats.error_log= ''
-        stats.row_count = 0
-        stats.count=0
-        stats.tot_record_num = 0
-        stats.start_time = datetime.datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         #self.env.cr.commit()
-        stats.update_statistics(remaining=True)
+        self.stats.update_statistics(remaining=True)
          
-        self.remove_records()
+        self.remove_records(self.model_id)
         if not self.src_type:
             return   
         
@@ -1039,65 +1060,53 @@ class import_data_file(models.Model):
         elif self.src_type == 'odbc':
             return self.action_import_odbc()
      
-        stats.stats_cr.close()
+        self.stats.cr.close()
+        self.stats = None
      #   if hasattr(threading.current_thread(), 'dbname'): 
      #       del threading.current_thread().dbname
      
     @api.multi
-    def remove_external_id_orphans(self,model):
-        orm_model = self.env[model]
-        search = [('model', '=', model)]                     
-        ext_ids = self.env['ir.model.data'].search(search) or None
-        orphin_external_ids = []
-        for ext_id in ext_ids:
-            try: 
-                rec  =  orm_model.browse(ext_id.res_id)
+    def remove_external_id_orphans(self, model):
+        
+        if not isinstance(model, (str,unicode)):
+            model = model.model
+        
+        table_name = self.env[model]._table
+        
+        cr  = self.env.cr
+        query = '''SELECT id  FROM ir_model_data
+                            WHERE  model = %s
+                            AND res_id  NOT IN 
+                        '''
+        query +=   ' (SELECT id FROM %s )' % (table_name)
+                       
+        cr.execute(query, (model,))
+        orphan_ids  =  cr.fetchall()
+
+        if orphan_ids:
             
-                if not rec:
-                    orphin_external_ids.append(ext_id.id)
-            except:
-                 orphin_external_ids.append(ext_id.id)
-                 
-        if orphin_external_ids:
-            
-            res = self.env['ir.model.data'].browse(orphin_external_ids)
+            res = self.env['ir.model.data'].browse(orphin_ids)
             res.unlink()       
            
     @api.multi      
-    def remove_records(self):    
+    def remove_records(self, model):    
         
+        if self.remove_records_xyz not in ('1','2'):
+            return
+        _logger.info(_("Processing Model %s  %s") %(model, self.remove_records_xyz))
         domain =  []
         if self.remove_records_filter :
             domain += eval(self.remove_records_filter)
-        if self.remove_records_xyz == '1' : 
-            record_objs = self.model_search_all(self.model_id.model,domain)
-            record_objs.unlink()
-        elif self.remove_records_xyz == '2' :
-            record_objs = self.model_search_all(self.model_id.model,domain)
-            record_objs.write({'active' : False})   
-            
-        self.remove_external_id_orphans(self.model_id.model)
-            
-    @api.multi
-    def remove_external_id_orphans(self,model):
-        orm_model = self.env[model]
-        search = [('model', '=', model)]                     
-        ext_ids = self.env['ir.model.data'].search(search)
-        orphin_external_ids = []
-        for ext_id in ext_ids:
-            try: 
-                rec  =  orm_model.search([('id' ,'=',ext_id.res_id)])
-            
-                if not rec:
-                    orphin_external_ids.append(ext_id.id)
-            except:
-                 orphin_external_ids.append(ext_id.id)
-                 
-        if orphin_external_ids:
-            
-            res = self.env['ir.model.data'].browse(orphin_external_ids)
-            res.unlink()       
+        res = self.search_all(model = model, domain = domain)
         
+        if self.remove_records_xyz == '1' : 
+            res.unlink()
+        elif self.remove_records_xyz == '2' :
+            
+            res.write({'active' : False})   
+            
+        self.remove_external_id_orphans(model)
+            
          
     @api.multi
     def action_import_dbf(self):
@@ -1106,28 +1115,28 @@ class import_data_file(models.Model):
            
             dbf_table = dbf.Table(self.dbf_path)
             dbf_table.open()
-            stats.tot_record_num = len(dbf_table)
-            stats.update_statistics(remaining=True)
+            self.stats.tot_record_num = len(dbf_table)
+            self.stats.update_statistics(remaining=True)
             #self.env.cr.commit()
             
            
             n = (self.start_row and self.start_row > 1 and self.start_row - 1) or 0
-            while n < stats.tot_record_num:
+            while n < self.stats.tot_record_num:
                  
                 import_record = dbf_table[n]
                 
                 self.do_process_import_row(import_record)
                 
                 if self.exit_test_mode():
-                    return{'value':stats.update_statistics(remaining=False)}
+                    return{'value':self.stats.update_statistics(remaining=False)}
                 n += 1
         except:
             self.env.cr.rollback()
-            stats.has_errors = True
+            self.stats.has_errors = True
             error_txt = _('Import Aborted')
             return self.update_log_error(error_txt=error_txt)
         
-        return {'value':stats.update_statistics(remaining=False)}
+        return {'value':self.stats.update_statistics(remaining=False)}
     
     @api.multi
     def action_import_odbc(self):
@@ -1139,10 +1148,10 @@ class import_data_file(models.Model):
             conn = self.env['base.external.dbsource'].conn_open(self.base_external_dbsource.id)
             cur = conn.cursor()
             
-            stats.tot_record_num = self.get_row_count_odbc(self.odbc_import_query(),cur)
+            self.stats.tot_record_num = self.get_row_count_odbc(self.odbc_import_query(),cur)
            
            
-            stats.update_statistics(remaining=True)
+            self.stats.update_statistics(remaining=True)
             #self.env.cr.commit()
 
 
@@ -1164,17 +1173,17 @@ class import_data_file(models.Model):
                     self.do_process_import_row(import_record)
                
                     if self.exit_test_mode():
-                        return{'value':stats.update_statistics(remaining=False)}
+                        return{'value':self.stats.update_statistics(remaining=False)}
                   
             conn.close()
         except:
             self.env.cr.rollback()
             if conn:
                 conn.close()
-            stats.has_errors = True
+            self.stats.has_errors = True
             error_txt = _('Import Aborted')
             return self.update_log_error(error_txt=error_txt)        
-        return{'value':stats.update_statistics(remaining=False)}
+        return{'value':self.stats.update_statistics(remaining=False)}
        
     def odbc_import_query(self):
         
@@ -1198,7 +1207,7 @@ class import_data_file(models.Model):
         count_result = cur.fetchone()
         for tot_count in count_result:
             
-            stats.tot_record_num = tot_count
+            self.stats.tot_record_num = tot_count
             return tot_count
             
         return False
@@ -1209,7 +1218,7 @@ class import_data_file(models.Model):
         try:    
             csv_data = self.get_csv_data_file()
             header_dict = self.get_csv_header_dict(rec, csv_data)
-            stats.update_statistics(remaining=True)
+            self.stats.update_statistics(remaining=True)
             #self.env.cr.commit()
 
             
@@ -1220,15 +1229,15 @@ class import_data_file(models.Model):
                 self.do_process_import_row(import_record)
                 
                 if self.exit_test_mode():
-                    return{'value':stats.update_statistics(remaining=False)}
+                    return{'value':self.stats.update_statistics(remaining=False)}
                     
         except:
             self.env.cr.rollback()
-            stats.has_errors = True
+            self.stats.has_errors = True
             error_txt = _('Import Aborted')
             return self.update_log_error(error_txt=error_txt)
         
-        return {'value':stats.update_statistics(remaining=False)}
+        return {'value':self.stats.update_statistics(remaining=False)}
     
     @api.multi   
     def get_csv_data_file(self):
@@ -1332,7 +1341,7 @@ class import_data_file(models.Model):
             return
         else:
             time_delta = datetime.datetime.now()- RowStartTime
-            _logger.info(_("Row: %s Process Time: %s seconds" ) %(stats.row_count, time_delta))
+            _logger.info(_("Row: %s Process Time: %s seconds" ) %(self.stats.row_count, time_delta))
             
             return                                               
     
