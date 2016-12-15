@@ -75,6 +75,7 @@ class Stats(object):
     
     start_time = None
     error_log = None
+    has_errors = None
     estimate_time = None
     row_count = None
     count = None
@@ -1029,7 +1030,7 @@ class import_data_file(models.Model):
             recs = obj.browse(cr,uid,ids)
             for rec in recs:
                 rec.action_import()
-                if self.commit_in_batch:
+                if rec.commit_in_batch:
                     env.cr.commit()
             return True
             
@@ -1085,7 +1086,7 @@ class import_data_file(models.Model):
 
         if orphan_ids:
             
-            res = self.env['ir.model.data'].browse(orphin_ids)
+            res = self.env['ir.model.data'].browse(orphan_ids)
             res.unlink()       
            
     @api.multi      
@@ -1093,16 +1094,17 @@ class import_data_file(models.Model):
         
         if self.remove_records_xyz not in ('1','2'):
             return
-        _logger.info(_("Processing Model %s  %s") %(model, self.remove_records_xyz))
+        
         domain =  []
         if self.remove_records_filter :
             domain += eval(self.remove_records_filter)
         res = self.search_all(model = model, domain = domain)
         
         if self.remove_records_xyz == '1' : 
+            _logger.info(_('Deleting  records in  Model %s') %(model.model, ))
             res.unlink()
         elif self.remove_records_xyz == '2' :
-            
+            _logger.info(_('Setting records In-Active in  Model %s') %(model.model, ))
             res.write({'active' : False})   
             
         self.remove_external_id_orphans(model)
