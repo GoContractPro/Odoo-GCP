@@ -140,7 +140,6 @@ class Stats(object):
                     COMMIT;
                     '''
 
-
         vals = ( self.start_time,
                     self.has_errors,
                     self.error_log,
@@ -1036,16 +1035,16 @@ class import_data_file(models.Model):
             
     @api.multi
     def action_import(self):
-       
-         
+          
         self.stats = Stats(self) 
 
         #self.env.cr.commit()
         self.stats.update_statistics(remaining=True)
-         
         self.remove_records(self.model_id.model)
         self.remove_external_id_orphans(self.model_id.model)
+        
         if not self.src_type:
+            self.stats.update_statistics(remaining=False)
             return   
         
         if not self.header_ids:
