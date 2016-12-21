@@ -239,6 +239,25 @@ class import_data_file(models.Model):
         ids = _uniquify_list([x[0] for x in res])
         return  model.browse(ids)
     
+    def do_delete(self,model,domain):
+        cr = self.env.cr
+        if isinstance(model, (str,unicode)):
+            model = self.env[model]
+        elif model.model:
+            model = self.env[model.model]
+        else:
+            raise  ValueError('Error! not correct type Model %s', model)
+        
+        query = model._where_calc(domain=domain, active_test=False )
+        
+        model._apply_ir_rules(query=query, mode='read')
+        
+        from_clause, where_clause, where_clause_params = query.get_sql()
+       
+        where_str = where_clause and (" WHERE %s" % where_clause) or ''
+        query_str = 'DELETE FROM %s' % model._table + where_str 
+        cr.execute(query_str, where_clause_params)
+    
     def _get_remove_options(self):
         
         options = [('0','No Action' ),('1','Delete'),('2' ,'Set In-Active'),]
@@ -1075,13 +1094,22 @@ class import_data_file(models.Model):
         table_name = self.env[model]._table
         
         cr  = self.env.cr
-        query = '''DELETE  FROM ir_model_data
-                            WHERE  model = %s
-                            AND res_id  NOT IN 
-                        '''
-        query +=   ' (SELECT id FROM %s )' % (table_name)
-                       
-        cr.execute(query, (model,))
+        query = '''DELETE FROM ir_model_data
+                    WHERE model = '%s'
+                    AND id IN
+                    (        
+                        SELECT md.id
+                        FROM ir_model_data AS md
+                        FULL OUTER JOIN %s AS t ON md.res_id = t.id
+                        WHERE t.id IS NULL
+                    )       
+                '''
+        query = query %(model,table_name)
+        #print query
+        cr.execute(query)
+        
+        #cr.execute(query, (model,table_name,))
+        
        # orphan_ids  =  cr.fetchall()
 
         #if orphan_ids:
@@ -1101,13 +1129,14 @@ class import_data_file(models.Model):
         domain =  []
         if self.remove_records_filter :
             domain += eval(self.remove_records_filter)
-        res = self.search_all(model = model, domain = domain)
+        #
         
         if self.remove_records_xyz == '1' : 
             _logger.info(_('Deleting  records in  Model %s') %(model, ))
-            res.unlink()
+            self.do_delete(model, domain)
         elif self.remove_records_xyz == '2' :
             _logger.info(_('Setting records In-Active in  Model %s') %(model, ))
+            res = self.search_all(model = model, domain = domain)
             res.write({'active' : False})   
         
          
