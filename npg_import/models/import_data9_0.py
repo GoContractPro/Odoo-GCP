@@ -585,8 +585,8 @@ class import_data_file(models.Model):
             
             field_val = self.process_related(field, import_record, field_val)
             
-            if self.m2o_skip and (not field_val or not self.check_is_active(field,field_val)):
-                error_txt = _('Warning:  %s Related Field: %s Val: %s  is not Active  or missing and import has skipped this record'  % ( field.model.model, field.model_field.name, field_val))
+            if field.m2o_skip and (not field_val or not self.check_is_active(field,field_val)):
+                error_txt = _('Warning:  %s Related Field: %s Val: %s  is not Active  or missing and import has skipped this record'  % ( field.model.model, field.model_field.name, source_field_val))
                 self.update_log_error(error_txt=error_txt)
                 field_val = False
                 return {'required_missing':True, 'field_val':field_val}
