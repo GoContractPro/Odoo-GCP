@@ -9,7 +9,7 @@ class ir_cron(models.Model):
     
     import_data_ids =  fields.One2many('import.data.file','ir_cron_id', string="Import Data Source",)
     is_import_data_job = fields.Boolean('Is Import Job')
-    
+    email_to =  fields.Many2many('res.partner', 'ir_cron_res_partner_rel','ir_cron_id','res_partner_id',string='Email Partner')
    
     @api.multi
     def action_select_data_imports(self):

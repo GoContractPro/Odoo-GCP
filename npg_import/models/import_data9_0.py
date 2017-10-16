@@ -209,16 +209,22 @@ class import_data_file(models.Model):
             domain.append(('active','in',(True,False)))
         
         return model_orm.search(domain) 
-     '''       
+     '''   
+
+    def env_model_convert(self,model):
+        if isinstance(model, (str,unicode)):
+            return self.env[model]
+        elif model.model:
+            return self.env[model.model]
+        else:
+            raise  ValueError('Error! not correct type Model %s', model)
+        
+      
     def search_all(self,model,domain):
         
         cr = self.env.cr
-        if isinstance(model, (str,unicode)):
-            model = self.env[model]
-        elif model.model:
-            model = self.env[model.model]
-        else:
-            raise  ValueError('Error! not correct type Model %s', model)
+        
+        model = self.env_model_convert(model)
         
         query = model._where_calc(domain=domain, active_test=False )
         
@@ -241,13 +247,8 @@ class import_data_file(models.Model):
     
     def do_delete(self,model,domain):
         cr = self.env.cr
-        if isinstance(model, (str,unicode)):
-            model = self.env[model]
-        elif model.model:
-            model = self.env[model.model]
-        else:
-            raise  ValueError('Error! not correct type Model %s', model)
         
+        model = self.env_model_convert(model)
         query = model._where_calc(domain=domain, active_test=False )
         
         model._apply_ir_rules(query=query, mode='read')
@@ -350,6 +351,17 @@ class import_data_file(models.Model):
         return False
     
     @api.multi
+    def check_model_field_name(self, model, field_name):
+        
+        model_fields = self.env['ir.model.fields']
+        if model_fields.search([('model','=',model),('name','=',field_name)]):
+        
+            return True
+        else:
+            return False
+        
+      
+    @api.multi
     def check_external_id_name(self, external_id_name=False):  
         
         #  When Using field for External ID 
@@ -437,7 +449,7 @@ class import_data_file(models.Model):
             return search_result 
               
         if search_unique_id and external_id and external_id != search_unique_id:
-            error_txt = _('Warning: Model %s External Id and Unique Field not Id not matched  %s <> %s external Id will be used' % (model.model, external_id, search_unique_id,))
+            error_txt = _('Warning: Model %s External Id and Unique Field  Id not matched  %s <> %s external Id will be used' % (model.model, external_id, search_unique_id,))
             self.update_log_error(error_txt=error_txt)
             search_result['res_id'] = external_id
             return search_result
@@ -549,6 +561,16 @@ class import_data_file(models.Model):
             
         return res_id
         
+      
+    def check_is_active(self, field,field_val):
+        
+        model = field.relation_id.model
+        if self.check_model_field_name(model, 'active'):
+            record = self.env[model].browse(field_val)
+            return record.active
+        return true # default is active if no Active field on Model
+        
+        
             
     @api.multi    
     def convert_odoo_data_types(self, field, source_field_val, import_record=None, append_vals=None):
@@ -559,9 +581,17 @@ class import_data_file(models.Model):
  
         required_missing = False
         
-        if field.model_field_type == 'many2one' and field_val:
+        if (field.model_field_type == 'many2one'  or field.is_db_id )and field_val:
             
             field_val = self.process_related(field, import_record, field_val)
+            
+            if self.m2o_skip and (not field_val or not self.check_is_active(field,field_val)):
+                error_txt = _('Warning:  %s Related Field: %s Val: %s  is not Active  or missing and import has skipped this record'  % ( field.model.model, field.model_field.name, field_val))
+                self.update_log_error(error_txt=error_txt)
+                field_val = False
+                return {'required_missing':True, 'field_val':field_val}
+                
+            
          
         elif field.model_field_type == 'boolean' and  field_val:
 
@@ -594,20 +624,15 @@ class import_data_file(models.Model):
                 self.update_log_error(error_txt=error_txt)
 
         elif field.model_field_type == 'integer' and  field_val:
-            
-            if field.is_db_id:
-                
-                field_val = self.process_related(field, import_record, field_val)
-                
-            else:  
-                if field_val.lower() == 'false': field_val = '0'
-                try:
-                    field_val = int(field_val)
-                except:
-                    self.stats.has_errors = True
-                    field_val = 0
-                    error_txt = _('Error:  Field %s -- not required Integer  type' % (field.model_field.name, field_val))
-                    self.update_log_error(error_txt=error_txt)
+             
+            if field_val.lower() == 'false': field_val = '0'
+            try:
+                field_val = int(field_val)
+            except:
+                self.stats.has_errors = True
+                field_val = 0
+                error_txt = _('Error:  Field %s -- not required Integer  type' % (field.model_field.name, field_val))
+                self.update_log_error(error_txt=error_txt)
 
         elif field.model_field_type == 'selection' and  field_val:
             
@@ -1040,6 +1065,16 @@ class import_data_file(models.Model):
             
         raise osv.except_osv('Warning', 'No Data files to Import')
     
+    def  email_scheduled_results(self,cron_id, result_message):
+            
+        cron = self.env['ir.cron'].browse(cron_id)
+        email_to = cron.email_to
+         
+    def email_scheduled_start(self,cron_id):   
+         
+         cron = self.env['ir.cron'].browse(cron_id)
+         email_to = cron.email_to
+    
     def action_import_scheduled(self,cr,uid,cron_id=False):
         if cron_id:
             domain = [('state','=','ready'),('ir_cron_id','=',cron_id)]
@@ -1059,8 +1094,8 @@ class import_data_file(models.Model):
 
         #self.env.cr.commit()
         self.stats.update_statistics(remaining=True)
-        self.remove_records(self.model_id.model)
-        self.remove_external_id_orphans(self.model_id.model)
+        self.action_remove_records()
+        self.action_remove_external_id_orphans()
         
         if not self.src_type:
             self.stats.update_statistics(remaining=False)
@@ -1086,10 +1121,10 @@ class import_data_file(models.Model):
      #       del threading.current_thread().dbname
      
     @api.multi
-    def remove_external_id_orphans(self, model):
+    def action_remove_external_id_orphans(self):
         
-        if not isinstance(model, (str,unicode)):
-            model = model.model
+        
+        model = self.model_id.model
         
         table_name = self.env[model]._table
         
@@ -1118,13 +1153,11 @@ class import_data_file(models.Model):
           #  res.unlink()       
            
     @api.multi      
-    def remove_records(self, model):    
+    def action_remove_records(self):    
         
+        model = self.model_id.model
         if self.remove_records_xyz not in ('1','2'):
             return
-        
-        if not isinstance(model, (str,unicode)):
-            model = model.model
         
         domain =  []
         if self.remove_records_filter :
@@ -1136,8 +1169,15 @@ class import_data_file(models.Model):
             self.do_delete(model, domain)
         elif self.remove_records_xyz == '2' :
             _logger.info(_('Setting records In-Active in  Model %s') %(model, ))
-            res = self.search_all(model = model, domain = domain)
-            res.write({'active' : False})   
+            
+            if  self.check_model_field_name(model,'website_published'):
+                values = {'website_published':False,
+                                                 'active':False}
+            else:
+                values = {'active' : False}
+                
+            res = self.search_all(model = model, domain = domain)                                             
+            res.write(values)   
         
          
     @api.multi
@@ -1864,3 +1904,4 @@ class import_data_file(models.Model):
                 
         return    
                                             
+   
