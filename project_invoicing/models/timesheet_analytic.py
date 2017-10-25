@@ -32,15 +32,15 @@ class AccountAnalyticLine(models.Model):
                     'so_line': task.sale_line_id2.id,
                     'product_id': task.sale_line_id2.product_id.id,})
         return result
-        
-    def _check(self, cr, uid, ids, vals = []):
+    '''      
+    def  _check(self, cr, uid, ids, vals = []):
         for att in self.browse(cr, uid, ids):
             if att.invoice_line and ['sheet_id'] != vals.keys():      
                 raise UserError(_('You cannot modify invoiced activities!'))
             if att.sheet_id and att.sheet_id.state not in ('draft', 'new') and ['invoice_line'] != vals.keys():
                 raise UserError(_('You cannot modify an entry in a confirmed timesheet.'))
         return True
-    
+     '''
     @api.multi
     @api.depends('invoice_line','sheet_id.state')
     def _check_lock(self):
