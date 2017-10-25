@@ -15,7 +15,8 @@
             		    <button name="action_select_data_imports" 
             		    	string="Select Source Data Maps"
             		    	type="object" class="oe_highlight"
-            		    />
+            		    	 />
+            		   
             			<field name="import_data_ids" widget="one2many_list" mode="tree" nolabel="1">
             				<tree>
             					<field name="sequence" string="#"/>

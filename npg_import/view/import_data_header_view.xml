@@ -27,6 +27,7 @@
 	            	 		<field name="is_unique"/>
 	                		<field name="is_unique_external"/>
 	                		<field name="default_val"/>	
+	                		
 	        			</group>
 	        			
 	        			<group string="Odoo Field Information" cols="2" >
@@ -45,7 +46,8 @@
 	                		<field name="relation" readonly="1"/>
 	                		<field name="relation_field"  readonly="1" attrs="{'invisible':[('relation_field','=',False)]}" />
 							<field name="search_other_field"/>
-							<field name="search_related_external"/>        
+							<field name="search_related_external"/>      
+							<field name="m2o_skip" attrs="{'invisible':[('model_field_type','not in',['many2one']),('is_db_id','=',False)]}"/>  
 						
 						</group>
 					</group>

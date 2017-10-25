@@ -100,6 +100,7 @@ class import_data_header(models.Model):
     sequence = fields.Integer('Sequence')
     sub_string = fields.Char('Substring', size=8)
     is_db_id = fields.Boolean('Is Record ID')
+    m2o_skip = fields.Boolean('Many2One  Skip', help='Create  record only if the Many to One relation exists and is active')
       
     def _get_model(self, cr, uid, context=None):
         
