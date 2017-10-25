@@ -23,8 +23,6 @@ class Task(models.Model):
     @api.model   
     def default_procurement_id(self):
         return self._context.get('default_procurement_id',False)
-        
-        
     
     def onchange_project(self, cr, uid, ids, project_id, context=None):
         
@@ -44,3 +42,48 @@ class Task(models.Model):
             if order_line:
                 result['value']['sale_line_id2'] = order_line[0]
         return   result 
+    
+class Analytic_Account(models.Model):
+        
+    _inherit = "account.analytic.account"
+        
+        
+
+        
+class Project_Poject(models.Model):
+        
+    _inherit = "project.project"
+
+    @api.multi
+    @api.depends('sale_order_ids')
+    def _compute_sales_totals(self):
+        
+        for project in self:
+            
+            project.sale_orders_total = sum([order. amount_total for order in project.sale_order_ids])  
+        
+    sale_order_ids = fields.One2many('sale.order','project_id',string='Project Orders')
+    sale_orders_total = fields.Float('Project Sale Total', compute='_compute_sales_totals')
+    
+    @api.multi
+    def action_view_sale_orders(self):
+        self.ensure_one()
+        imd = self.env['ir.model.data']
+        action = imd.xmlid_to_object('sale.action_orders')
+        list_view_id = imd.xmlid_to_res_id('sale.view_order_tree')
+        form_view_id = imd.xmlid_to_res_id('sale.view_order_form')
+
+        result = {
+            'name': action.name,
+            'help': action.help,
+            'type': action.type,
+            'views': [[list_view_id, 'tree'], [form_view_id, 'form']],
+            'target': action.target,
+            'context': action.context,
+            'res_model': action.res_model,
+        }
+        if self.timesheet_count > 0:
+            result['domain'] = "[('id','in',%s)]" % self.sale_order_ids.ids
+        else:
+            result = {'type': 'ir.actions.act_window_close'}
+        return result

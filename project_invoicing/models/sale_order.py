@@ -154,6 +154,7 @@ class SaleOrder(models.Model):
     start_date = fields.Date('Start Date')
     end_date = fields.Date('End Date')
     
+    
    
     @api.onchange('start_date','end_date')
     def _onchange_invoiced_dates(self):
