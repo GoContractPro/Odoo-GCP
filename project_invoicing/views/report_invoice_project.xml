@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data>
+<template id="account_invoice_project" inherit_id="account.report_invoice_document" >
+    <xpath expr="//table/tbody[@class='invoice_tbody']"  position="replace">
+
+    <tbody class="invoice_tbody">
+			<tr t-foreach="o.invoice_line_ids" t-as="l">
+                  <td><span t-field="l.name"/></td>
+                  <td class="text-right">
+                      <span t-field="l.quantity"/>
+                      <span t-field="l.uom_id"  groups="product.group_uom"/>
+                  </td>
+                  <td class="text-right">
+                      <span t-field="l.price_unit"/>
+                  </td>
+                  <td t-if="display_discount" class="text-right" groups="sale.group_discount_per_so_line">
+                      <span t-field="l.discount"/>
+                  </td>
+                  <td class="text-right">
+                      <span t-esc="', '.join(map(lambda x: (x.description or x.name), l.invoice_line_tax_ids))"/>
+                  </td>
+                  <td class="text-right">
+                      <span t-field="l.price_subtotal" 
+                          t-field-options='{"widget": "monetary", "display_currency": "o.currency_id"}'/>
+                  </td>
+                  
+                  <div class="col-xs-4 pull-left">
+						<table class="table table-condensed">
+                  			<thead>
+                     
+                  				<tr>
+                   					<th>Date</th>
+                   					<th>Task</th>
+                   					<th>Description</th>
+                   					<th>Duration</th>
+                  				</tr>
+                			</thead> 
+                			                 
+	                        <tbody class="invoice_tbody">
+		                        <tr t-foreach="l.analytic_lines" t-as="activity">
+			                        <td class="text-right">
+			                        	<span t-field="activity.date"/>
+			                        </td >
+			                        <td class="text-right">
+			                        	<span t-field="activity.account_id.name" />
+			                        </td>
+			                        <td class="text-right">
+			                        	<span t-field="activity.name"/>
+			                        </td>
+			                        <td>
+			                        	<span t-field="activity.unit_amount"/>
+			                        </td>
+		                        </tr>
+		                     </tbody>
+	                     </table>
+                    </div>
+			</tr>
+	                    
+       </tbody>
+       </xpath>
+</template>
+</data>
+</openerp>
