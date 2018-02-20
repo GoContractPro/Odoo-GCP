@@ -47,6 +47,25 @@
             	</field>
             </field>
         </record>
+        
+        <record id="project_invoicing_form" model="ir.ui.view">
+            <field name="name">Inherit project form : Invoicing Data</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.edit_project"/>
+            <field name="arch" type="xml">
+            
+
+                <div name="button_box" position="inside">
+                     <button type="object"
+                           name="action_view_sale_orders"
+                           class="oe_stat_button"
+                           icon="fa-clock-o"
+                            groups="base.group_user">
+                           <field name="sale_orders_total" widget="monetary" string="Sales Orders"/>
+                       </button>
+                </div>
+            </field>
+        </record>
     
     </data>
 </openerp>
