@@ -1181,12 +1181,10 @@ class import_data_file(models.Model):
             
         elif self.remove_records_xyz == '3' :      
             
-            ids = self.search_all(model, domain)
+            res = self.search_all(model, domain)
             
-            for id in ids:
-                
+            for record_obj in res:
                 try:
-                    record_obj = self.env[model].browse(id)
                     record_obj.unlink
                 except:
                     record_obj.write( {'active' : False})
