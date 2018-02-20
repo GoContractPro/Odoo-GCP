@@ -261,7 +261,7 @@ class import_data_file(models.Model):
     
     def _get_remove_options(self):
         
-        options = [('0','No Action' ),('1','Delete'),('2' ,'Set In-Active'),]
+        options = [('0','No Action' ),('1','Delete'),('2' ,'Set In-Active'),('3', 'Delete or Set In-Active')]
         ''';
         for record in self.env['import.data.file'].search([]):
         
@@ -1175,9 +1175,21 @@ class import_data_file(models.Model):
                                                  'active':False}
             else:
                 values = {'active' : False}
-                
+
             res = self.search_all(model = model, domain = domain)                                             
             res.write(values)   
+            
+        elif self.remove_records_xyz == '3' :      
+            
+            ids = self.search_all(model, domain)
+            
+            for id in ids:
+                
+                try:
+                    record_obj = self.env[model].browse(id)
+                    record_obj.unlink
+                except:
+                    record_obj.write( {'active' : False})
         
          
     @api.multi
