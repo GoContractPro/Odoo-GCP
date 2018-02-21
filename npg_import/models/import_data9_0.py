@@ -1187,7 +1187,12 @@ class import_data_file(models.Model):
                 try:
                     record_obj.unlink
                 except:
-                    record_obj.write( {'active' : False})
+                    if  self.check_model_field_name(model,'website_published'):
+                        values = {'website_published':False,
+                                  'active':False}
+                    else:
+                        values = {'active' : False}
+                    record_obj.write( values)
         
          
     @api.multi
