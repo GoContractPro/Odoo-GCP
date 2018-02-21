@@ -1156,7 +1156,7 @@ class import_data_file(models.Model):
     def action_remove_records(self):    
         
         model = self.model_id.model
-        if self.remove_records_xyz not in ('1','2'):
+        if self.remove_records_xyz not in ('1','2','3'):
             return
         
         domain =  []
