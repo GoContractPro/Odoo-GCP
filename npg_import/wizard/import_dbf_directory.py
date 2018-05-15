@@ -28,7 +28,9 @@ import csv
 import glob
 import os
 import sys
+import logging
 
+_logger = logging.getLogger(__name__)
 
 try:
     import dbf
