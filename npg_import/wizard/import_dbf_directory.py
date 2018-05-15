@@ -28,8 +28,13 @@ import csv
 import glob
 import os
 import sys
-import dbf
 
+
+try:
+    import dbf
+    SOURCE_TYPES.append(('dbf', 'DBF File'))  
+except:
+    _logger.info("Python DBF not available. Please install dbf python package.")
 
 from datetime import datetime
 import time
